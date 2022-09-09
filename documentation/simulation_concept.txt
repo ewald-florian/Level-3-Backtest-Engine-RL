@@ -1,0 +1,43 @@
+Ideas for simulation:
+---------------------
+
+- parallel to the _state I could have an _simulated_state
+    which will contain agent messages
+
+- I can also use match on the _simulated_state and check if
+    my trades can be executed / canceled
+
+- I can track the liquidity used by the agent and deduct it from state
+    to get simulated_state (attention: could lead to negative volumes...)
+
+- Or the agent messages are stored in a seperate data structure
+- Then each timestep:
+
+simulated_state = state.copy()
+
+add agent_messages from agent_message_store to simulated_state
+
+match simulated_state and receive trade list
+
+remove executed messages (orders) from agent_message_store or mark as executed
+
+keep track of agent trades in agent_trade_store
+
+More Ideas:
+- MarketSimulation could even be a seperate class from MarketState
+ which retrieves market state from MarketState every iteration...
+- Then insert agent messages
+- check for matching
+- probably inconvenient since the MarketState already contains
+ match() which can also be used for MarketSimulation.
+
+- Execution Summaries: execution summaries ARE RELEVANT for the simulation since
+ agent orders could sit on the top of the book in the simulated state so they would have
+ been filled against the markatable orders!
+
+ - The agent will only submit orders in the inner few levels (e.g. 5 or 10)
+  so, it would be sufficient to deepcopy only these levels for the simulation_state,
+  however, the levels could of course move while the agent orders remain in the book
+  such that they would be moved to levels which are far away... I could always
+  slice exactly the state levels up to my min/max prices of agent orders...
+
