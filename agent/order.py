@@ -8,8 +8,11 @@
 """ Order Module for the Level-3 backtest engine"""
 # ---------------------------------------------------------------------------
 
-class Order:
+# Should later replace Market.agent_message_list
 
+class OrderManagementSystem:
+
+    # Basically, Market.agent_message_list
     order_list = list()  # instance store
 
     # TODO: I could append all the order attributes in addition to the message

@@ -2,8 +2,9 @@
 # - Trade could also just use Order and filter for filled orders...
 # - Or I call Trade inside the MarketState _update_with_agent_message part...
 
+# Store executed agent trades
 
-class Trade:
+class TradeLog:
 
     history = list()  # instance store
 
@@ -19,6 +20,11 @@ class Trade:
         self.quantity = quantity
         self.price = price
         self.trade_id = len(self.__class__.history)
+        # combo trades
+        # agent_msg_num (order ref)
+        # tc/commissions
+
+        #
 
         # ...
         print("(INFO) trade {trade_id} was executed: {self}".format(

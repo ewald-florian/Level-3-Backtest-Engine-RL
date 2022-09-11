@@ -13,9 +13,10 @@ if __name__ == '__main__':
 
     replay = Replay()
     replay.reset()
-    print("Episode Len: ", replay.episode.__len__())
+    #print("Episode Len: ", replay.episode.__len__())
 
-    for i in range(replay.episode.__len__()):
+    for i in range(11):#replay.episode.__len__()):
+
         #print(i)
         replay.step()
 

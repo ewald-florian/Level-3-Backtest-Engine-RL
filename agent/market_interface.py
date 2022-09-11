@@ -12,8 +12,9 @@ Interface to submit and cancel orders.
 # ---------------------------------------------------------------------------
 
 #TODO: handle circular import problplems...
+# get filtered stuff: executed_order = next(filter(lambda message: message['agent_msg_num'] == agent_msg_num, agent_message_list))
 from market.market_state_v1 import MarketStateAttribute
-from agent.order import Order
+#from agent.order import OrderManagementSystem as OMS
 
 class MarketInterface:
 
@@ -60,9 +61,11 @@ class MarketInterface:
         # submit to
         MarketStateAttribute.instance.simulated_update_with_agent_message(message)
 
+        #TODO: change to OMS
+
         # append message to order-list
-        Order(message)
-        print(len(Order.order_list))
+        #Order(message)
+        #print(len(Order.order_list))
 
     def cancel_order(self, side, limit, timestamp):
         """
