@@ -112,6 +112,8 @@ class Replay:
 
         # ... buy: test order submission
 
+
+        '''
         print(MarketStateAttribute.instance.state_l1)
         price = 9415000000
         ts = 1643716931606681391
@@ -119,7 +121,6 @@ class Replay:
         if self.step_counter == 0:
             self.market_interface.submit_order(side=side, quantity=2220000, timestamp=ts, limit=price)
 
-        '''
         price = 9450000000
         ts = 1643716931606681391
         side = 1
