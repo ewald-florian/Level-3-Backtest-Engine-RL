@@ -41,19 +41,15 @@ from market.parser import MessagePacketParser
 from market.parser import SnapshotParser
 
 #TODO:
-# - Gibt es schon eine trade-history (e.g. liste mit allen execution summary infos)?
 # - Test / Debug match() method
-# - Warum ist trade_list immer leer?
 # - Brauche ich message_counter?
 # - update_internal_timestamp und update_internal:index sind sehr ineffizient, optimieren...
-# - implement _execution_summary() to append the trade to a self.trade_history which stores all trades
-# and can be used for market VWAP etc.
 # - class attribute better as dictionary / list? as in L2...
-# - Checken od match() die priority time berücksichtigt...
 # - Idee wie execution summaries und simulated orders zusammengebrcuht werden können finden...
-# - make update timestamp and update index optional (this could save a little bit of comp. effort)
-# - Check ob und wie match() timestamp priority berücksichtigt...
-# - xlm fertig
+# - make update index optional (this could save a little bit of comp. effort)
+# - TODO: If I remove liquidity from simulation state, I also have to do this in the observation space (to have consistency)!!!
+# - TODO Execution Summarx: last Px is the "worst" execution price, not the only execition price, to be more
+# - accurate, I have to get the trades from the 13104/13105 messages instead of 13202!
 
 # --------------- MARKET STATE WITH CLASS ATTRIBUTE EXTENSION __________________________
 class MarketStateAttribute:
@@ -369,44 +365,6 @@ class MarketStateAttribute:
         midpoint = self.midpoint()
         return spread / midpoint
 
-    '''
-    # TODO: implement XLM (maybe for buy- and sell side seperately)
-    @property
-    def xlm(self, euro_volume=100_000):
-        """
-        Xetra Liquidity Measure.
-        :return: xlm
-        """
-        #TODO
-        midpoint = self.midpoint()
-        best_bid = self.best_bid()
-        best_ask = self.best_ask()
-        level_2_lob = self.state_l2
-
-        # sort
-        # bid:
-        list(level_2_lob[1].keys()).sort(reverse=True # descending
-        # ask:
-        list(level_2_lob[2].keys()).sort(reverse=False) # ascending
-
-        # TODO: Has to be weighted with volume on each level
-        exec_vol = 0
-        for price in bid_prices:
-            exec_vol += level_2_lob[1][price] * price # level volume
-            if exec_vol >= euro_volume:
-                outer_bid_price = price
-                break
-
-        exec_vol = 0
-        for price in ask_prices:
-            exec_vol += level_2_lob[2][price] * price # level volume
-            if exec_vol >= euro_volume:
-                outer_ask_price = price
-                break
-
-        pass
-    '''
-
     @property
     def index(self):  # relevant only in exchange-based setting
         """
@@ -634,6 +592,12 @@ class MarketStateAttribute:
             # execution summary
             elif message["template_id"] == 13202:
                 self._execution_summary(message)
+                ################################
+                print(10*'!', '13202')
+                print('MESSAGE PACKET: ', message_packet)
+                print('AGENT MESSAGE LIST: ', self.agent_message_list)
+                self._match_agent_orders_against_execution_summary(message_packet)
+                ################################
             else:
                 pass
 
@@ -853,6 +817,7 @@ class MarketStateAttribute:
 
         return trade
 
+    # TODO: 1304/1305 als basis für Trade list nehmen, 13202 ist nur eine Zusammenfassung!
     def _execution_summary(self, message):  # 13202
         """
         Execution summary messages do not need to be processed to maintain the
@@ -869,6 +834,8 @@ class MarketStateAttribute:
 
         # retrieve trade infos
         exec_id = message['exec_id']
+        #TODO: last Px is the "worst" execution price, not the only execition price, to be more
+        # accurate, I have to get the trades from the 13104/13105 messages!
         price = message['price']
         quantity = message['quantity']
         aggressor_side = message['side']
@@ -1132,7 +1099,7 @@ class MarketStateAttribute:
         simulation_state[2] = ask_side_dict
 
         # TODO: Remove liquidity used by the agent earlier in this episode (make as optional setting) BEFORE agent masseges are appendet!
-
+        # TODO: If I remove liquidity, I also have to do this in the observation space (to have consistency)!!!
         # -- add agent messages to simulation_state:
 
         # Note: messages can just be appended, they will be executed according to their priority time
@@ -1175,7 +1142,8 @@ class MarketStateAttribute:
 
     def _process_executed_agent_orders(self, trade_list):
         """
-        Helper method to execute agent messages. If an agent order is fully
+        Helper method to process executed agent messages in the agent_message_list.
+        If an agent order is fully
         executed, its template_id gets updated to 11111. If an agent order
         is partially executed, the execution volume is deducted from the quantity
         and the order remains active (template_id = 99999). To keep track of
@@ -1201,21 +1169,24 @@ class MarketStateAttribute:
                 # -- manipulate the agent message to process the execution
 
                 # agent orders was fully executed (possibly after partial executions)
-                if executed_volume == message['quantity']:
+                if executed_volume >= message['quantity']:
                     message['template_id'] = 11111  # -11111: fully executed
+                    if 'partial_executions' in message.keys():
+                        message['partial_executions'].append(message['quantity'])
 
                 # agent order was partially executed
                 if executed_volume < message['quantity']:
                     # add partial execution indicator
-                    if 'partial_execution' in message.keys():
+                    if 'partial_executions' in message.keys():
                         message['partial_executions'].append(executed_volume)
 
                     else:
-                        message['partial_executions'] = [executed_volume]
+                        message['partial_executions'] = [executed_volume] # list
                         message['original_quantity'] = message['quantity']
 
                     # remove executed quantity
                     message['quantity'] = message['quantity'] - executed_volume
+
 
     def _store_agent_trades(self, trade_list):
         """
@@ -1231,35 +1202,110 @@ class MarketStateAttribute:
             agent_trade['execution_time'] = trade['timestamp']
             agent_trade['executed_volume'] = trade['quantity']
             agent_trade['execution_price'] = trade['price']
+            #TODO: agent order side is more relevant
             agent_trade['aggressor_side'] = trade['aggressor_side']
             agent_trade['agent_msg_num'] = trade['agent_msg_num']
 
             self.agent_trade_list.append(agent_trade)
 
-    #TODO: implement
-    def match_agent_orders_against_execution_summaries(self): # "arbeitstitel"
+    def _match_agent_orders_against_execution_summary(self, message_packet): # "arbeitstitel"
         """
         => Simuliere, ob die agent orders gegen market- bzw. marketable limit orders
         ausgeführt worden wären.
         => hilfreich: alle relevanten messages werden (idR) zusammen in einem message packet
         geliefert.
-
-
-        Idee:
-        if message in message packet == execution_summary:
-                store entire message_packet (so I have exec summary and 13104/13105 messages)
-                Assumption: 13104 and 13105 belong directly to the execution summary
-                -> assert this, if not true, skip the execution summary
-
-        if orders from agent_message_list could have been executed atn this price: # compare limits
-                if agent-priority time < 13104/13105 priority time:
-                        simulate (partial) agent-order execution
-
-        # Problem: Execution packets are sometimes messy...
+        => Should be called if template_id == 13202 - execution summary
         # -
         :return: trade_list
+            list, trades as dictionaries
         """
-        pass
+
+        # -- filter out the execution summary message to get execution infos
+        exec_sum_message = list(filter(lambda d: d['template_id'] == 13202, message_packet.copy()))[0]
+        aggressor_side = exec_sum_message['side'] # "AggressorSide"
+        # worst price of this match.
+        last_price = exec_sum_message['price'] # LastPx
+        aggressor_timestamp = exec_sum_message['timestamp'] # AggressorTime
+
+        # -- get historically executed orders from message_packet
+        executed_orders = list(filter(lambda d: d['template_id'] in [13104, 13105], message_packet.copy()))
+
+        # -- get potentially executable agent orders from agent_message_list (side and ACTIVE - 99999)
+        complementary_agent_orders = list(filter(lambda d: d['side'] != aggressor_side and d['template_id'] == 99999,
+                                                 self.agent_message_list.copy()))
+        # agent-ask <= aggressor bid:
+        if aggressor_side == 1:
+            executable_agent_orders = list(filter(lambda d: d['price'] <= last_price, complementary_agent_orders))
+        # agent-bid >= aggressor ask:
+        elif aggressor_side == 2:
+            executable_agent_orders = list(filter(lambda d: d['price'] >= last_price, complementary_agent_orders))
+
+        # sort executable_agent_orders by price and timestamp
+        if aggressor_side == 2:
+            # sort by highest price and smallest timestamp
+            executable_agent_orders = sorted(executable_agent_orders, key=lambda d: (-d['price'], d['timestamp']))
+        elif aggressor_side == 1:
+            # sort by lowest price and smallest timestamp
+            executable_agent_orders = sorted(executable_agent_orders, key=lambda d: (d['price'], d['timestamp']))
+
+        # -- test if agent orders would have had a higher priority than historically executed orders
+        trade_list = []
+        ######
+        print('executed_orders BEFORE: ', executed_orders)
+        ######
+        for agent_order in executable_agent_orders:
+
+            match_execution_summary = None  # reset
+            agent_msg_num = agent_order["agent_msg_num"]
+
+            for executed_order in list(executed_orders): # list() to not mess up the iterator while removing elements
+                ###
+                print('next_order')
+                ###
+                # set flag to false
+                agent_execution_possible = False
+
+                execution_price = executed_order['price']  # for match_execution_summary
+                execution_quantity = executed_order['quantity']  # for match_execution_summary
+
+                if aggressor_side == 1 and agent_order['price'] < executed_order['price']:
+                    agent_execution_possible = True
+
+                elif aggressor_side == 2 and agent_order['price'] > executed_order['price']:
+                    agent_execution_possible = True
+
+                # smaller timestamps have higher priority
+                elif agent_order['price'] == executed_order['price'] and agent_order['timestamp'] < executed_order['timestamp']:
+                    agent_execution_possible = True
+
+                if agent_execution_possible:
+                    # create execution summary
+                    match_execution_summary = {"aggressor_side": aggressor_side,
+                                               "price": execution_price,
+                                               "timestamp": aggressor_timestamp,
+                                               "quantity": execution_quantity,
+                                               "agent_msg_num": agent_msg_num}
+
+                    # add to trade_list
+                    trade_list.append(match_execution_summary)
+                    # remove executed_order from executed_orders
+                    executed_orders.remove(executed_order)
+                    ######
+                    print('executed_orders AFTER: ', executed_orders)
+                    ######
+        #DEBUGGING:
+        print('AGENT ORDER EXECUTED AGAINST EXECUTION SUMMARY:')
+        print('SPECIAL TRADE-LIST: ', trade_list)
+        print('AGENT MESSAGE LIST BEFORE EXECUTION', self.agent_message_list)
+        print('AGENT TRADE LIST BEFORE EXECUTION: ', self.agent_trade_list)
+
+        # process agent executions
+        if trade_list:
+            self._process_executed_agent_orders(trade_list)
+            self._store_agent_trades(trade_list)
+
+        print('AGENT MESSAGE LIST AFTER EXECUTION', self.agent_message_list)
+        print('AGENT TRADE LIST AFTER EXECUTION: ', self.agent_trade_list)
 
     # match . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 

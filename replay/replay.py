@@ -112,6 +112,14 @@ class Replay:
 
         # ... buy: test order submission
 
+        print(MarketStateAttribute.instance.state_l1)
+        price = 9415000000
+        ts = 1643716931606681391
+        side = 2
+        if self.step_counter == 0:
+            self.market_interface.submit_order(side=side, quantity=2220000, timestamp=ts, limit=price)
+
+        '''
         price = 9450000000
         ts = 1643716931606681391
         side = 1
@@ -140,9 +148,9 @@ class Replay:
         if self.step_counter == 10:
             # via MarketInterface
             self.market_interface.cancel_order(side=side, limit=price, timestamp=1643716931606681401)
-
-        print("AGENT MESSAGE LIST")
-        print(MarketStateAttribute.instance.agent_message_list)
+        '''
+        #print("AGENT MESSAGE LIST")
+        #print(MarketStateAttribute.instance.agent_message_list)
 
         # . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
         self.step_counter = self.step_counter + 1
