@@ -13,12 +13,18 @@ import json
 
 # PATH TO DATA DIRECTORY
 #PATH = "/Users/florianewald/PycharmProjects/Level3-Data-Analysis/sample_msg_data/DE0005190003.XETR_20220201T080007_20220201T120000"
-PATH = "/Users/florianewald/PycharmProjects/Level3-Data-Analysis/sample_msg_data/DE0005190003.XETR_20220201T120211_20220201T163000"
+local = "/Users/florianewald/PycharmProjects/Level3-Data-Analysis/sample_msg_data/DE0005190003.XETR_20220201T120211_20220201T163000"
+
+PATH = local
+
 class Episode:
 
     def __init__(self):
+                 #symbol_list = None,
+                 #episode_start = None,
+                 #episode_end = None):
         """
-
+        ...
         :rtype: object
         """
         # load data
@@ -59,7 +65,6 @@ class Episode:
         '''
         # retrieve next message packet
         next_message_packet = self.message_packet_list[self._step]
-        # TODO: Which timestamp as global timestamp?
         # update timestamp with message-header TransactTime
         self._timestamp = next_message_packet[0]['TransactTime']
         # count step

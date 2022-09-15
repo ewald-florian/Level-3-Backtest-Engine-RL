@@ -20,7 +20,7 @@ class Context:
 
     def __init__(self,
                  market_state,
-                 context_length:int=55):
+                 context_length:int=100):
         """
         Context class maintains the context list as class attribute
         which can be used to store market states by calling
