@@ -5,7 +5,7 @@
 # Created Date: 05/Sept/2022
 # version ='1.0'
 # ---------------------------------------------------------------------------
-""" Order Module for the Level-3 backtest engine"""
+""" Order class for the Level-3 backtest engine"""
 # ---------------------------------------------------------------------------
 
 # Should later replace Market.agent_message_list
@@ -40,7 +40,11 @@ class OrderManagementSystem:
         pass
 
     @property
-    def df_representation(self):
+    def dataframe(self):
+        pass
+
+    @property
+    def array(self):
         pass
 
     @classmethod
