@@ -59,7 +59,7 @@ class MarketInterface:
         message["timestamp"] = timestamp
 
         # submit to
-        MarketStateAttribute.instance.simulate_agent_message(message)
+        MarketStateAttribute.instance.update_with_agent_message_simulation(message)
         print('SUBMISSION MSG SUBMITTED')
 
         #TODO: change to OMS
@@ -69,10 +69,11 @@ class MarketInterface:
         #print(len(Order.order_list))
 
     # TODO: kann einfach mit agent:msg_num gecancelt werden!
-    def cancel_order(self, side, limit, timestamp):
+    def cancel_order(self, order_agent_msg_num, limit=None, side=None, order_timestamp=None):
         """
         For simulated orders which do not affect the market state.
-        Send cancellation order. Requires price, limit and timestamp of order
+        Send cancellation order. Message can be identified by agent_msg_num
+        or alternatively, by price, limit and timestamp of order
         which should be cancelled.
         :param side
             1 (buy) or 2 (Sell)
@@ -80,19 +81,25 @@ class MarketInterface:
             int, price
         :param timestamp
             int, unix timestamp of order which should be cancelled
+        :param order_agent_msg_num
+            int, unique agent message identifier
         """
         #TODO: assert if order to be cancelled exists...
 
         message = dict()
         # TemplateID 66666 for cancellation
         message['template_id'] = 66666
-        message["side"] = side
-        message["price"] = limit
-        # timestamp of order which should be cancelled
-        message["timestamp"] = timestamp
+        # message number of the order to be cancelled
+        message['order_agent_msg_num'] = order_agent_msg_num
+
+        # alternatively, message can be identified by price, side, timestamp combination
+        #message["side"] = side
+        #message["price"] = limit
+        ## timestamp of order which should be cancelled
+        #message["order_timestamp"] = order_timestamp
 
         # send cancellation message to MarketState
-        MarketStateAttribute.instance.simulate_agent_message(message)
+        MarketStateAttribute.instance.update_with_agent_message_simulation(message)
 
         # TODO: Update order status to 'CANCELLED' in Order.history...
         print('CANCELLATION MSG SUBMITTED')
@@ -125,7 +132,7 @@ class MarketInterface:
         message["timestamp"] = timestamp
 
         # submit directly to MarketStateAttribute.instance
-        MarketStateAttribute.instance.update_with_agent_message(message)
+        MarketStateAttribute.instance.update_with_agent_message_impact(message)
 
         # append message to order-list
         Order(message)
@@ -151,7 +158,7 @@ class MarketInterface:
         message["timestamp"] = timestamp
 
         # send cancellation message to MarketState
-        MarketStateAttribute.instance.update_with_agent_message(message)
+        MarketStateAttribute.instance.update_with_agent_message_impact(message)
 
         # TODO: Update order status to 'CANCELLED' in Order.history...or whatever
 

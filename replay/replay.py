@@ -16,6 +16,8 @@ from replay.episode import Episode
 from market.market_state_v1 import MarketStateAttribute
 from agent.context import Context
 from agent.market_interface import MarketInterface
+from agent.agent_trade import AgentTrade
+from market.market_trade import MarketTrade
 
 class Replay:
 
@@ -60,6 +62,7 @@ class Replay:
         MarketStateAttribute.instance.update_with_exchange_message(message_packet)
 
     #--- EXPERIMENTAL METHOD
+    # TODO: testen ob es mit match_new funktioniert
     def _showcase_submit_and_cancel_order_impact(self): # delete method later...
         """
         Showcase of how the MarketInterface class can be used to submit
@@ -112,47 +115,60 @@ class Replay:
 
         # ... buy: test order submission
 
+        print('NEW MARKET TRADE HISTORY Object')
+        print(len(MarketTrade.history))
+        print(MarketTrade.dataframe)
+        print(MarketTrade.array)
 
 
-        print(MarketStateAttribute.instance.state_l1)
-        price = 9415000000
+        price = 9420000000
         ts = 1643716931606681391
         side = 2
         if self.step_counter == 0:
             self.market_interface.submit_order(side=side, quantity=2220000, timestamp=ts, limit=price)
+            print('INFO(SUBMISSION)')
+
+        # ... test order cancellation
+        if self.step_counter == 100:
+            # via MarketInterface
+            self.market_interface.cancel_order(order_agent_msg_num=0)
+            print('INFO(CANCELLATION)')
 
 
         price = 9450000000
         ts = 1643716931606681391
         side = 1
-        if self.step_counter == 0:
+        if self.step_counter == 10:
             self.market_interface.submit_order(side=side, quantity=2220000, timestamp=ts, limit=price)
 
         price = 9413000000
         ts = 1643716931606681391
         side = 1
-        if self.step_counter == 0:
+        if self.step_counter == 20:
             self.market_interface.submit_order(side=side, quantity=1110000, timestamp=ts, limit=price)
 
         # ... sell: test order submission
         price = 9418000000
         ts = 1643716931606681391
         side = 2
-        if self.step_counter == 0:
+        if self.step_counter == 30:
             self.market_interface.submit_order(side=side, quantity=3330000, timestamp=ts, limit=price)
 
-        price = 9421000000
-        ts = 1643716931606681391
-        side = 2
-        if self.step_counter == 0:
-            self.market_interface.submit_order(side=side, quantity=8880000, timestamp=ts, limit=price)
+        if self.step_counter % 10==0:
+            price = 9417000000
+            ts = 1643716931606681391
+            side = 1
+            if self.step_counter == 40:
+                self.market_interface.submit_order(side=side, quantity=8880000, timestamp=ts, limit=price)
+
+
         # ... test order cancellation
-        if self.step_counter == 10:
+        if self.step_counter == 100:
             # via MarketInterface
-            self.market_interface.cancel_order(side=side, limit=price, timestamp=1643716931606681401)
+            self.market_interface.cancel_order(order_agent_msg_num=3)
 
         #print("AGENT MESSAGE LIST")
-        #print(MarketStateAttribute.instance.agent_message_list)
+        print(MarketStateAttribute.instance.agent_message_list)
 
         # . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
         self.step_counter = self.step_counter + 1
