@@ -23,17 +23,17 @@ class AgentTrade: # vs MarketTrade
         # append trade dict to history list
         self.__class__.history.append(agent_trade)
 
-        agent_trade_num = agent_trade['agent_trade_num']
+        trade_id = agent_trade['trade_id']
         execution_time = agent_trade['execution_time']
         executed_volume = agent_trade['executed_volume']
         execution_price = agent_trade['execution_price']
         #self.aggressor_side = agent_trade['aggressor_side']
-        #self.agent_msg_num = agent_trade['agent_msg_num']
+        #self.message_id = agent_trade['message_id']
         agent_side = agent_trade['agent_side']
 
         #TODO: Format f string
         if verbose:
-            print(f'(EXEC-INFO)agent-trade {agent_trade_num} executed|{executed_volume}@{execution_price}|side: {agent_side}|time: {pd.to_datetime(int(execution_time), unit="ns")}|unix {execution_time}')
+            print(f'(EXEC-INFO)agent-trade {trade_id} executed|{executed_volume}@{execution_price}|side: {agent_side}|time: {pd.to_datetime(int(execution_time), unit="ns")}|unix {execution_time}')
 
     @property
     def dataframe(self):
@@ -48,7 +48,7 @@ class AgentTrade: # vs MarketTrade
         """
         Numpy Array representation of trade history.
         """
-        df = self.dataframe()
+        df = self.dataframe
         return np.array(df)
 
     @property
@@ -56,7 +56,7 @@ class AgentTrade: # vs MarketTrade
         """
         Trade count
         """
-        return self.__class__.history[-1]['agent_trade_num']
+        return len(self.__class__.history)
 
     #TODO: implement helpful properties...
     @property

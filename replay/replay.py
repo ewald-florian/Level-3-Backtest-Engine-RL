@@ -12,12 +12,13 @@ import logging
 logging.getLogger().setLevel(logging.INFO)
 
 from replay.episode import Episode
-#from .market_state_new import MarketState
-from market.market_state_v1 import MarketStateAttribute
+from market.market_state_v1 import Market
 from agent.context import Context
 from agent.market_interface import MarketInterface
 from agent.agent_trade import AgentTrade
 from market.market_trade import MarketTrade
+from agent.agent_order import OrderManagementSystem as OMS
+from agent.agent_metrics import AgentMetrics
 
 class Replay:
 
@@ -32,9 +33,6 @@ class Replay:
         self.step_counter = 0
         self.done = False
 
-        # instantiate market interface
-        self.market_interface = MarketInterface()
-        print(type(self.market_interface))
 
     def _generate_episode_start_list(self):
         pass
@@ -59,44 +57,7 @@ class Replay:
     def _market_step(self, message_packet):
 
         #TODO: I have to call match() for every update during simulation
-        MarketStateAttribute.instance.update_with_exchange_message(message_packet)
-
-    #--- EXPERIMENTAL METHOD
-    # TODO: testen ob es mit match_new funktioniert
-    def _showcase_submit_and_cancel_order_impact(self): # delete method later...
-        """
-        Showcase of how the MarketInterface class can be used to submit
-        and cancel orders.
-        :return:
-        """
-        # -- get next message packet update
-        next_message_packet = self.episode.__next__()
-        # -- update market
-        self._market_step(message_packet=next_message_packet)
-
-        print('STEP: ', self.step_counter)
-        # ... test order submission
-        price = 9411000000
-        ts = 1643716931606681391
-        side = 1
-        if self.step_counter == 0:
-            self.market_interface.submit_order_impact(side=side, quantity=2220000, timestamp=ts, limit=price)
-
-        # ... test order cancellation
-
-        if self.step_counter == 10:
-            # directly
-            # MarketStateAttribute.instance.update_with_agent_message(message)
-            # via MarketInterface
-            self.market_interface.cancel_order_impact(side=side, limit=price, timestamp=ts)
-
-
-        # check state for my message/order
-        if price in MarketStateAttribute.instance._state[1].keys():
-            print(MarketStateAttribute.instance._state[1][price])
-        # test order cancellation
-        self.step_counter = self.step_counter + 1
-
+        Market.instances['ID'].update_with_exchange_message(message_packet)
 
     def step(self):
 
@@ -108,79 +69,71 @@ class Replay:
         # -- update market
         self._market_step(message_packet=next_message_packet)
         # -- retrieve current state form MarketState:
-        current_state = MarketStateAttribute.instance.state_l3
+        current_state = Market.instances['ID'].state_l3
         # -- append state to Context
         Context(market_state=current_state)
         # . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
-        # ... buy: test order submission
+######################  test order submission etc  #####################################################
 
-        print('NEW MARKET TRADE HISTORY Object')
-        print(len(MarketTrade.history))
-        print(MarketTrade.dataframe)
-        print(MarketTrade.array)
+        #DEBUG AgentMetrics
+
+        print(AgentMetrics.vwap_buy)
+        print(AgentMetrics.vwap_sell)
+        print(AgentMetrics.transaction_costs)
+        print(AgentMetrics.pnl_realized)
+        print(AgentMetrics.pnl_unrealized)
+        print(AgentMetrics.cash_position)
+        print(AgentMetrics.exposure)
+        print(AgentMetrics.exposure_budget_left)
+        print('filtered msgs ', AgentMetrics.get_filtered_messages(template_id=11111))
+        print('filtered trades ', AgentMetrics.get_filtered_trades(side=1))
+        print(AgentMetrics.get_realized_trades)
+        print(AgentMetrics.get_unrealized_trades)
+        print(AgentMetrics.get_unrealized_trades)
+        print(AgentMetrics.realized_quantity)
+        print(AgentMetrics.vwap_score)
+        print(AgentMetrics.unrealized_quantity)
+        print(AgentMetrics)
+
+        print(Market.instances['ID'].state_l1)
 
 
-        price = 9420000000
-        ts = 1643716931606681391
-        side = 2
-        if self.step_counter == 0:
-            self.market_interface.submit_order(side=side, quantity=2220000, timestamp=ts, limit=price)
+        price = 9418000000
+        side = 1
+        if self.step_counter % 10 == 0:
+            MarketInterface.submit_order(side=side, quantity=2220000, limit=price)
             print('INFO(SUBMISSION)')
 
         # ... test order cancellation
         if self.step_counter == 100:
             # via MarketInterface
-            self.market_interface.cancel_order(order_agent_msg_num=0)
+            MarketInterface.cancel_order(order_message_id=0)
             print('INFO(CANCELLATION)')
 
-
-        price = 9450000000
-        ts = 1643716931606681391
-        side = 1
-        if self.step_counter == 10:
-            self.market_interface.submit_order(side=side, quantity=2220000, timestamp=ts, limit=price)
-
         price = 9413000000
-        ts = 1643716931606681391
-        side = 1
-        if self.step_counter == 20:
-            self.market_interface.submit_order(side=side, quantity=1110000, timestamp=ts, limit=price)
-
-        # ... sell: test order submission
-        price = 9418000000
-        ts = 1643716931606681391
         side = 2
-        if self.step_counter == 30:
-            self.market_interface.submit_order(side=side, quantity=3330000, timestamp=ts, limit=price)
-
-        if self.step_counter % 10==0:
-            price = 9417000000
-            ts = 1643716931606681391
-            side = 1
-            if self.step_counter == 40:
-                self.market_interface.submit_order(side=side, quantity=8880000, timestamp=ts, limit=price)
+        if self.step_counter % 20 == 0:
+            MarketInterface.submit_order(side=side, quantity=2220000, limit=price)
+            print('INFO(SUBMISSION)')
 
 
-        # ... test order cancellation
-        if self.step_counter == 100:
-            # via MarketInterface
-            self.market_interface.cancel_order(order_agent_msg_num=3)
 
-        #print("AGENT MESSAGE LIST")
-        print(MarketStateAttribute.instance.agent_message_list)
 
-        # . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+####################################################################################################
         self.step_counter = self.step_counter + 1
 
 
     def _reset_market_with_attributes(self, snapshot_start):
         # reset old market instance
-        MarketStateAttribute.reset_instance()
+        Market.reset_instances()
         # create new instance of MarketState
-        _ = MarketStateAttribute(market_id="ID_0")
+        _ = Market(market_id="ID")
         # build initial state of new MarektState instance from snapshot_start
-        MarketStateAttribute.instance.initialize_state(snapshot=snapshot_start)
+        Market.instances['ID'].initialize_state(snapshot=snapshot_start)
+
+        # instantiate agent metrics
+        _ = AgentMetrics()
 
     def _reset_context(self):
         # reset context

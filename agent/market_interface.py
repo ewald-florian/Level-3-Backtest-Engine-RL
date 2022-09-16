@@ -11,31 +11,26 @@ Interface to submit and cancel orders.
 """
 # ---------------------------------------------------------------------------
 
-#TODO: handle circular import problplems...
-# get filtered stuff: executed_order = next(filter(lambda message: message['agent_msg_num'] == agent_msg_num, agent_message_list))
-from market.market_state_v1 import MarketStateAttribute
-#from agent.order import OrderManagementSystem as OMS
+
+from market.market_state_v1 import Market
+#from agent.agent_order import OrderManagementSystem as OMS
 
 class MarketInterface:
 
     def __init__(self,
-                 latency:int=0,
                  tc_factor:float=0,
                  exposure_limit:float=100_000
                  ):
 
-        # -- static attributes from argumens
+        # static attributes from argumens
         self.latency = latency
         self.tc_factor = tc_factor
         self.exposure_limit = exposure_limit
 
-        # -- dynamic attributes
-        # ...
-
-
     # without order book impact (simulation) . . . . . . . . . . . . . . . . .
 
-    def submit_order(self, side, quantity, timestamp, limit=None):
+    @staticmethod
+    def submit_order(side, quantity, limit=None):
         """
         For simulated orders which do not affect the market state.
         Send submission order.
@@ -43,12 +38,9 @@ class MarketInterface:
             1(Buy), 2(Sell)
         :param quantity:
             int,
-        :param timestamp:
-            int, unix timestamp
         :param limit:
             int, limit price
         """
-        # TODO: Assert if price is in ticksize etc.
 
         message = dict()
         # TemplateID 99999 for submission
@@ -56,60 +48,41 @@ class MarketInterface:
         message["side"] = side
         message["price"] = limit
         message["quantity"] = quantity
-        message["timestamp"] = timestamp
 
-        # submit to
-        MarketStateAttribute.instance.update_with_agent_message_simulation(message)
-        print('SUBMISSION MSG SUBMITTED')
+        # submit to Market
+        Market.instances["ID"].update_simulation_with_agent_message(message)
 
-        #TODO: change to OMS
-
-        # append message to order-list
-        #Order(message)
-        #print(len(Order.order_list))
-
-    # TODO: kann einfach mit agent:msg_num gecancelt werden!
-    def cancel_order(self, order_agent_msg_num, limit=None, side=None, order_timestamp=None):
+    @staticmethod
+    def cancel_order(order_message_id):
         """
         For simulated orders which do not affect the market state.
-        Send cancellation order. Message can be identified by agent_msg_num
-        or alternatively, by price, limit and timestamp of order
-        which should be cancelled.
-        :param side
-            1 (buy) or 2 (Sell)
-        :param limit
-            int, price
-        :param timestamp
-            int, unix timestamp of order which should be cancelled
-        :param order_agent_msg_num
+        Send cancellation order. Message can be identified by message_id.
+
+        :param order_message_id
             int, unique agent message identifier
         """
-        #TODO: assert if order to be cancelled exists...
+        #TODO: assert if order to be cancelled exists... (sort OMS)
 
         message = dict()
         # TemplateID 66666 for cancellation
         message['template_id'] = 66666
         # message number of the order to be cancelled
-        message['order_agent_msg_num'] = order_agent_msg_num
+        message['order_message_id'] = order_message_id
 
-        # alternatively, message can be identified by price, side, timestamp combination
-        #message["side"] = side
-        #message["price"] = limit
-        ## timestamp of order which should be cancelled
-        #message["order_timestamp"] = order_timestamp
+        # send cancellation message to Market
+        Market.instances["ID"].update_simulation_with_agent_message(message)
 
-        # send cancellation message to MarketState
-        MarketStateAttribute.instance.update_with_agent_message_simulation(message)
-
-        # TODO: Update order status to 'CANCELLED' in Order.history...
-        print('CANCELLATION MSG SUBMITTED')
-
+    @staticmethod
     def modify_order(self):
-        pass
+        """
+        ...
+        """
+        raise NotImplementedError ("order modify not implemented yet")
 
     # with order book impact . . . . . . . . . . . . . . . . . . . . . .
 
-    def submit_order_impact(self, side, quantity, timestamp, limit=None):
+    @staticmethod
+    def submit_order_impact(side, quantity, timestamp, limit=None):
         """
         Send submission order.
         :param side:
@@ -132,13 +105,11 @@ class MarketInterface:
         message["timestamp"] = timestamp
 
         # submit directly to MarketStateAttribute.instance
-        MarketStateAttribute.instance.update_with_agent_message_impact(message)
+        Market.instances["ID"].update_with_agent_message_impact(message)
 
-        # append message to order-list
-        Order(message)
-        print(len(Order.order_list))
-
-    def cancel_order_impact(self, side, limit, timestamp):
+    # TODO: Überarbeiten, aktuell nicht kompatibel...
+    @staticmethod
+    def cancel_order_impact(order_message_id):
         """
         Send cancellation order. Requires price, limit and timestamp of order
         which should be cancelled.
@@ -152,18 +123,20 @@ class MarketInterface:
         message = dict()
         # TemplateID 66666 for cancellation
         message['template_id'] = 66666
-        message["side"] = side
-        message["price"] = limit
-        # timestamp of order which should be cancelled
-        message["timestamp"] = timestamp
+        # message number of the order to be cancelled
+        message['order_message_id'] = order_message_id
 
         # send cancellation message to MarketState
-        MarketStateAttribute.instance.update_with_agent_message_impact(message)
+        Market.instances["ID"].update_with_agent_message_impact(message)
 
-        # TODO: Update order status to 'CANCELLED' in Order.history...or whatever
-
+    @staticmethod
     def modify_order_impact(self):
-        pass
+        """
+        ...
+        """
+        raise NotImplementedError ("order modify not implemented yet")
+
+    # statistics . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
     def get_filtered_orders(self):
         pass

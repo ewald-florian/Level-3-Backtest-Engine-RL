@@ -1,51 +1,78 @@
 #!/usr/bin/env python3  Line 1
 # -*- coding: utf-8 -*- Line 2
-#----------------------------------------------------------------------------
+# ----------------------------------------------------------------------------
 # Created By  : florian
 # Created Date: 05/Sept/2022
 # version ='1.0'
 # ---------------------------------------------------------------------------
 """ Order class for the Level-3 backtest engine"""
+
+
 # ---------------------------------------------------------------------------
 
 # Should later replace Market.agent_message_list
 
-class OrderManagementSystem:
+class OrderManagementSystem:  # OMS
 
     # Basically, Market.agent_message_list
     order_list = list()  # instance store
 
-    # TODO: I could append all the order attributes in addition to the message
-    def __init__(self, message):
+    def __init__(self, message, verbose=True):
         """
-        Store Messages to order history list.
+        Store agent messages (submissions and cancellations)
+         in class attribute order_list.
+        :param message
+            dict, agent message
+        :param verbose
+            bool, set True to log messages.
         """
 
-        self.message = message
-        # append order to history_list class attribute
-        self.__class__.order_list.append(self)
+        # append order to order_list class attribute
+        self.__class__.order_list.append(message)
 
-    def _assert_params(self):
-        pass
+        # TODO: besser hier loggen order direkt im MarketInterface?
 
-    def execute(self):
-        # Change status, e.g. from 'ACTIVE' to 'FILLED'
-        pass
+        # logging
+        if message['template_id'] == 99999:
+            side = message["side"]
+            limit = message["price"]
+            quantity = message["quantity"]
+            # TODO: include latency
+            timestamp = message["timestamp"]
+            # TODO
+            # if verbose:
+            #    print()
+            # print(f'(INFO) Agent Order Submitted: Side: {side} | Price: {price} | Quantity: {quantity}')
 
-    def cancel(self):
-        # Change Status to 'CANCELLED'
-        pass
+        elif message['template_id'] == 66666:
 
-    def __str__(self):
-        pass
+            order_message_id = message['order_message_id']
+            # TODO
+            # if verbose:
+            #    print(order_message_id)
 
     @property
     def dataframe(self):
-        pass
+        """
+        Dataframe representation of trade history.
+        """
+        return pd.DataFrame.from_records(
+            self.__class__.order_list)
 
     @property
     def array(self):
-        pass
+        """
+        Numpy Array representation of trade history.
+        """
+        df = self.dataframe
+        return np.array(df)
+
+    @property
+    def message_count(self):
+        """
+        Trade count
+        """
+        return len(self.__class__.order_list)
 
     @classmethod
     def reset_history(class_reference):
