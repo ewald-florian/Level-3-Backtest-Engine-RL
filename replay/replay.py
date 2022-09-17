@@ -99,6 +99,7 @@ class Replay:
         print(self.agent_metrics.unrealized_quantity)
         # str
         print(self.agent_metrics)
+        print(self.agent_metrics.position_value)
 
 
         price = 9418000000

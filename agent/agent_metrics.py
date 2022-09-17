@@ -15,10 +15,10 @@ from agent.agent_trade import AgentTrade
 from market.market_state_v1 import Market
 from market.market_trade import MarketTrade
 
-#TODO: is there a way to access properzies withoz instantiating AgentMetrics? I can use
+#TODO: is there a way to access properties withoz instantiating AgentMetrics? I can use
 # staticmethods but many methods need self...
 
-# TODO: testing, debugging
+# TODO: testing, debugging, str, roundtrip-PnLs
 class AgentMetrics:
 
     def __init__(self, tc_factor: float = 1e-3,
@@ -114,11 +114,31 @@ class AgentMetrics:
 
         return realized_quantity * 1e-4
 
-    # TODO: refactor exposure to "buy_in_value" to use it in other methods
+    @property
+    def position_value(self):
+        """
+        Current value of unrealized position, approximated with best-bid
+        or best-ask value.
+        """
+        unrealized_quantity = self.unrealized_quantity
+        if unrealized_quantity > 0:
+            position_value = unrealized_quantity * \
+                             Market.instances['ID'].best_bid
+
+        elif unrealized_quantity < 0:
+            position_value = unrealized_quantity * \
+                             Market.instances['ID'].best_ask
+
+        else:
+            position_value = 0
+
+        return position_value
+
     @property
     def exposure(self):
         """
-        Current Exposure given in EUR.
+        Current Exposure given in EUR. Based on entry value of
+        unrealized trades.
 
         :return expsoure
             float, current exposure in EUR
