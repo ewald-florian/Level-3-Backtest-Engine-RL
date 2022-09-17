@@ -51,14 +51,19 @@ class MarketTrade:
         """
         return self.__class__.history[-1]['market_trade_num']
 
-    #TODO: implement helpful properties...
+    #TODO: test / debug vwap / wie kann vwap angezeigt werden wenn es keine instanz gibt?
     @property
-    def vwap_buy(self):
-        pass
-
-    @property
-    def vwap_sell(self):
-        pass
+    def vwap(self):
+        """
+        Market vwap of current episode.
+        :return
+            ...
+        """
+        vwap = (sum(trade['price']*trade['quantity']
+                    for trade in self.__class__.history) /
+                    sum(trade['quantity'] for
+                    trade in self.__class__.history))*1e-8
+        return vwap
 
     @classmethod
     def reset_history(cls):

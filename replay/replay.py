@@ -33,6 +33,8 @@ class Replay:
         self.step_counter = 0
         self.done = False
 
+        self.agent_metrics = AgentMetrics()
+
 
     def _generate_episode_start_list(self):
         pass
@@ -78,25 +80,25 @@ class Replay:
 
         #DEBUG AgentMetrics
 
-        print(AgentMetrics.vwap_buy)
-        print(AgentMetrics.vwap_sell)
-        print(AgentMetrics.transaction_costs)
-        print(AgentMetrics.pnl_realized)
-        print(AgentMetrics.pnl_unrealized)
-        print(AgentMetrics.cash_position)
-        print(AgentMetrics.exposure)
-        print(AgentMetrics.exposure_budget_left)
-        print('filtered msgs ', AgentMetrics.get_filtered_messages(template_id=11111))
-        print('filtered trades ', AgentMetrics.get_filtered_trades(side=1))
-        print(AgentMetrics.get_realized_trades)
-        print(AgentMetrics.get_unrealized_trades)
-        print(AgentMetrics.get_unrealized_trades)
-        print(AgentMetrics.realized_quantity)
-        print(AgentMetrics.vwap_score)
-        print(AgentMetrics.unrealized_quantity)
-        print(AgentMetrics)
 
-        print(Market.instances['ID'].state_l1)
+        print(self.agent_metrics.vwap_buy)
+        print(self.agent_metrics.vwap_sell)
+        print(self.agent_metrics.transaction_costs)
+        print(self.agent_metrics.pnl_realized)
+        print(self.agent_metrics.pnl_unrealized)
+        print(self.agent_metrics.cash_position)
+        print(self.agent_metrics.exposure)
+        print(self.agent_metrics.exposure_budget_left)
+        print('filtered msgs ', self.agent_metrics.get_filtered_messages(template_id=11111))
+        print('filtered trades ', self.agent_metrics.get_filtered_trades(side=1))
+        print(self.agent_metrics.get_realized_trades)
+        print(self.agent_metrics.get_unrealized_trades)
+        print(self.agent_metrics.get_unrealized_trades)
+        print(self.agent_metrics.realized_quantity)
+        print(self.agent_metrics.vwap_score)
+        print(self.agent_metrics.unrealized_quantity)
+        # str
+        print(self.agent_metrics)
 
 
         price = 9418000000
