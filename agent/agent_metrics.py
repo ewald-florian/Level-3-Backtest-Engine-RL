@@ -12,7 +12,7 @@ import textwrap
 
 from agent.agent_order import OrderManagementSystem as OMS
 from agent.agent_trade import AgentTrade
-from market.market_state_v1 import Market
+from market.market import Market
 from market.market_trade import MarketTrade
 
 #TODO: is there a way to access properties withoz instantiating AgentMetrics? I can use

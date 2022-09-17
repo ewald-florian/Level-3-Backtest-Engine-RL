@@ -12,13 +12,14 @@ import logging
 logging.getLogger().setLevel(logging.INFO)
 
 from replay.episode import Episode
-from market.market_state_v1 import Market
+from market.market import Market
 from agent.context import Context
 from agent.market_interface import MarketInterface
 from agent.agent_trade import AgentTrade
 from market.market_trade import MarketTrade
 from agent.agent_order import OrderManagementSystem as OMS
 from agent.agent_metrics import AgentMetrics
+from agent.observation_space import ObservationSpace
 
 class Replay:
 
@@ -58,7 +59,6 @@ class Replay:
 
     def _market_step(self, message_packet):
 
-        #TODO: I have to call match() for every update during simulation
         Market.instances['ID'].update_with_exchange_message(message_packet)
 
     def step(self):
@@ -71,37 +71,18 @@ class Replay:
         # -- update market
         self._market_step(message_packet=next_message_packet)
         # -- retrieve current state form MarketState:
+        # TODO: test without L3 next (this is even without levels...)!
         current_state = Market.instances['ID'].state_l3
         # -- append state to Context
         Context(market_state=current_state)
         # . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+        print('OBS', ObservationSpace.market_observation())
 
 ######################  test order submission etc  #####################################################
 
-        #DEBUG AgentMetrics
 
 
-        print(self.agent_metrics.vwap_buy)
-        print(self.agent_metrics.vwap_sell)
-        print(self.agent_metrics.transaction_costs)
-        print(self.agent_metrics.pnl_realized)
-        print(self.agent_metrics.pnl_unrealized)
-        print(self.agent_metrics.cash_position)
-        print(self.agent_metrics.exposure)
-        print(self.agent_metrics.exposure_budget_left)
-        print('filtered msgs ', self.agent_metrics.get_filtered_messages(template_id=11111))
-        print('filtered trades ', self.agent_metrics.get_filtered_trades(side=1))
-        print(self.agent_metrics.get_realized_trades)
-        print(self.agent_metrics.get_unrealized_trades)
-        print(self.agent_metrics.get_unrealized_trades)
-        print(self.agent_metrics.realized_quantity)
-        print(self.agent_metrics.vwap_score)
-        print(self.agent_metrics.unrealized_quantity)
-        # str
-        print(self.agent_metrics)
-        print(self.agent_metrics.position_value)
-
-
+        """
         price = 9418000000
         side = 1
         if self.step_counter % 10 == 0:
@@ -119,9 +100,7 @@ class Replay:
         if self.step_counter % 20 == 0:
             MarketInterface.submit_order(side=side, quantity=2220000, limit=price)
             print('INFO(SUBMISSION)')
-
-
-
+        """
 
 ####################################################################################################
         self.step_counter = self.step_counter + 1

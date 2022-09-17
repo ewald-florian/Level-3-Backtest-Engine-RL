@@ -12,7 +12,7 @@ Interface to submit and cancel orders.
 # ---------------------------------------------------------------------------
 
 
-from market.market_state_v1 import Market
+from market.market import Market
 #from agent.agent_order import OrderManagementSystem as OMS
 
 class MarketInterface:

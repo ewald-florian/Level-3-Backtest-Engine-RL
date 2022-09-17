@@ -8,20 +8,22 @@
 """ Test and debug Level-3 backtest engine"""
 # --------------------------------------------------------------------------
 from replay.replay import Replay
-from market.market_state_v1 import Market
+from market.market import Market
 from agent.market_interface import MarketInterface
-
+import time
 
 if __name__ == '__main__':
+    #start = time.time()
 
     replay = Replay()
     replay.reset()
     print("Episode Len: ", replay.episode.__len__())
 #
-    for i in range(1000):#replay.episode.__len__()):
-#
-        print(i)
+    for i in range(replay.episode.__len__()):
         replay.step()
+
+    #end = time.time()
+    #print("TIME: ", end-start)
 
 
 

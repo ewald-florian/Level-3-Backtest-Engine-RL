@@ -9,6 +9,7 @@
 # ---------------------------------------------------------------------------
 
 import pandas as pd
+import orjson
 import json
 
 # PATH TO DATA DIRECTORY
@@ -27,25 +28,49 @@ class Episode:
         ...
         :rtype: object
         """
-        # load data
-        _ = self.load_data()
+
+        # dynamic attributes
         self._step = 0
         self._timestamp = 0
+        self.snapshot_end = []
+        self.snapshot_start = []
+        self.message_list = []
+        self.message_packet_list = []
+
+        # load data
+        _ = self.load_data()
 
     # Preliminary Version to develop replay etc.
     def load_data(self):
         '''
         Load data
         '''
+
         snapshot_start_file = open(f"{PATH}/snapshot_start.json")
         snapshot_end_file = open(f"{PATH}/snapshot_end.json")
         message_list_file = open(f"{PATH}/message_list.json")
 
-        #TODO: why is snapshot start in a list?
+        
         self.snapshot_start = json.load(snapshot_start_file)[0]
         self.snapshot_end = json.load(snapshot_end_file)
         # slice out the first message (reconstruction message)
         self.message_packet_list = json.load(message_list_file)[1:]
+        '''
+        # Note: orjson is slightly faster than json
+        # but requires adjustemnts
+        snapshot_start_file = f"{PATH}/snapshot_start.json"
+        snapshot_end_file = f"{PATH}/snapshot_end.json"
+        message_list_file = f"{PATH}/message_list.json"
+
+        with open(snapshot_start_file, "rb") as f:
+            self.snapshot_start = orjson.loads(f.read())
+
+        with open(snapshot_end_file, "rb") as f:
+            self.snapshot_end = orjson.loads(f.read())
+
+        with open(message_list_file, "rb") as f:
+            self.message_list = orjson.loads(f.read())
+        '''
 
     def generate_episode(self):
         #TODO:
@@ -60,13 +85,13 @@ class Episode:
         Returns next message_packet and counts episode steps.
         __next__ can be called to step the episode externally,
         for example in a RL training loop.
+
         :return message_packet
             list, contains messages as dictionaries.
         '''
+
         # retrieve next message packet
         next_message_packet = self.message_packet_list[self._step]
-        # update timestamp with message-header TransactTime
-        self._timestamp = next_message_packet[0]['TransactTime']
         # count step
         self._step += 1
         # return message_packet
@@ -77,35 +102,14 @@ class Episode:
 
     def __len__(self):
         '''
-        Returns length of the current episode, relevant for training loops
-        over episodes and the done-flag of the RL environment. Based on
-        length of the message_packet_list.
+        Returns length of the current episode as number of message packets,
+        relevant for training loops over episodes and the done-flag of the RL
+        environment. Based on length of the message_packet_list.
         :return: current_episode_length
             int, length of episode
         '''
-        # TODO: What would be appropiate as length, message_packets or single messages?
         current_episode_length = len(self.message_packet_list)
-
         return current_episode_length
-
-    @property
-    def timestamp(self):
-        """
-        UTCTimestamp: Timestamps are in UTC, and represented as nanoseconds past the UNIX epoch
-        (00:00:00 UTC on 1 January 1970).
-        :return: timestamp, int
-        """
-        return self._timestamp
-
-    @property
-    def timestamp_datetime(self):
-        """
-        Timestamp converted to datetime.
-        :return: timestamp, datetime
-        """
-        utct_timestamp = int(self._timestamp)
-        datetime_timestamp = pd.to_datetime(utct_timestamp, unit='ns')
-        return datetime_timestamp
 
     @property
     def episode_start(self):
