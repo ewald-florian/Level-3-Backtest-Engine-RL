@@ -30,18 +30,18 @@ class Context:
         used to generate features which require a timeseries of market states.
         Context can potentially store various representations in context_list,
         e.g. level1, level2, level3 states or all of them combined. Context
-        should be resetted before each new episode.
+        should be reset before each new episode.
 
         The designated was to use Context is:
-        current_state = Market.state_l3
-        Context(current_state)
+          current_state = Market.state_l3
+          Context(current_state)
 
         Several state representations can be stored together, e.g. in a dict:
-        state_l1 = Market.state_l1
-        state_l2 = Market.state_l2
-        state_l3 = Market.state_l3
+          state_l1 = Market.state_l1
+          state_l2 = Market.state_l2
+          state_l3 = Market.state_l3
 
-        current_state_dict = {L1:state_l1, L2:state_l2, L3:state_l3}
+          current_state_dict = {L1:state_l1, L2:state_l2, L3:state_l3}
 
         :param market_state,
             market_state which should be stored, can take different dtypes

@@ -97,8 +97,17 @@ class Episode:
         # return message_packet
         return next_message_packet
 
+    # Note: Not Tested!
     def __iter__(self):
-        pass
+        """
+        Create episode as iterable generator object which can be
+        used to step the backtest internally.
+        """
+        for step, message_packet in enumerate(self.message_packet_list):
+
+            next_message_packet = self.message_packet_list[step]
+
+            yield next_message_packet
 
     def __len__(self):
         '''

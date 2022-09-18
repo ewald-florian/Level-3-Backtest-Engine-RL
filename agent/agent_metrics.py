@@ -228,13 +228,15 @@ class AgentMetrics:
         """
         List of realized trades.
         """
+        # TODO: checken was passiert wenn listen unvollständig sind...(am anfang)
         realized_trades = AgentTrade.history.copy()
         unrealized_trades = self.get_unrealized_trades
 
-        for trade in unrealized_trades:
-            realized_trades.remove(trade)
+        if realized_trades:
+            for trade in unrealized_trades:
+                realized_trades.remove(trade)
 
-        return realized_trades
+            return realized_trades
 
     @property
     def vwap_buy(self):

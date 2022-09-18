@@ -1,0 +1,28 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+#----------------------------------------------------------------------------
+# Created By  : florian
+# Created Date: 17/Sept/2022
+# version ='1.0'
+# ---------------------------------------------------------------------------
+"""
+Reward class for MarketMetrics
+"""
+# ---------------------------------------------------------------------------
+
+# TODO: Gegenstück zu AgentMetrics
+# AgentTrade ist nur eine Liste, hier werden die metrics berechnet
+
+class MarketMetrics:
+
+    def __init__(self):
+        pass
+
+    # TODO: most important because relevamt for other features
+    def market_vwap(self):
+        pass
+
+    def trading_volume(self):
+        pass
+    def reset(self):
+        pass

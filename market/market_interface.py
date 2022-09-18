@@ -1,6 +1,6 @@
 #!/usr/bin/env python3  Line 1
 # -*- coding: utf-8 -*- Line 2
-#----------------------------------------------------------------------------
+# ----------------------------------------------------------------------------
 # Created By  : florian
 # Created Date: 06/Sept/2022
 # version ='1.0'
@@ -11,26 +11,56 @@ Interface to submit and cancel orders.
 """
 # ---------------------------------------------------------------------------
 
-
+# TODO: implement assertions (ca. 20 min.)
 from market.market import Market
-#from agent.agent_order import OrderManagementSystem as OMS
+# from agent.agent_order import OrderManagementSystem as OMS
 
 class MarketInterface:
 
     def __init__(self,
-                 tc_factor:float=0,
-                 exposure_limit:float=100_000
-                 ):
+                 tc_factor: float = 0,
+                 exposure_limit: float = None,
+                 long_only:bool=None,
+                short_only:bool=None):
+        """
+        MarketInterface allows to submit new orders into Market or
+        cancel existing orders. There are two separate types of submittable
+        agent messages:
 
-        # static attributes from argumens
-        self.latency = latency
+        1.) Simulated Messages:
+        -----------------------
+        - Are stored and managed in OrderManagementSytem and  seperated
+        from the actual market state.
+        - Are matched against historical limit and/or marekt orders in
+        a simulated matching process.
+        - Do not affect the internal market state and hence do not have
+        "real" market impact.
+        - Instead, market impact can be artificially generated as a part
+        of the backtest simulation.
+
+        2.) Impact Messages:
+        --------------------
+        - Impact submissions place orders into the internal market state.
+        - When impact orders can be matched, their counter-orders get executed
+        and vanish from the orderbook.
+        - Impact submissions do have lasting market impact.
+        - Note, that the orderbook can not recover in a realistic way from
+        excessive agent impact executions.
+
+        :param tc_factor
+            float, transaction costs in bps (100th of %)
+        :param exposure_limit
+            int, agent exposure limit, blocks additional submissions
+        """
+
+        # static attributes from arguments
         self.tc_factor = tc_factor
         self.exposure_limit = exposure_limit
 
-    # without order book impact (simulation) . . . . . . . . . . . . . . . . .
+    # 1.) without order book impact (simulation) . . . . . . . . . . . . . . . . .
 
     @staticmethod
-    def submit_order(side, quantity, limit=None):
+    def submit_order(side: int, quantity: int, limit: int = None):
         """
         For simulated orders which do not affect the market state.
         Send submission order.
@@ -41,6 +71,12 @@ class MarketInterface:
         :param limit:
             int, limit price
         """
+        #TODO: if exposure limit, assert if exposure budget left...
+        #TODO: Assert if price is in ticksize etc.
+        # Assert correct format
+        # long/short (depends on current position if is allowed to sell,
+        # e.g. long only can only sell if position_value > 0 and > estimated
+        # sell volume
 
         message = dict()
         # TemplateID 99999 for submission
@@ -53,15 +89,15 @@ class MarketInterface:
         Market.instances["ID"].update_simulation_with_agent_message(message)
 
     @staticmethod
-    def cancel_order(order_message_id):
+    def cancel_order(order_message_id: int):
         """
         For simulated orders which do not affect the market state.
         Send cancellation order. Message can be identified by message_id.
 
         :param order_message_id
-            int, unique agent message identifier
+            int, unique agent message identifier of order to be cancelled
         """
-        #TODO: assert if order to be cancelled exists... (sort OMS)
+        # TODO: assert if order to be cancelled exists... (sort OMS)
 
         message = dict()
         # TemplateID 66666 for cancellation
@@ -77,12 +113,13 @@ class MarketInterface:
         """
         ...
         """
-        raise NotImplementedError ("order modify not implemented yet")
+        raise NotImplementedError("order modify not implemented yet")
 
-    # with order book impact . . . . . . . . . . . . . . . . . . . . . .
+    # 2.) with order book impact . . . . . . . . . . . . . . . . . . . . . .
 
     @staticmethod
-    def submit_order_impact(side, quantity, timestamp, limit=None):
+    def submit_order_impact(side: int, quantity: int,
+                            timestamp: int, limit: int = None):
         """
         Send submission order.
         :param side:
@@ -109,16 +146,12 @@ class MarketInterface:
 
     # TODO: Überarbeiten, aktuell nicht kompatibel...
     @staticmethod
-    def cancel_order_impact(order_message_id):
+    def cancel_order_impact(order_message_id: int):
         """
         Send cancellation order. Requires price, limit and timestamp of order
         which should be cancelled.
-        :param side
-            1 (buy) or 2 (Sell)
-        :param limit
-            int, price
-        :param timestamp
-            int, unix timestamp of order which should be cancelled
+        :param order_message_id
+            int, id of message to be cancelled
         """
         message = dict()
         # TemplateID 66666 for cancellation
@@ -134,41 +167,7 @@ class MarketInterface:
         """
         ...
         """
-        raise NotImplementedError ("order modify not implemented yet")
+        raise NotImplementedError("order modify not implemented yet")
 
-    # statistics . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
-
-    def get_filtered_orders(self):
-        pass
-
-    def get_filtered_trades(self):
-        pass
-
-    @property
-    def exposure(self):
-        pass
-
-    @property
-    def pnl_realized(self):
-        # for each round-trip seperately to use as reward,
-        # alternatively, compute diff between old and new PnL realized
-        pass
-
-    @property
-    def pnl_unrealized(self):
-        # exposure * price difference since execution
-        # consider spread?
-        # consider midpoints?
-        pass
-
-    @property
-    def exposure_budget_left(self):
-        pass
-
-    @property
-    def transaction_costs(self):
-
-        #trading_volume = price * quantity
-        #transaction_costs = volume * self.tc_factor
-        #return(round(transaction_costs, 4))
+    def reset(self):
         pass

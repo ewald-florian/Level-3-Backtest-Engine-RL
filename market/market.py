@@ -65,7 +65,7 @@ class Market:
                  market_id: str = "ID",
                  l3_levels: int = 10,
                  l2_levels: int = 10,
-                 report_state_timestamps: bool = False,
+                 report_state_timestamps: bool = True,
                  match_agent_against_exec_summary: bool = True,
                  agent_latency: int = 0):
         """
@@ -233,13 +233,9 @@ class Market:
             dict, state_l3 with only quantity and timestamp per order
         """
 
-        # TODO: Maybe SORTING is the bottleneck!
-        # TODO: right now, it has the same speed than the for-loop..
+        # TODO: right now, it has the same speed than the old for-loop...
 
         state_l3 = {}
-
-        if self.report_state_timestamps:
-            state_l3[0] = self.timestamp
 
         # bid side (1), highest prices first
         bid_keys = sorted(list(self._state[1].keys()), reverse=True)
@@ -249,7 +245,8 @@ class Market:
 
         bid_side_dict = self._state[1]
 
-        # Note: this operation does not build referance to _state, no copy/deepcopy necessary
+        # Note: this operation does not build reference to _state,
+        # no copy/deepcopy necessary
         adj_bid_side_dict = {
             n: [{'quantity': d['quantity'], 'timestamp': d['timestamp']}
                 for d in bid_side_dict[n]] for n in bid_keys}
@@ -266,8 +263,13 @@ class Market:
             n: [{'quantity': d['quantity'], 'timestamp': d['timestamp']}
                 for d in ask_side_dict[n]] for n in ask_keys}
 
+        # add timestamp
+        if self.report_state_timestamps:
+            state_l3[0] = self.timestamp
+
         # combine to state_l3
-        state_l3 = {1: adj_bid_side_dict, 2: adj_ask_side_dict}
+        state_l3[1] = adj_bid_side_dict
+        state_l3[2] = adj_ask_side_dict
 
         return state_l3
 
@@ -283,7 +285,7 @@ class Market:
         :return state_l2
             dict, level_l2 representation of internal state
         """
-
+        keys = []
         state_l2 = {}
         # if activated, save current timestamp to state_l2[0]
         if self.report_state_timestamps:
@@ -303,6 +305,7 @@ class Market:
             # aggregate quantities on price levels
             agg_side_dict = {n: sum([(d['quantity']) for d in side_dict[n]])
                              for n in keys}
+
             state_l2[side] = agg_side_dict
 
         return state_l2
@@ -312,8 +315,8 @@ class Market:
         """
         Level 1 limit order book representation. Structure:
 
-        {1: {Best Bid Price: Best Bid Quantity}, 2: {Best Ask Price: Best
-        Ask Quantity}}
+        {0: Timestamp, 1: {Best Bid Price: Best Bid Quantity},
+        2: {Best Ask Price: Best Ask Quantity}}
 
         :return state_l1
             dict, Level 1 representation

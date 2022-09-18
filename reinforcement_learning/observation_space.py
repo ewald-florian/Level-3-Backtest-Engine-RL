@@ -9,17 +9,23 @@
 Observation Space for RL-Agent
 """
 # ---------------------------------------------------------------------------
-from agent.context import Context
 
+from reinforcement_learning.market_features import MarketFeatures
+
+import numpy as np
 # TODO: Überlegen wie und wo ObservationSpace aufgerufen werden soll
 # TODO: Welche art von class attribute (einfach self? -> self.observation)
+
+#TODO: Concept: get "raw" features from FeatureEngineering, normalize and
+# concatenate them in ObservationSpace, pass to Neural Network (obs)
 
 class ObservationSpace:
 
     # class attribute
     observation = None
 
-    def __init__(self):
+    # start_date to compute latest min max prices
+    def __init__(self, start_date=None):
 
         # -- static attributes
         self.min_price = 258.4
@@ -28,20 +34,18 @@ class ObservationSpace:
         self.max_size = 50614.0
         self.ticksize = 0.1
 
+        self.market_features = MarketFeatures()
         # -- update class attribute
         self.__class__.instance = self.holistic_observation()
 
     def market_observation(self):
-        # based on Context
-        self.market_context = Context.context_list.copy()
-
-        #for testing:
-        self.__class__.instance = self.market_context
+        # -- market features
+        market_obs = self.market_features.level_2_plus()
 
         # -- normalize
 
-        # -- add additional feature
-        return self.market_context
+
+        return market_obs
 
     def _min_max_normalization(self, prices, quantities):
         """
@@ -83,7 +87,7 @@ class ObservationSpace:
         agent_obs = self.agent_observation
 
         holistic_obs = np.append(market_obs, agent_obs)
-        holistic_obs.astype('float32')
+        #holistic_obs.astype('float32')
 
         return holistic_obs
 
