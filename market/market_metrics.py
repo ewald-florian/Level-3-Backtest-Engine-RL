@@ -13,6 +13,7 @@ Reward class for MarketMetrics
 # TODO: Gegenstück zu AgentMetrics
 # AgentTrade ist nur eine Liste, hier werden die metrics berechnet
 
+
 class MarketMetrics:
 
     def __init__(self):

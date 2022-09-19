@@ -8,6 +8,7 @@ from agent.agent_order import OrderManagementSystem as OMS
 
 import numpy as np
 
+
 class RandomTrader:
 
     def __init__(self, number_range:int=10_000):
@@ -20,6 +21,7 @@ class RandomTrader:
 
         lucky_number = np.random.randint(0, self.range)
 
+        # buy order
         if lucky_number == 42:
 
             # submit order via market interface
@@ -29,6 +31,7 @@ class RandomTrader:
                             limit=best_ask,
                             quantity=lucky_number*1e4)
 
+        # sell order
         if lucky_number == 24:
 
             best_bid = Market.instances['ID'].best_ask
@@ -37,6 +40,7 @@ class RandomTrader:
                             limit=best_bid,
                             quantity=lucky_number * 1e4)
 
+        # cancellation
         if lucky_number == 69:
 
             # filter OMS for active orders

@@ -15,21 +15,34 @@ from agent.agent_metrics import AgentMetrics
 
 class Reward:
 
-    def __init__(self):
-        pass
+    # class attribute
+    reward = None
 
+    def __init__(self):
+
+        self.agent_metrics = AgentMetrics()
+        self.last_pnl = 0
+
+    @property
     def pnl_unrealized(self):
 
-        return AgentMetrics.pnl_unrealized
+        return self.agent_metrics.pnl_unrealized
 
-    def unrealized_pnl(self):
+    @property
+    def pnl_realized(self):
 
-        return AgentMetrics.pnl_realized
+        return self.agent_metrics.pnl_realized
 
+    # TODO: testing
+    @property
     def pnl_difference(self):
         # basically, pnl of the most recent roundtrip?
         # new_pnl_real - old_pnl_real
-        pass
+        # Note only works when called every pnl update such that
+        # self.last_pnl is updated
+        pnl_difference = self.pnl_realized() - self.last_pnl
+        self.last_pnl = self.pnl_realized()
+        return pnl_difference
 
     def vwap_score(self):
         pass
@@ -38,6 +51,7 @@ class Reward:
         pass
 
     def relative_sell_vwap(self):
+        pass
 
     def timing_reward(self, ideal_trading_interval):
         # Idea: based on the time difference between submissions,

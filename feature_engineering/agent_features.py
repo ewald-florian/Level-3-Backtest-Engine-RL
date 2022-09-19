@@ -37,9 +37,14 @@ class AgentFeatures:
     def number_of_submissions(self):
         pass
 
-    def inventory(self): # postion
+    def time_since_last_trade(self):
         pass
 
+    def number_of_trades(self):
+        pass
+
+    def inventory(self): # postion
+        pass
 
     def reset(self):
         pass

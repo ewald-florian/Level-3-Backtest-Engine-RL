@@ -13,7 +13,6 @@
 
 from market.context import Context
 from market.market_trade import MarketTrade
-from market.market_trade import MarketTrade
 
 import numpy as np
 import pandas as pd

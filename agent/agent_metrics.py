@@ -15,10 +15,14 @@ from agent.agent_trade import AgentTrade
 from market.market import Market
 from market.market_trade import MarketTrade
 
-#TODO: is there a way to access properties withoz instantiating AgentMetrics? I can use
-# staticmethods but many methods need self...
+#TODO: is there a way to access properties withoz instantiating AgentMetrics?
+# I can use staticmethods but many methods need self...
+# Could store them in a class attribute but would compute features which
+# i dont need
 
 # TODO: testing, debugging, str, roundtrip-PnLs
+
+
 class AgentMetrics:
 
     def __init__(self, tc_factor: float = 1e-3,

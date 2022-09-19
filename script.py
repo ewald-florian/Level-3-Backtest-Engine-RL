@@ -10,8 +10,9 @@
 from replay.replay import Replay
 from market.market import Market
 from market.context import Context
-from reinforcement_learning.market_features import MarketFeatures
+from feature_engineering.market_features import MarketFeatures
 from reinforcement_learning.observation_space import ObservationSpace
+from reinforcement_learning.reward import Reward
 
 # Dev MarketFeatures
 if __name__ == '__main__':
@@ -20,6 +21,7 @@ if __name__ == '__main__':
 
     mf = MarketFeatures()
     obs_space = ObservationSpace()
+    reward = Reward()
 
     for i in range(100_000):
         replay.step()
@@ -30,7 +32,9 @@ if __name__ == '__main__':
 
         array = mf.level_2_plus(data_structure='array', store_hhi=False, store_timestamp=False)
 
-        print(obs_space.market_observation())
+        #print(obs_space.market_observation())
+
+        print("PNL REAL", reward.pnl_realized)
 
 
 

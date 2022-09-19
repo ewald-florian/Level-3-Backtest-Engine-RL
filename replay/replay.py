@@ -15,8 +15,7 @@ from replay.episode import Episode
 from market.market import Market
 from market.context import Context
 from agent.agent_metrics import AgentMetrics
-from reinforcement_learning.observation_space import ObservationSpace
-from reinforcement_learning.market_features import MarketFeatures
+
 
 class Replay:
 

@@ -10,7 +10,8 @@ Observation Space for RL-Agent
 """
 # ---------------------------------------------------------------------------
 
-from reinforcement_learning.market_features import MarketFeatures
+from feature_engineering.market_features import MarketFeatures
+from feature_engineering.agent_features import AgentFeatures
 
 import numpy as np
 # TODO: Überlegen wie und wo ObservationSpace aufgerufen werden soll
@@ -18,6 +19,7 @@ import numpy as np
 
 #TODO: Concept: get "raw" features from FeatureEngineering, normalize and
 # concatenate them in ObservationSpace, pass to Neural Network (obs)
+
 
 class ObservationSpace:
 
@@ -35,8 +37,27 @@ class ObservationSpace:
         self.ticksize = 0.1
 
         self.market_features = MarketFeatures()
+        self.agent_features = AgentFeatures()
+
         # -- update class attribute
         self.__class__.instance = self.holistic_observation()
+
+    # TODO: implement
+    def _get_min_max_prices(self):
+        # avoid look-ahead bias...
+        # compute min max of the last episode
+        # multiply with some margin multiplier or so
+        self.min_price = ...
+        self.max_price = ...
+
+    def _get_min_max_quantities(self):
+        # I don't necessarily need historical values here,
+        # can assume min_quantity = 1 and max_quantity as a
+        # cap value (e.g. 10_000, depending on symbol price
+        # and liquidity...)
+        # larger quantities will be capped to this value
+        self.min_qt = 1
+        self.max_qt = ...
 
     def market_observation(self):
         # -- market features
@@ -47,25 +68,26 @@ class ObservationSpace:
 
         return market_obs
 
-    def _min_max_normalization(self, prices, quantities):
+    def _min_max_norma_prices(self, input_array):
         """
         Scales values between 0 and 1.
         """
-        #TODO: historische min-max values automatisch berechnen oder
-        # vorher in csv oÄ Speichern (für Level 1/5/10/20)
-
-        #TODO: Clip outliers, muss aber sinnvoll sein! am besten nochmal in
-        # den ML/HFT Büchern nachlesen...
-
-        scaled_prices = (prices - self.min_price)/(
+        scaled_prices = (input_array - self.min_price)/(
                     self.max_price - self.min_price)
-        # scale quantities
-        scaled_quantities = (quantities - self.min_size)/(
-                    self.max_size - self.min_size)
 
-        return scaled_prices, scaled_quantities
+        return scaled_prices
 
-    def _arbitrary_min_max_nomalization(self, a, b, prices, quantities):
+    def _min_max_norma_quantities(self, input_array):
+        """
+        Scales values between 0 and 1.
+        """
+        scaled_quantities = (input_array - self.min_qt)/(
+                    self.max_qt - self.min_qt)
+
+        return scaled_quantities
+
+    def _arbitrary_min_max_normalization(self, input_array, a:int = -1,
+                                         b: int = 1):
         """
         Scales values between arbitrary numbers a and b.
         """
