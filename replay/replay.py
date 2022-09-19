@@ -70,7 +70,7 @@ class Replay:
         # -- update market with new message packet from episode
         message_packet = self.episode.__next__()
         # -- pass nex message packet to Market
-        Market.instances['ID'].update_with_exchange_message(message_packet)
+        Market.instances['ID'].update_simulation_with_exchange_message(message_packet)
 
         # -- check if episode is done
         if self.episode._step >= (self.episode.__len__() - 1):

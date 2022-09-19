@@ -13,6 +13,8 @@ from market.context import Context
 from feature_engineering.market_features import MarketFeatures
 from reinforcement_learning.observation_space import ObservationSpace
 from reinforcement_learning.reward import Reward
+from market.market_trade import MarketTrade
+from market.market_interface import MarketInterface
 
 # Dev MarketFeatures
 if __name__ == '__main__':
@@ -23,7 +25,7 @@ if __name__ == '__main__':
     obs_space = ObservationSpace()
     reward = Reward()
 
-    for i in range(100_000):
+    for i in range(replay.episode.__len__()):
         replay.step()
 
         state_l3 = Market.instances['ID'].state_l3
@@ -31,10 +33,13 @@ if __name__ == '__main__':
         Context(state_l3)
 
         array = mf.level_2_plus(data_structure='array', store_hhi=False, store_timestamp=False)
+        print(array)
 
         #print(obs_space.market_observation())
+        if MarketTrade.history:
+            print(MarketTrade.history)
 
-        print("PNL REAL", reward.pnl_realized)
+        MarketInterface.submit_order(side=1, limit=30000000000, quantity=500000)
 
 
 
