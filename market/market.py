@@ -1,15 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-
 import math
 
 import pandas as pd
-
-#from reconstruction.reconstruction import Reconstruction
-#from agent.agent_trade import AgentTrade
-#from market.market_trade import MarketTrade
-#from agent.agent_order import OrderManagementSystem as OMS
 
 from reconstruction.reconstruction import Reconstruction
 from agent.agent_trade import AgentTrade
@@ -17,18 +11,19 @@ from market.market_trade import MarketTrade
 from agent.agent_order import OrderManagementSystem as OMS
 
 
-# TODO:
-# - Test / Debug match_n() method (auch mit impact)
-#TODO: If I remove liquidity from simulation state, I also have to do this
-#  in the observation space (to have consistency)!!!
-# TODO: Idee: Reconstruction als eigene Klasse an Market vererben
-#  (um Übersichtlichkeit zu verbessern? i.e. backend auslagern)
+# TODO: / Debug match_n() method (auch mit impact)
+# TODO: If I remove liquidity from simulation state, I also have to do this
+#  in the observation space (to have consistency)
 
 
 class Market(Reconstruction):
 
     # store several instances in dict with market_id as key
     instances = dict()
+
+    """
+    # TODO: Write Market class docstring.
+    """
 
     def __init__(self,
                  market_id: str = "ID",
@@ -38,42 +33,12 @@ class Market(Reconstruction):
                  match_agent_against_exec_summary: bool = True,
                  agent_latency: int = 0,
                  track_index: bool = False):
+
         super().__init__(track_timestamp=True,
                          track_index=track_index)
         """
-        State is implemented as a stateful object that reflects the current
-        limit order book snapshot in full depth and full detail.
-
-        The state consists of a dictionary with two sides, which have the
-        integer keys 1 (=Buy) and 2 (=Sell). Each of
-        these sides contains a dictionary with price levels. The keys for the
-        price levels are the prices as integers.
-        Since the structure of a dictionary does not require the keys to be in
-        order, the price levels in the dict may
-        not be in order. Each price level contains a list of orders, which are
-        in price-time-order. The orders are
-        represented as dicts with the following values: "template_id",
-        "msg_seq_num", "side", "price", "quantity"
-        and "timestamp". All orders must contain the same six values and all
-        of these values must be integers:
-
-        Possible values:
-
-       "template_id":  13100 (order_add), 13101 (order_modify), 13102
-                        (order_delete), 13103 (order_mass_delete), 13104
-                        (execution_full), 13105 (execution_partial),
-                        13106 (order_modify_same_priority), 13202
-                        (execution_summary), 99999 (order_submit agent-side),
-                        66666 (order_cancel agent-side)
-        "msg_seq_num":  any integer, but must be in ascending order
-        "side": 1 (buy side) or 2 (sell side)
-        "price":    any integer, that is a valid pirce for the security. Note
-                    that the price is always represented as an integer, e.g.
-                    123.45 would be 12345000000 with 8 decimals.
-        "quantity": any integer, that is a valid quantity for the security
-                    with 4 decimal, i.e. 10 would be 10000.
-        "timestamp":   an integer that represents a unix timestamp
-
+        Instantiate Market.
+        
         :param market_id:
             str, ...
         :param l3_levels
@@ -84,6 +49,10 @@ class Market(Reconstruction):
             Bool, if True, store timestamp in state_l1, state_l2, state_l3
         :param agent_latency
             int, latency of agent messages is nanoseconds
+        :param: match_agent_against_exec_summary
+            bool, if True, agent orders will be matched against exec summaries.
+        :param track_index
+            bool, if True, the internal state index will be tracked
         ...
         """
         # static attributes from arguments
@@ -256,8 +225,10 @@ class Market(Reconstruction):
             int,
         """
         prices = list(self._state[1].keys()) + list(self._state[2].keys())
-        return math.gcd(*prices)
+        ticksize = math.gcd(*prices)
+        return ticksize
 
+    #TODO: remove unnecessary properties but check if I used them somewhere! (e.g. I think I used best_ask somewhere)
     @property
     def best_bid(self):
         """
@@ -374,6 +345,9 @@ class Market(Reconstruction):
     # TODO: Überarbeiten damit es mit MarketInterface kompatibel ist!
     def update_with_agent_message_impact(self, message):
         """
+        This method is the entry point of MarketInterface to submit and cancel
+        agent orders with impact.
+
         Updates are based on agent-based message, a simple decision to either
         submit (99999) or cancel (66666) a message that will potentially lead
         to a crossed limit order book pre-match.
@@ -483,6 +457,9 @@ class Market(Reconstruction):
     #TODO: better name for this method
     def update_simulation_with_exchange_message(self, message_packet):
         """
+        This method is the entry point for Replay to Marekt to step the
+        market environment.
+
         Update market messages and check if agent matching is possible.
         """
 
@@ -514,6 +491,9 @@ class Market(Reconstruction):
 
     def update_simulation_with_agent_message(self, message):
         """
+        This method is the entry point of MarketInterface to submit and cancel
+        simulated agent orders without impact.
+
         Process simulated agent messages:
 
         Each incoming agent message gets the current state timestamp plus
@@ -672,7 +652,7 @@ class Market(Reconstruction):
             for message in OMS.order_list:
 
                 if message['template_id'] == 99999 and message[
-                    'timestamp'] <= self.timestamp:
+                                        'timestamp'] <= self.timestamp:
                     # buy-order
                     if message['side'] == 1:
                         price = message['price']
@@ -682,6 +662,7 @@ class Market(Reconstruction):
                         # create new price level for message
                         else:
                             simulation_state[1][price] = [message.copy()]
+
                     # sell-order
                     if message['side'] == 2:
                         price = message['price']

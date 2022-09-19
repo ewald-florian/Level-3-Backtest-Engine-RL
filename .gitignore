@@ -4,7 +4,7 @@ __pycache__/
 .idea/
 data/
 _data_old/
-message_data_analysis.ipynb/
-profiling_cProfile.py/
-validate_state_w_snapshot.ipynb/
+_notebooks/message_data_analysis.ipynb/
+profiling_cProfile.py
+_notebooks
 _archieve

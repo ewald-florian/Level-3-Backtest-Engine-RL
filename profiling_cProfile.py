@@ -7,21 +7,25 @@
 # ---------------------------------------------------------------------------
 """
 Profile Code to find Bottlenecks:
+
 ncalls : Shows the number of calls made
 tottime: Total time taken by the given function. Note that the time made
-    in calls to sub-functions are excluded.
+            in calls to sub-functions are excluded.
 percall: Total time / No of calls. ( remainder is left out )
 cumtime: Unlike tottime, this includes time spent in this and all
-    subfunctions that the higher-level function calls. It is most
-    useful and is accurate for recursive functions.
+            subfunctions that the higher-level function calls. It is most
+            useful and is accurate for recursive functions.
 
 use in terminal:
 $ python -m cProfile -s tottime myscript.py
 """
 # ---------------------------------------------------------------------------
+
+# TODO: write wrapper function
+
 import cProfile, pstats
 
-# basically, put execution script in run_code()
+
 def run_code():
     # ----
     from replay.replay import Replay
@@ -29,9 +33,9 @@ def run_code():
     replay.reset()
     print("Episode Len: ", replay.episode.__len__())
 
-    for i in range(50):#replay.episode.__len__()):
+    for i in range(replay.episode.__len__()):
         replay.step()
-    # ---
+
 
 def main():
     run_code()

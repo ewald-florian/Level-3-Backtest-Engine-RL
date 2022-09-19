@@ -1,13 +1,13 @@
-
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 
 
 # TODO __init__ Docstring anpassen
+import json
+import copy
 
 from reconstruction.parser import MessagePacketParser
 from reconstruction.parser import SnapshotParser
-
-import json
-import copy
 
 
 class Reconstruction:
