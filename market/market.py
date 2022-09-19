@@ -21,6 +21,7 @@ class Market(Reconstruction):
     # store several instances in dict with market_id as key
     instances = dict()
 
+
     """
     # TODO: Write Market class docstring.
     """
