@@ -290,6 +290,7 @@ class Replay:
 
         # -- from parsed snapshot (episode delivers parsed snapshots)
         # note: parsed snapshots have "template_id" instead of "Template_ID"
+        some_price = list(snapshot_start[1].keys())[0]
         if "template_id" in snapshot_start[1][some_price][0]:
             Market.instances['ID'].initialize_state_from_parsed_snapshot(
                 snapshot=snapshot_start)
