@@ -1,5 +1,13 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
+#!/usr/bin/env python3  Line 1
+# -*- coding: utf-8 -*- Line 2
+# ----------------------------------------------------------------------------
+# Created By  : florian
+# Created Date: 05/Sept/2022
+# version ='1.0'
+# ---------------------------------------------------------------------------
+""" Agent Trade storage class for the Level-3 backtest engine"""
+
+# ---------------------------------------------------------------------------
 
 import pandas as pd
 import numpy as np
@@ -9,7 +17,9 @@ class AgentTrade: # vs MarketTrade
 
     history = list()
 
-    def __init__(self, agent_trade, verbose=False):
+    def __init__(self,
+                 agent_trade: dict,
+                 verbose: bool = False):
         """
         Store agent trades in class attribute history (list)
         :param agent_trade

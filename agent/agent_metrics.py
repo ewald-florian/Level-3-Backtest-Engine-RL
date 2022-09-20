@@ -25,14 +25,15 @@ from market.market_trade import MarketTrade
 
 class AgentMetrics:
 
-    def __init__(self, tc_factor: float = 1e-3,
+    def __init__(self,
+                 tc_factor: float = 1e-3,
                  exposure_limit: int = 0):
 
-
+        # static arguments
         self.tc_factor = tc_factor
         self.exposure_limit = exposure_limit
 
-        # TODO: versuchen, ohne instanzen auszukommen...
+        # TODO: better without composition?
         self.order_list = OMS.order_list
         self.trade_list = AgentTrade.history
 

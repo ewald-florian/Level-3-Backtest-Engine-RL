@@ -1,5 +1,14 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+#----------------------------------------------------------------------------
+# Created By  : florian
+# Created Date: 17/Sept/2022
+# version ='1.0'
+# ---------------------------------------------------------------------------
+"""
+Class to store Market Trades
+"""
+# ---------------------------------------------------------------------------
 
 import pandas as pd
 import numpy as np
@@ -13,7 +22,9 @@ class MarketTrade:
     history = list()
 
     # TODO: save as dict not as np.array()
-    def __init__(self, market_trade, verbose=False):
+    def __init__(self,
+                 market_trade: dict,
+                 verbose: bool = False):
         """
         Store historical market trades in class attribute history (list)
         :param market_trade

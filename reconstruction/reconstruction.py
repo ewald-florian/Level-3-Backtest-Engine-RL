@@ -1,5 +1,14 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+#----------------------------------------------------------------------------
+# Created By  : Phillipp
+# Creation Date: -
+# version ='1.0'
+# ---------------------------------------------------------------------------
+"""
+Reconstruction Class. Reconstructs Market State from proprietary A7 EOBI Data.
+"""
+# ---------------------------------------------------------------------------
 
 
 # TODO __init__ Docstring anpassen

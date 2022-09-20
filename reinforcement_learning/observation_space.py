@@ -27,7 +27,7 @@ class ObservationSpace:
     observation = None
 
     # start_date to compute latest min max prices
-    def __init__(self, start_date=None):
+    def __init__(self):
 
         # -- static attributes
         self.min_price = 258.4

@@ -63,14 +63,32 @@ class RandomTrader:
 
 if __name__ == '__main__':
 
-    replay = Replay()
-    replay.reset()
+    # inst: -> generate episode start list
+    replay = Replay(identifier="FME",
+                 start_date="2022-02-16",
+                 end_date="2022-02-16",
+                 episode_length = "10m",
+                 frequency ="1m",
+                 seed = 42,
+                 shuffle=True,
+                 random_identifier=False,
+                 exclude_high_activity_time=True,
+        )
+
+    replay.reset() # -> build new episode
     randomtrader = RandomTrader()
     print("Episode Len: ", replay.episode.__len__())
 
     for i in range(replay.episode.__len__()):
+
         replay.step()
         randomtrader.submit_random_orders()
+
+        if i%100==0:
+            print('Market:',Market.instances['ID'].state_l1)
+
+
+
 
 
 

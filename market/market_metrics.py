@@ -6,7 +6,7 @@
 # version ='1.0'
 # ---------------------------------------------------------------------------
 """
-Reward class for MarketMetrics
+Class to compute MarketMetrics
 """
 # ---------------------------------------------------------------------------
 
@@ -19,11 +19,12 @@ class MarketMetrics:
     def __init__(self):
         pass
 
-    # TODO: most important because relevamt for other features
+    # TODO: most important, relevant for other features
     def market_vwap(self):
         pass
 
     def trading_volume(self):
         pass
+
     def reset(self):
         pass

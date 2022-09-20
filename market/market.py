@@ -1,5 +1,15 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+#----------------------------------------------------------------------------
+# Created By  : florian
+# Credits: Phillipp
+# Creation Date: 18/Sept/2022
+# version ='2.0'
+# ---------------------------------------------------------------------------
+"""
+Market Class. Matching engine of backtest library.
+"""
+# ---------------------------------------------------------------------------
 
 import math
 
@@ -11,9 +21,9 @@ from market.market_trade import MarketTrade
 from agent.agent_order import OrderManagementSystem as OMS
 
 
-# TODO: / Debug match_n() method (auch mit impact)
+# TODO: / Debug match_n() method (impact)
 # TODO: If I remove liquidity from simulation state, I also have to do this
-#  in the observation space (to have consistency)
+#  in the observation space (consistency)
 
 
 class Market(Reconstruction):
@@ -391,6 +401,7 @@ class Market(Reconstruction):
 
         return trade_list
 
+    # TODO: adjust to new structure
     def _order_submit_impact(self, message):
         """
         Process agent submission message.
@@ -404,7 +415,6 @@ class Market(Reconstruction):
         # extract message information
         side = message["side"]
         price = message["price"]
-        quantity = message["quantity"]
 
         # if price level not existing, create price level
         if price not in self._state[side].keys():
@@ -413,6 +423,7 @@ class Market(Reconstruction):
         # TODO: remove .get() use [price]?
         self._state[side].get(price, []).append(message)
 
+    # TODO: adjust to new structure
     def _order_cancel_impact(self, message):
         """
         Process agent cancellation message. The order which is to be cancelled
@@ -560,6 +571,7 @@ class Market(Reconstruction):
         if trade_list:
             self._process_executed_agent_orders(trade_list)
 
+        print(trade_list)
         # -- store executed orders to AgentTrade
         if trade_list:
             self._store_agent_trades(trade_list)
@@ -737,7 +749,13 @@ class Market(Reconstruction):
         :param trade_list,
             list, contains execution summaries from match()
         """
-        for trade in trade_list:
+
+        # only agent trades have a message_id
+        agent_trades = list(
+            filter(lambda trade: 'message_id' in trade.keys(), trade_list))
+
+        for trade in agent_trades:
+
             agent_trade = {'trade_id': len(AgentTrade.history),
                            'execution_time': trade['timestamp'],
                            'executed_volume': trade['quantity'],
@@ -746,8 +764,7 @@ class Market(Reconstruction):
                            'message_id': trade['message_id'],
                            "agent_side": trade["agent_side"]}
 
-            # TODO: better to just call the class or make composition
-            #  (e.g. Market.agent_trade = AgentTrade.history)
+            # TODO: better to just call the class or create composition
             AgentTrade(agent_trade)
 
     def _match_agent_against_execution_summary(self,

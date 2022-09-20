@@ -23,7 +23,7 @@ class Context:
     context_list = list()
 
     def __init__(self,
-                 market_state,
+                 market_state:dict,
                  context_length:int=100):
         """
         Context class maintains the context list as class attribute

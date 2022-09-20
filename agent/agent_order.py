@@ -5,19 +5,22 @@
 # Created Date: 05/Sept/2022
 # version ='1.0'
 # ---------------------------------------------------------------------------
-""" Order class for the Level-3 backtest engine"""
-
+""" Agent Order Management class for the Level-3 backtest engine"""
 
 # ---------------------------------------------------------------------------
 
 # Should later replace Market.agent_message_list
+# TODO: log order submissions/cancellations
+
 
 class OrderManagementSystem:  # OMS
 
     # Basically, Market.agent_message_list
     order_list = list()  # instance store
 
-    def __init__(self, message, verbose=True):
+    def __init__(self,
+                 message: dict,
+                 verbose: bool =True):
         """
         Store agent messages (submissions and cancellations)
          in class attribute order_list.
@@ -27,6 +30,7 @@ class OrderManagementSystem:  # OMS
             bool, set True to log messages.
         """
 
+        self.verbose = verbose
         # append order to order_list class attribute
         self.__class__.order_list.append(message)
 

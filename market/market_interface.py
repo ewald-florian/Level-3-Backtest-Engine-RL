@@ -20,8 +20,8 @@ class MarketInterface:
     def __init__(self,
                  tc_factor: float = 0,
                  exposure_limit: float = None,
-                 long_only:bool=None,
-                short_only:bool=None):
+                 long_only: bool = None,
+                short_only: bool = None):
         """
         MarketInterface allows to submit new orders into Market or
         cancel existing orders. There are two separate types of submittable

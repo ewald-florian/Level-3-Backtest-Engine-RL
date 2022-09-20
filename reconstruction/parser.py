@@ -1,5 +1,15 @@
-# !/usr/bin/env python3
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+#----------------------------------------------------------------------------
+# Created By  : Phillipp
+# Creation Date: -
+# version ='1.0'
+# ---------------------------------------------------------------------------
+"""
+Parser classes. Parse snapshot and message data, i.e. convert str numbers
+to int, use uniform keys, remove unnecessary message types and headers.
+"""
+# ---------------------------------------------------------------------------
 
 
 class SnapshotParser:
@@ -14,7 +24,8 @@ class SnapshotParser:
     # parse decorator . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
     def parse(f):        
-        def wrapper(self, snapshot):
+        def wrapper(self,
+                    snapshot:dict):
 
             # ...
             snapshot_output = {}
@@ -55,7 +66,8 @@ class MessagePacketParser:
     # parse decorator . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
     def parse(f):
-        def wrapper(self, message_packet):
+        def wrapper(self,
+                    message_packet: list):
 
 
             message_packet_output = []        
