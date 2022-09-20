@@ -7,9 +7,9 @@
 # ---------------------------------------------------------------------------
 """ Replay Module for the Level-3 backtest engine"""
 # ---------------------------------------------------------------------------
-import os
+
 import random
-import json
+import datetime
 
 #!pip install pandas-market-calendars
 import pandas_market_calendars as mcal
@@ -24,10 +24,17 @@ from market.context import Context
 from agent.agent_metrics import AgentMetrics
 
 
+# TODO: clean implementation after all classes are finished
+# TODO: will also be responsible for passing input arguments to all the
+# classes (i.e. latency to Market, tc_factor to AgentMetrics etc.), hence
+# these methods cannot all be static since these input argements will be
+# stored in replay.self...
+#TODO: modes to run episode as list of dates or for a continuing time period
+
 class Replay:
 
     def __init__(self,
-                 identifier_list=None,
+                 identifier_list:list=None,
                  identifier: str="BMW",
                  start_date:str="2022-02-20",
                  end_date:str="2022-02-22",
@@ -36,7 +43,8 @@ class Replay:
                  seed:int=None,
                  shuffle:bool=True,
                  random_identifier:bool=True,
-                 exclude_high_activity_time:bool=False):
+                 exclude_high_activity_time:bool=False,
+                 mode:str="random_episodes"):
 
         # -- static attributes
         self.identifier_list = identifier_list
@@ -48,6 +56,8 @@ class Replay:
         self.frequency = frequency
         self.seed = seed
         self.shuffle = shuffle
+        self.exclude_high_activity_time = exclude_high_activity_time
+        self.mode = mode
 
         # -- dynamic attributes
         self.episode = None
@@ -57,33 +67,118 @@ class Replay:
         self.step_counter = 0
         self.done = False
 
-    def _generate_episode_start_list(self):
+        # -- generate new episode_start_list
+        self._generate_episode_start_list()
 
-        # xetra trading calendar
+    # note: method is tested and debugged (20-09-22)
+    def _generate_episode_start_list(self):
+        """
+        Generates a new episode start list which is a list of timestamps that
+        can potentially be used as episode starting points.
+
+        Epsiode_start_list only contains timestamps which are in XETRA
+        trading hours and account for the episode length such that the time
+        between episode_start and mid- or close auction is always adequate to
+        run an entire episode.
+
+        High activity trading times defined as 08:00-08:15 UTC and 16:15-16:30
+        UTC can be optionally excluded using the exclude_high_activity_time
+        argument.
+
+        The episode list can optionally be shuffled using the shuffle argument,
+        it is possible to define a specific seed using the seed argumen.
+        """
+
+        # xetra trading calendar (trading hours, weekends, holydays)
         xetr = mcal.get_calendar('XETR')
         schedule = xetr.schedule(start_date=self.start_date,
                                  end_date=self.end_date)
 
-        # create range with respective frequency
+        # create date range with respective frequency
         self.episode_start_list = list(
             mcal.date_range(schedule, frequency=self.frequency))
 
-        #TODO: exclude_high_activity_time
+        # -- account for market close and mid auction buffers
+        # market_close (16:30 UTC)
+        market_close = '01/01/10 16:30:00'  # arbitrary date
+        # account for market close
+        market_close = datetime.datetime.strptime(market_close,
+                                                  '%m/%d/%y %H:%M:%S')
 
+        # account for episode_length
+        market_close_buffer = market_close - pd.Timedelta(self.episode_length)
+        # mid auction (12.00 UTC)
+
+        mid_auction = '01/01/10 12:00:00'  # arbitrary date
+
+        mid_auction = datetime.datetime.strptime(mid_auction,
+                                                 '%m/%d/%y %H:%M:%S')
+        # account for episode_length
+        mid_auction_buffer = mid_auction - pd.Timedelta(self.episode_length)
+
+        # filter for close buffer
+        self.episode_start_list = list(
+            filter(lambda ts: (ts.time() < market_close_buffer.time()),
+                   self.episode_start_list))
+
+        # filter for mid auction buffer
+        self.episode_start_list = list(
+            filter(lambda ts: (ts.time() > mid_auction.time() or
+                               ts.time() < mid_auction_buffer.time()),
+                   self.episode_start_list))
+
+        # -- exclude high trading activity time (optional)
+        if self.exclude_high_activity_time:
+
+            # high trading activity time in the beginning of the trading day
+            high_activity_open = '01/01/10 08:15:00'  # arbitrary date
+            # account for market close
+            high_activity_open = datetime.datetime.strptime(
+                high_activity_open, '%m/%d/%y %H:%M:%S')
+
+            # high trading activity time in the end of the trading day
+            high_activity_close = '01/01/10 16:15:00'  # arbitrary date
+            # account for market close
+            high_activity_close = datetime.datetime.strptime(
+                high_activity_close, '%m/%d/%y %H:%M:%S')
+
+            # filter
+            self.episode_start_list = list(
+                filter(lambda ts: (ts.time() > high_activity_open.time() and
+                                   ts.time() < high_activity_close.time()),
+                                    self.episode_start_list))
+
+        # -- shuffle episode (optional
         if self.seed:
             random.seed(self.seed)
 
         if self.shuffle:
             random.shuffle(self.episode_start_list)
 
-        # set episode_counter to 0
+        # -- reset episode_counter to 0
         self.episode_counter = 0
+        self.episode_index = 0
 
-    def build_new_episode_new(self):
+    # note: method is tested and debugged (20-09-22)
+    def build_new_episode(self):
+        """
+        Use the next start timestamp in episode_start_list to build the next
+        episode. It is not necessarily the case that each start_point in
+        episode_start_list is equipped with the necessary data files, hence
+        the construction of the new episode might fail. In this case, the
+        episode is build with the next start timestamp until an episode can be
+        build successfully.
 
-        #TODO: Wrap in statement, repeat until episode is build.. (like in my level2 library...)
+        episiode_counter counts the successfully built episodes.
+        episode_index counts the number of trials to build episodes
+        and is therefore used to index the episode_start_list.
 
-        episode_start = self.episode_start_list[self.episode_counter]
+        A new episode is directly stored in the self.episode attribute.
+        """
+
+        # -- update episode parameters
+
+        episode_start = self.episode_start_list[self.episode_index]
         episode_end = episode_start + pd.Timedelta(self.episode_length)
 
         if self.random_identifier and self.identifier_list:
@@ -91,29 +186,36 @@ class Replay:
         else:
             identifier = self.identifier
 
-        self.episode = Episode(episode_start = episode_start,
-                               episode_end = episode_end,
-                               identifier = identifier)
+        # -- build new episode
 
+        for attempt in range(100):
 
+            try:
+                self.episode = Episode(episode_start=episode_start,
+                                       episode_end=episode_end,
+                                       identifier=identifier)
 
+                # update episode_counter/index
+                self.episode_counter += 1
+                self.episode_index += 1
 
-    def _build_new_episode(self):
-        #TODO: add all options...
-        try:
-            self.episode = Episode()
-            # update episode counter
-            self.episode_counter += 1
-            print("(INFO) new episode was build")
-        except:
-            print("(ERROR) could not build episode with the specified parameters")
-            # also update episode_counter
-            self.episode_counter += 1
+                print("(INFO) new episode was build in attempt: {}".format(
+                    attempt+1))
 
-        # RL: set done-flag for new episode false
-        self.done = False
-        # episode_index counts episodes which have been build successfully
-        self.episode_index += 1
+            # return if episode could not be generated
+            except:
+
+                print("(ERROR) could not build episode from start_point")
+                # update episode_counter
+
+                self.episode_index += 1
+
+                # update episode parameters
+                episode_start = self.episode_start_list[self.episode_index]
+                episode_end = episode_start + pd.Timedelta(self.episode_length)
+                continue
+
+            break
 
     # externally stepped replay . . . . . . . . . . . . . . . . . . . . . . .
 
@@ -131,13 +233,10 @@ class Replay:
 
         # -- update market with new message packet from episode
         message_packet = self.episode.__next__()
+
         # -- pass nex message packet to Market
         Market.instances['ID'].update_simulation_with_exchange_message(
             message_packet)
-
-        # -- check if episode is done
-        if self.episode._step >= (self.episode.__len__() - 1):
-            self.done = True
 
     def step(self):
         """
@@ -149,7 +248,7 @@ class Replay:
         RL-environment class in Open-AI Gym convention.
         """
 
-        # conduct market step
+        # market step
         self._market_step()
 ################## DEVELOPMENT AREA ##########################################
         state_l3 = Market.instances['ID'].state_l3
@@ -160,7 +259,7 @@ class Replay:
 ##############################################################################
         self.step_counter = self.step_counter + 1
 
-    # externally stepped replay . . . . . . . . . . . . . . . . . . . . . . .
+    # internally stepped replay . . . . . . . . . . . . . . . . . . . . . . .
 
     def run_backtest(self):
         """"
@@ -180,12 +279,6 @@ class Replay:
     to reset the environment and replay.step() to step the environment.
     """
 
-    # TODO: clean implementation after all classes are finished
-    #TODO: will also be responsible for passing input arguments to all the
-    # classes (i.e. latency to Market, tc_factor to AgentMetrics etc.), hence
-    # these methods cannot all be static since these input argements will be
-    # stored in replay.self...
-    #
     def _reset_market(self, snapshot_start):
         # reset old market instance
         Market.reset_instances()
@@ -208,11 +301,15 @@ class Replay:
         # not necessarily needed
         pass
 
+    def _reset_replay(self):
+
+        self.build_new_episode()
+
     # TODO: call all reset helper methods!
     def reset(self):
         # episode has to be build before _reset_market
         # to provide new snapshot_start to Market
-        self._build_new_episode()
+        self._reset_replay()
 
         self._reset_market(self.episode.snapshot_start)
 
