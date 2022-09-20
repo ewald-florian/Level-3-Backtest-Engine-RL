@@ -98,6 +98,36 @@ class Reconstruction:
         print("(INFO) State Build from Snapshot: Start Timestamp: {}".format(
             pd.to_datetime(self._state_timestamp, unit='ns')))
 
+    def initialize_state_from_parsed_snapshot(self, snapshot):
+        """
+        Episode class generates start snapshot with  reconstruction. Hence,
+        these snapshots are already parsed and can be loaded without the
+        @SnapshotParser.parse decorator.
+
+        Set current state to be the provided snapshot from which to start
+        reconstruction.
+
+        The original snapshot format is parsed by SnapshotParser
+        (as decorator).
+
+        The parsed snapshot contains all orders with side and price
+        as keys. Orders contain the attributes 'template_id', 'msg_seq_num',
+        'side', 'price', 'quantity', timestamp'. (Note: this could change when
+        using other data or when the downloader is modified...).
+        :param snapshot:
+            dict, contains all orders with side and price as keys
+        """
+        # set initial internal state to be the start snapshot
+        self._state = snapshot
+        # set initial state index
+        self._initialize_internal_state_index()
+        # set initial timestamp
+        self._initialize_internal_timestamp()
+
+        # logging
+        print("(INFO) State Build from Snapshot: Start Timestamp: {}".format(
+            pd.to_datetime(self._state_timestamp, unit='ns')))
+
     @SnapshotParser.parse
     def validate_state(self, snapshot):
         """

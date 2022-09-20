@@ -33,16 +33,18 @@ from agent.agent_metrics import AgentMetrics
 
 class Replay:
 
+    # DE0005190003.XETR_20220201T080007_20220201T120000
+
     def __init__(self,
                  identifier_list:list=None,
                  identifier: str="BMW",
-                 start_date:str="2022-02-20",
-                 end_date:str="2022-02-22",
+                 start_date:str="2022-02-01",
+                 end_date:str="2022-02-02",
                  episode_length:str = "10m",
                  frequency:str="1m",
                  seed:int=None,
                  shuffle:bool=True,
-                 random_identifier:bool=True,
+                 random_identifier:bool=False,
                  exclude_high_activity_time:bool=False,
                  mode:str="random_episodes"):
 
@@ -285,7 +287,16 @@ class Replay:
         # create new instance of MarketState
         _ = Market(market_id="ID")
         # build initial state of new MarektState instance from snapshot_start
-        Market.instances['ID'].initialize_state(snapshot=snapshot_start)
+
+        # -- from parsed snapshot (episode delivers parsed snapshots)
+        # note: parsed snapshots have "template_id" instead of "Template_ID"
+        if "template_id" in snapshot_start[1][some_price][0]:
+            Market.instances['ID'].initialize_state_from_parsed_snapshot(
+                snapshot=snapshot_start)
+
+        # -- from un-parsed snapshot (raw snapshot from database)
+        else:
+            Market.instances['ID'].initialize_state(snapshot=snapshot_start)
 
     @staticmethod
     def _reset_agent_metrics():

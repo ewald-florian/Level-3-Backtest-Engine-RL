@@ -95,15 +95,22 @@ class MarketFeatures:
         # dataframe:
         elif data_structure == 'df':
 
-            state_df =  self._convert_to_df(state_array=state_array,
+            state_df = self._convert_to_df(state_array=state_array,
                                 num_levels=len(state_l3[1]),
                                 store_timestamp=store_timestamp,
-                                            store_hhi=store_hhi)
+                                store_hhi=store_hhi)
 
             return state_df
 
         else:
             pass
+
+    # TODO
+    def weighted_priority_time(self):
+        # for each level
+        # ptiority_time*qt / sum(qt)
+        # test if good signal for midpoint
+        pass
 
     def level_2(self, store_timestamp: bool = True,
                 data_structure: str = 'df'):
