@@ -1013,7 +1013,7 @@ class Market(Reconstruction):
             return trade_list
 
         else:
-            print('(WARNING) State is not complete - no matching possible')
+            print('(WARNING) Relevant State has only one side - no matching')
 
     @classmethod
     def reset_instances(cls):

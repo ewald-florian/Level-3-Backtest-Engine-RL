@@ -1,6 +1,6 @@
 """For Demonstration Purposes"""
 
-from market.market_interface import MarketInterface as MI
+from market.market_interface import MarketInterface
 from market.market import Market
 from replay.replay import Replay
 from agent.agent_metrics import AgentMetrics
@@ -11,15 +11,21 @@ import numpy as np
 
 class RandomTrader:
 
-    def __init__(self, number_range:int=10_000):
+    """
+    Test Backtest Engine.
+    """
+
+    def __init__(self, number_range:int=100):
 
         self.range = number_range
         self.metrics = AgentMetrics()
+        self.mi = MarketInterface()
 
 
     def submit_random_orders(self):
 
         lucky_number = np.random.randint(0, self.range)
+        #print(lucky_number)
 
         # buy order
         if lucky_number == 42:
@@ -27,7 +33,7 @@ class RandomTrader:
             # submit order via market interface
             best_ask = Market.instances['ID'].best_ask
 
-            MI.submit_order(side=1,
+            self.mi.submit_order(side=1,
                             limit=best_ask,
                             quantity=lucky_number*1e4)
 
@@ -36,7 +42,7 @@ class RandomTrader:
 
             best_bid = Market.instances['ID'].best_ask
 
-            MI.submit_order(side=2,
+            self.mi.submit_order(side=2,
                             limit=best_bid,
                             quantity=lucky_number * 1e4)
 
@@ -51,14 +57,13 @@ class RandomTrader:
                 id = l[0]['message_id']
 
                 # cancel order
-                MI.cancel_order(order_message_id=id)
+                self.mi.cancel_order(order_message_id=id)
             else:
                 pass
 
         if lucky_number == 96:
-            # log Position Value from AgentMetrics
-            print(">>> POSITION VALUE: ", round(
-                self.metrics.position_value/1e-8),2)
+            # log AgentMetrics
+            print(self.metrics)
 
 
 if __name__ == '__main__':
@@ -67,7 +72,7 @@ if __name__ == '__main__':
     replay = Replay(identifier="FME",
                  start_date="2022-02-16",
                  end_date="2022-02-16",
-                 episode_length = "10m",
+                 episode_length = "1H",
                  frequency ="1m",
                  seed = 42,
                  shuffle=True,
@@ -76,7 +81,9 @@ if __name__ == '__main__':
         )
 
     replay.reset() # -> build new episode
+
     randomtrader = RandomTrader()
+
     print("Episode Len: ", replay.episode.__len__())
 
     for i in range(replay.episode.__len__()):
@@ -84,7 +91,8 @@ if __name__ == '__main__':
         replay.step()
         randomtrader.submit_random_orders()
 
-        if i%100==0:
+        if i%10==0:
+            # log market
             print('Market:',Market.instances['ID'].state_l1)
 
 

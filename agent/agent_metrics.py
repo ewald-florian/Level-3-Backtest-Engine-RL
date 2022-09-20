@@ -439,29 +439,26 @@ class AgentMetrics:
         """
         Current realized PnL of agent.
         """
+
+        pnl_realized = 0
+
         realized_quantity = self.realized_quantity
         vwap_buy = self.vwap_buy
         vwap_sell = self.vwap_sell
 
         if realized_quantity:
-            # net long
-            if realized_quantity > 0:
 
-                pnl_realized = realized_quantity * (vwap_sell - vwap_buy)
+            if vwap_buy and vwap_sell:
 
-            # net short
-            elif realized_quantity < 0:
+                # net long
+                if realized_quantity > 0:
 
-                pnl_realized = realized_quantity * (vwap_buy - vwap_sell)
+                    pnl_realized = realized_quantity * (vwap_sell - vwap_buy)
 
-            # no realized quantity
-            else:
+                # net short
+                elif realized_quantity < 0:
 
-                pnl_realized = 0
-
-        else:
-
-            pnl_realized = 0
+                    pnl_realized = realized_quantity * (vwap_buy - vwap_sell)
 
         return round(pnl_realized, 2)
 
