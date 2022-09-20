@@ -57,6 +57,7 @@ class MessagePacketParser:
     def parse(f):
         def wrapper(self, message_packet):
 
+
             message_packet_output = []        
 
             # parse message based on the corresponding template_id
@@ -134,6 +135,7 @@ class MessagePacketParser:
 
     @staticmethod
     def _order_add(message): # 13100
+
         return { 
             "template_id":      13100,
             "msg_seq_num":      int(message["MessageHeader"]["MsgSeqNum"]),
@@ -218,7 +220,7 @@ class MessagePacketParser:
         }
 
     @staticmethod
-    def _execution_summary(message): # 13202
+    def _execution_summary(message, verbose=False): # 13202
         
         if message["AggressorTime"]:
                
@@ -235,6 +237,7 @@ class MessagePacketParser:
                }
 
         else:
+            if verbose:
                 print('Flawed Message: ')
                 print(message)
                 print(message["AggressorTime"])
