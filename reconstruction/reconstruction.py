@@ -5,6 +5,7 @@
 # TODO __init__ Docstring anpassen
 import json
 import copy
+import pandas as pd
 
 from reconstruction.parser import MessagePacketParser
 from reconstruction.parser import SnapshotParser
@@ -95,7 +96,7 @@ class Reconstruction:
 
         # logging
         print("(INFO) State Build from Snapshot: Start Timestamp: {}".format(
-            self.timestamp_datetime))
+            pd.to_datetime(self._state_timestamp, unit='ns')))
 
     @SnapshotParser.parse
     def validate_state(self, snapshot):

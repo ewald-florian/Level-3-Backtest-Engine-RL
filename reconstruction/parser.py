@@ -1,10 +1,6 @@
 # !/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-# Modifications:
-# - added exec_id to _execution_summary()
-# -
-
 
 class SnapshotParser:
     """
@@ -145,7 +141,6 @@ class MessagePacketParser:
             "price":            int(message["OrderDetails"]["Price"]),
             "quantity":         int(message["OrderDetails"]["DisplayQty"]),
             "timestamp":        int(message["OrderDetails"]["TrdRegTSTimePriority"]),
-            # Problem: time-in does not exist in snapshot so the build state will be different from snapshot_end
             "time-in":          int(message["TrdRegTSTimeIn"])    
         }
 
@@ -236,12 +231,9 @@ class MessagePacketParser:
                     "quantity":         int(message["LastQty"]),
                    # time-in like
                     "timestamp":        int(message["AggressorTime"]),
-                   # exec_id is probably the execution time (~6000 ns behind aggressor time)
                     "exec_id":        int(message["ExecID"])
                }
 
-        
-        # Some 13202s have None as AggressorTime...ignore them and print info
         else:
                 print('Flawed Message: ')
                 print(message)

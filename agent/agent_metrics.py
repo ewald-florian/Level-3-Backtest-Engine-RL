@@ -28,11 +28,16 @@ class AgentMetrics:
     def __init__(self, tc_factor: float = 1e-3,
                  exposure_limit: int = 0):
 
+
         self.tc_factor = tc_factor
         self.exposure_limit = exposure_limit
 
-    @staticmethod
-    def get_filtered_messages(side=None, template_id=None):
+        # TODO: versuchen, ohne instanzen auszukommen...
+        self.order_list = OMS.order_list
+        self.trade_list = AgentTrade.history
+
+
+    def get_filtered_messages(self, side=None, template_id=None):
         """
         Filter messages by side (1: Bid, 2: Ask) and template_id:
         - 99999 = active order
@@ -55,19 +60,56 @@ class AgentMetrics:
 
         filtered_messages = OMS.order_list
 
-        # orders must have requested market_id
-        if side:
-            filtered_messages = filter(lambda d: d['side'] == side,
-                                       filtered_messages)
-        # orders must have requested side
-        if template_id:
-            filtered_messages = filter(lambda d: d['template_id'] == template_id,
-                                       filtered_messages)
+        if filtered_messages:
+            # orders must have requested market_id
+            if side:
+                filtered_messages = filter(lambda d: d['side'] == side,
+                                           filtered_messages)
+            # orders must have requested side
+            if template_id:
+                filtered_messages = filter(lambda d: d['template_id'] == template_id,
+                                           filtered_messages)
 
-        return list(filtered_messages)
+            return list(filtered_messages)
 
     @staticmethod
-    def get_filtered_trades(side):
+    def get_filtered_messages_static(side=None, template_id=None):
+        """
+        Filter messages by side (1: Bid, 2: Ask) and template_id:
+        - 99999 = active order
+        - 66666 = cancellation message
+        - 11111 = executed order
+        - 33333 = cancelled order
+
+        :param side
+            int, 1 or 2
+        :param template_id
+            int, template_id of message
+        """
+        if side:
+            assert side in [1, 2], "(AgentMetrics) Side " \
+                                   "not valid, must be 1 or 2"
+
+        if template_id:
+            assert template_id in [99999, 66666, 11111, 33333], \
+                "(AgentMetrics) template_id not valid"
+
+        filtered_messages = OMS.order_list
+
+        if filtered_messages:
+            # orders must have requested market_id
+            if side:
+                filtered_messages = filter(lambda d: d['side'] == side,
+                                           filtered_messages)
+            # orders must have requested side
+            if template_id:
+                filtered_messages = filter(
+                    lambda d: d['template_id'] == template_id,
+                    filtered_messages)
+
+            return list(filtered_messages)
+
+    def get_filtered_trades(self, side):
         """
         Filter trades by side (1 Buy, 2 Sell)
 
@@ -77,7 +119,7 @@ class AgentMetrics:
         assert side in [1, 2], "(AgentMetrics) Side " \
                                "not valid, must be 1 or 2"
 
-        filtered_trades = AgentTrade.history
+        filtered_trades = self.trade_list
 
         filtered_trades = filter(lambda d: d['agent_side'] == side,
                                  filtered_trades)

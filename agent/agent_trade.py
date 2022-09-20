@@ -4,15 +4,12 @@
 import pandas as pd
 import numpy as np
 
-#TODO: I could also store agent trades and markt trades in the same class
-# in two different lists (agent_trades, and market_trades)
-
 
 class AgentTrade: # vs MarketTrade
 
     history = list()
 
-    def __init__(self, agent_trade, verbose=True):
+    def __init__(self, agent_trade, verbose=False):
         """
         Store agent trades in class attribute history (list)
         :param agent_trade
