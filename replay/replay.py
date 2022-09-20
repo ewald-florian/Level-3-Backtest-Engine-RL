@@ -7,6 +7,13 @@
 # ---------------------------------------------------------------------------
 """ Replay Module for the Level-3 backtest engine"""
 # ---------------------------------------------------------------------------
+import os
+import random
+import json
+
+#!pip install pandas-market-calendars
+import pandas_market_calendars as mcal
+import pandas as pd
 
 import logging
 logging.getLogger().setLevel(logging.INFO)
@@ -19,22 +26,77 @@ from agent.agent_metrics import AgentMetrics
 
 class Replay:
 
-    def __init__(self):
+    def __init__(self,
+                 identifier_list=None,
+                 identifier: str="BMW",
+                 start_date:str="2022-02-20",
+                 end_date:str="2022-02-22",
+                 episode_length:str = "10m",
+                 frequency:str="1m",
+                 seed:int=None,
+                 shuffle:bool=True,
+                 random_identifier:bool=True,
+                 exclude_high_activity_time:bool=False):
+
         # -- static attributes
-        # self.start_date etc.
+        self.identifier_list = identifier_list
+        self.identifier = identifier
+        self.random_identifier = random_identifier
+        self.start_date = start_date
+        self.end_date = end_date
+        self.episode_length = episode_length
+        self.frequency = frequency
+        self.seed = seed
+        self.shuffle = shuffle
 
         # -- dynamic attributes
+        self.episode = None
         self.episode_start_list = []
         self.episode_counter = 0
         self.episode_index = 0
         self.step_counter = 0
         self.done = False
 
-        self.agent_metrics = AgentMetrics()
-
-
     def _generate_episode_start_list(self):
-        pass
+
+        # xetra trading calendar
+        xetr = mcal.get_calendar('XETR')
+        schedule = xetr.schedule(start_date=self.start_date,
+                                 end_date=self.end_date)
+
+        # create range with respective frequency
+        self.episode_start_list = list(
+            mcal.date_range(schedule, frequency=self.frequency))
+
+        #TODO: exclude_high_activity_time
+
+        if self.seed:
+            random.seed(self.seed)
+
+        if self.shuffle:
+            random.shuffle(self.episode_start_list)
+
+        # set episode_counter to 0
+        self.episode_counter = 0
+
+    def build_new_episode_new(self):
+
+        #TODO: Wrap in statement, repeat until episode is build.. (like in my level2 library...)
+
+        episode_start = self.episode_start_list[self.episode_counter]
+        episode_end = episode_start + pd.Timedelta(self.episode_length)
+
+        if self.random_identifier and self.identifier_list:
+            identifier = random.choice(self.identifier_list)
+        else:
+            identifier = self.identifier
+
+        self.episode = Episode(episode_start = episode_start,
+                               episode_end = episode_end,
+                               identifier = identifier)
+
+
+
 
     def _build_new_episode(self):
         #TODO: add all options...
@@ -70,7 +132,8 @@ class Replay:
         # -- update market with new message packet from episode
         message_packet = self.episode.__next__()
         # -- pass nex message packet to Market
-        Market.instances['ID'].update_simulation_with_exchange_message(message_packet)
+        Market.instances['ID'].update_simulation_with_exchange_message(
+            message_packet)
 
         # -- check if episode is done
         if self.episode._step >= (self.episode.__len__() - 1):
