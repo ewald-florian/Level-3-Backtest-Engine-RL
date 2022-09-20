@@ -210,7 +210,7 @@ class Reconstruction:
         for message in message_packet:
 
             # assert that self._state_index is smaller than 'msg_seq_num'
-            assert self._state_index < message["msg_seq_num"], \
+            assert self._state_index <= message["msg_seq_num"], \
                 "(ERROR) update requires 'msg_seq_num' larger than index"
 
             # -- update internal limit order book state ...
