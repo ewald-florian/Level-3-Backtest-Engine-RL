@@ -14,10 +14,8 @@ import pandas as pd
 
 from reconstruction.reconstruction import Reconstruction
 
-# PATH TO DATA DIRECTORY
-#PATH = "/Users/florianewald/PycharmProjects/Level3-Data-Analysis/sample_msg_data/DE0005190003.XETR_20220201T080007_20220201T120000"
-#local = "/Users/florianewald/PycharmProjects/Level3-Data-Analysis/sample_msg_data/DE0005190003.XETR_20220201T120211_20220201T163000"
 
+# PATH TO DATA DIRECTORY
 local = "/Users/florianewald/PycharmProjects/A7_data/"
 
 PATH = local
@@ -25,12 +23,34 @@ PATH = local
 
 class Episode:
 
+    """
+    Episode is the datastorage for one episode in the backtest. It consists of
+    a snapshot_start (used to initialize the market state in the beginning of
+    the episode) and a message_packet_list (used to iteratively update the
+    market state from messages and hence replay the historical continuous
+    trading phases.
+
+    Data is given in UTC. XETRA trading hours reach from 08:00 to 16:30 UTC.
+    The mid-action takes place from 12:00 to 12:02 UTC.
+    """
+
     def __init__(self,
                  identifier:str = None,
                  episode_start = None,
                  episode_end = None):
         """
+        Generates episode by loading the respective start_snapshot and
+        message_packet_list from the database  and storing them under the
+        instance attributes self.start_snapshot and self.message_packet_list.
 
+        Can be called from replay to build the next episode for the backtest.
+
+        :param identifier
+            str, identifier of symbol
+        :param episode_start,
+            pd.Timestamp, start timestamp of the episode
+        :param episode_end,
+            pd.Timestamp, end timestamp of the episode
         """
         # static attributes from arguments
         self.identifier = identifier
@@ -42,26 +62,25 @@ class Episode:
         self._timestamp = None
         self.snapshot_end = None
         self.snapshot_start = None
-        self.message_list = None
         self.message_packet_list = None
 
         # map stock ETR to ISIN
         self.isin_dict = {"BMW": "DE0005190003",
                         "FME": "DE0005785802"}
 
+        # -- instantiate reconstruction
+        # instantiate reconstuction
+        self.reconstruction = Reconstruction()
 
-        self.load_data_new()
+        # -- load episide
+        self.load_episode_data()
 
+    def load_episode_data(self):
 
-
-    def load_data_new(self):
-
-        #TODO: epsiode_start/end besser als str oder datetime?
-
-        ###FOR TESTING ###
+        #FOR TESTING / DEBUGGING
         #self.episode_start = pd.Timestamp('2022-02-16 08:10:00+0000', tz='UTC')
         #self.episode_end = pd.Timestamp('2022-02-16 08:20:00+0000', tz='UTC')
-        #################
+
 
         start_date_str = self.episode_start.strftime("%Y%m%d")
         start_hour = self.episode_start.strftime("%H")
@@ -70,9 +89,10 @@ class Episode:
         market = ".XETR_"
 
         # NOTE: THIS IS FOR DATA FILES WHICH ARE SPLIT AT MID-AUCTION
+        # (T08 -> morning, T12... -> afternoon)
 
         # trading_time
-        # Note: 12 in UTC time (MEZ would be 13)
+        # Note: 12 in UTC (CET would be 13)
         if int(start_hour) <= 12:
             trading_time = "T08"
         elif int(start_hour) >= 12:
@@ -102,13 +122,11 @@ class Episode:
         snapshot_start = json.load(snapshot_start_path)[0]
         # TODO: not required..
         snapshot_end = json.load(snapshot_end_path)
-        # slice out the first message (reconstruction message)
+        # slice out the first message (self.reconstruction message)
         message_packet_list = json.load(message_list_path)[1:]
 
-        # instantiate reconstuction
-        reconstruction = Reconstruction()
         # load state from snapshot_start
-        reconstruction.initialize_state(snapshot=snapshot_start)
+        self.reconstruction.initialize_state(snapshot=snapshot_start)
 
         # convert to unix
         episode_start_unix = (self.episode_start - pd.Timestamp(
@@ -120,50 +138,48 @@ class Episode:
         # run reconstruction until episode start is reached
         for message_packet in message_packet_list:
 
-            reconstruction.update_with_exchange_message(message_packet)
+            self.reconstruction.update_with_exchange_message(message_packet)
 
             if int(message_packet[0]['TransactTime']) > episode_start_unix:
                 break
 
         # assert deviation
-        assert reconstruction._state_timestamp - episode_start_unix < 6e10, \
+        assert self.reconstruction._state_timestamp - episode_start_unix < 6e10, \
             "Divergence at Episode Snapshot larger 1 Min"
 
         # set episode_start_snapshot
-        self.episode_start_snapshot = reconstruction._state
+        self.snapshot_start = self.reconstruction._state
 
         # filter message list for episode messages
-        self.episode_message_list = list(filter(lambda p:
+        self.message_packet_list = list(filter(lambda p:
                             int(p[0]['TransactTime']) > episode_start_unix and
                             int(p[0]['TransactTime']) < episode_end_unix,
                             message_packet_list))
 
         # assert deviation
-        if self.episode_message_list:
-            assert abs(int(self.episode_message_list[0][0]
+        if self.message_packet_list:
+            assert abs(int(self.message_packet_list[0][0]
                            ['TransactTime']) - episode_start_unix
                        ) < 6e10, "Divergence at Episode Start larger 1 Min"
 
-        if self.episode_message_list:
+        if self.message_packet_list:
             assert abs(
-                int(self.episode_message_list[-1][0]
+                int(self.message_packet_list[-1][0]
                     ['TransactTime']) - episode_end_unix
                 ) < 6e10, "Divergence at Episode Start larger 1 Min"
 
-    # Preliminary Version to develop replay etc.
-    def load_data(self): #OLD todo: rename "load_specific_files", can be useful for testing...
+    # note: mostly for development uses
+    def load_specific_files(self, base_path:str):
         '''
-        Load data
+        Load episode from specific base_path
         '''
 
-        snapshot_start_file = open(f"{PATH}/snapshot_start.json")
-        snapshot_end_file = open(f"{PATH}/snapshot_end.json")
-        message_list_file = open(f"{PATH}/message_list.json")
+        snapshot_start_file = open(f"{base_path}/snapshot_start.json")
+        snapshot_end_file = open(f"{base_path}/snapshot_end.json")
+        message_list_file = open(f"{base_path}/message_list.json")
 
-        
         self.snapshot_start = json.load(snapshot_start_file)[0]
         self.snapshot_end = json.load(snapshot_end_file)
-        # slice out the first message (reconstruction message)
         self.message_packet_list = json.load(message_list_file)[1:]
 
 
