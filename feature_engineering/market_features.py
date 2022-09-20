@@ -9,8 +9,6 @@
 
 
 # ---------------------------------------------------------------------------
-
-
 from market.context import Context
 from market.market_trade import MarketTrade
 
@@ -61,56 +59,54 @@ class MarketFeatures:
         :param data_structure
             str, 'array' or 'df'
         """
-        permitted = ['array', 'df']
-        if data_structure not in ['array', 'df']:
-            raise ValueError(
-                "data_structure must be one of %r." % permitted)
 
-        state_l3 = self.context[-1]
-        # store datapoints of current state to a list
-        data_list = []
+        # check if context is not empty
+        if self.context:
 
-        if store_timestamp:
-            data_list.append(state_l3[0])
+            permitted = ['array', 'df']
+            if data_structure not in ['array', 'df']:
+                raise ValueError(
+                    "data_structure must be one of %r." % permitted)
 
-        for side in [1, 2]:
+            state_l3 = self.context[-1]
+            # store datapoints of current state to a list
+            data_list = []
 
-            for price in state_l3[side].keys():
+            if store_timestamp:
+                data_list.append(state_l3[0])
 
-                agg_qt = sum([(d['quantity']) for d in state_l3[side][price]])
+            for side in [1, 2]:
 
-                if store_hhi:
-                    # herfindahl index
-                    hhi = sum([(d['quantity'] / agg_qt) ** 2 for d in
-                               state_l3[side][price]])
-                    data_list.extend((price, agg_qt, hhi))
-                else:
-                    data_list.extend((price, agg_qt))
+                for price in state_l3[side].keys():
 
-        # numpy array
-        state_array = np.array(data_list)
-        if data_structure == "array":
-            return state_array
+                    agg_qt = sum([(d['quantity']) for d in state_l3[side][price]])
 
-        # dataframe:
-        elif data_structure == 'df':
+                    if store_hhi:
+                        # herfindahl index
+                        hhi = sum([(d['quantity'] / agg_qt) ** 2 for d in
+                                   state_l3[side][price]])
+                        data_list.extend((price, agg_qt, hhi))
+                    else:
+                        data_list.extend((price, agg_qt))
 
-            state_df = self._convert_to_df(state_array=state_array,
-                                num_levels=len(state_l3[1]),
-                                store_timestamp=store_timestamp,
-                                store_hhi=store_hhi)
+            # numpy array
+            state_array = np.array(data_list)
+            if data_structure == "array":
+                return state_array
 
-            return state_df
+            # dataframe:
+            elif data_structure == 'df':
 
-        else:
-            pass
+                state_df = self._convert_to_df(state_array=state_array,
+                                    num_levels=len(state_l3[1]),
+                                    store_timestamp=store_timestamp,
+                                    store_hhi=store_hhi)
 
-    # TODO
-    def weighted_priority_time(self):
-        # for each level
-        # ptiority_time*qt / sum(qt)
-        # test if good signal for midpoint
-        pass
+                return state_df
+
+            else:
+                pass
+
 
     def level_2(self, store_timestamp: bool = True,
                 data_structure: str = 'df'):
@@ -156,14 +152,25 @@ class MarketFeatures:
 
         return state_df
 
+    # TODO
+    def weighted_priority_time(self):
+        # for each level
+        # ptiority_time*qt / sum(qt)
+        # test if good signal for midpoint
+        pass
+
     def midpoint(self):
         """
         Current Market midpoint.
         """
-        best_bid = max(self.context[-1][1].keys())
-        best_ask = min(self.context[-1][2].keys())
 
-        return int((best_bid + best_ask)/2)
+        # check if context is not empty
+        if self.context:
+
+            best_bid = max(self.context[-1][1].keys())
+            best_ask = min(self.context[-1][2].keys())
+
+            return int((best_bid + best_ask)/2)
 
     def midpoint_series(self):
         pass
@@ -205,8 +212,10 @@ class MarketFeatures:
         """
         Current best bid.
         """
-        best_bid = max(self.context[-1][1].keys())
-        return best_bid
+        # check if context is not empty
+        if self.context:
+            best_bid = max(self.context[-1][1].keys())
+            return best_bid
 
     def best_bid_series(self):
         pass
@@ -215,8 +224,10 @@ class MarketFeatures:
         """
         Current best ask.
         """
-        best_ask = min(self.context[-1][2].keys())
-        return best_ask
+        # check if context is not empty
+        if self.context:
+            best_ask = min(self.context[-1][2].keys())
+            return best_ask
 
     def best_ask_series(self):
         pass
@@ -225,12 +236,14 @@ class MarketFeatures:
         """
         Current relative spread.
         """
-        best_bid = self.best_bid()
-        best_ask = self.best_ask()
-        midpoint = self.midpoint()
-        rel_spread = (best_ask - best_bid) / midpoint
+        # check if context is not empty
+        if self.context:
+            best_bid = self.best_bid()
+            best_ask = self.best_ask()
+            midpoint = self.midpoint()
+            rel_spread = (best_ask - best_bid) / midpoint
 
-        return rel_spread
+            return rel_spread
 
     def rel_spread_series(self):
         pass
@@ -243,20 +256,23 @@ class MarketFeatures:
         :return: imbalance
             float, lob imbalance
         """
-        state_l3 = self.context[-1]
+        # check if context is not empty
+        if self.context:
 
-        # aggregate the quantities for the respective number of levels
-        bid_keys = list(state_l3[1].keys())[:num_levels]
-        bid_qt = sum(
-            [sum([d['quantity'] for d in state_l3[1][n]]) for n in bid_keys])
+            state_l3 = self.context[-1]
 
-        ask_keys = list(state_l3[2].keys())[:num_levels]
-        ask_qt = sum(
-            [sum([d['quantity'] for d in state_l3[2][n]]) for n in ask_keys])
+            # aggregate the quantities for the respective number of levels
+            bid_keys = list(state_l3[1].keys())[:num_levels]
+            bid_qt = sum(
+                [sum([d['quantity'] for d in state_l3[1][n]]) for n in bid_keys])
 
-        imbalance = (bid_qt - ask_qt) / (ask_qt + bid_qt)
+            ask_keys = list(state_l3[2].keys())[:num_levels]
+            ask_qt = sum(
+                [sum([d['quantity'] for d in state_l3[2][n]]) for n in ask_keys])
 
-        return round(imbalance, 3)
+            imbalance = (bid_qt - ask_qt) / (ask_qt + bid_qt)
+
+            return round(imbalance, 3)
 
     def xlm(self):
         pass
