@@ -9,6 +9,8 @@
 # ---------------------------------------------------------------------------
 import json
 import os
+import copy
+import pickle
 
 import pandas as pd
 
@@ -55,6 +57,7 @@ class Episode:
         :param episode_end,
             pd.Timestamp, end timestamp of the episode
         """
+
         # static attributes from arguments
         self.identifier = identifier
         self.episode_start = episode_start
@@ -78,6 +81,7 @@ class Episode:
         # -- load episide
         self.load_episode_data()
 
+    # TODO: profiling
     def load_episode_data(self):
 
         #FOR TESTING / DEBUGGING
@@ -92,11 +96,11 @@ class Episode:
         market = ".XETR_"
 
         # NOTE: THIS IS FOR DATA FILES WHICH ARE SPLIT AT MID-AUCTION
-        # (T08 -> morning, T12... -> afternoon)
+        # (...T08... -> morning, ...T12... -> afternoon)
 
         # trading_time
-        # Note: 12 in UTC (CET would be 13)
-        if int(start_hour) <= 12:
+        # Note: 12:00 UTC (CET would be 13)
+        if int(start_hour) < 12:
             trading_time = "T08"
         elif int(start_hour) >= 12:
             trading_time = "T12"
@@ -107,16 +111,13 @@ class Episode:
         # find base_path name
         base_path = None
         for directory in os.listdir(PATH):
+
             if pattern in directory:
-                #DEBUGGING
-                print(pattern)
-                print(directory)
-                print(self.episode_start)
-                ##
+
                 base_path = directory
 
         if not base_path:
-            print("Base_Path not found")
+            print("...Base_Path not found")
 
 
         # load files from base_path
@@ -149,17 +150,18 @@ class Episode:
                 break
 
         # assert deviation
-        assert self.reconstruction._state_timestamp - episode_start_unix < 6e10, \
-            "Divergence at Episode Snapshot larger 1 Min"
+        assert (self.reconstruction._state_timestamp - episode_start_unix
+                ) < 6e10, "Divergence at Episode Snapshot larger 1 Min"
 
         # set episode_start_snapshot
-        self.snapshot_start = self.reconstruction._state
+        self.snapshot_start = copy.deepcopy(self.reconstruction._state)
+        # faster: pickle.loads(pickle.dumps(self.reconstruction._state, -1))
 
         # filter message list for episode messages
         self.message_packet_list = list(filter(lambda p:
                             int(p[0]['TransactTime']) > episode_start_unix and
                             int(p[0]['TransactTime']) < episode_end_unix,
-                            message_packet_list))
+                            copy.deepcopy(message_packet_list)))
 
         # assert deviation
         if self.message_packet_list:
@@ -173,7 +175,14 @@ class Episode:
                     ['TransactTime']) - episode_end_unix
                 ) < 6e10, "Divergence at Episode Start larger 1 Min"
 
-    # note: mostly for development uses
+        # -- free up interpreter memory
+        del snapshot_start
+        del message_packet_list
+        if 'snapshot_end' in locals():
+            del snapshot_end
+        del self.reconstruction._state
+
+    # note: for development uses
     def load_specific_files(self, base_path:str):
         '''
         Load episode from specific base_path
