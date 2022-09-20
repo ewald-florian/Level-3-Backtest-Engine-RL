@@ -30,11 +30,10 @@ if __name__ == '__main__':
     for i in range(replay.episode.__len__()):
 
         replay.step()
-        #print(am.get_filtered_messages(side=1))
-        print(AgentMetrics.get_filtered_messages_static())
+        print(i)
 
 
-        MarketInterface.submit_order(side=1, limit=22200000000, quantity=9990000)
+
 
 
 
