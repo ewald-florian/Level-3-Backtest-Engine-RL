@@ -43,7 +43,8 @@ class Market(Reconstruction):
                  report_state_timestamps: bool = True,
                  match_agent_against_exec_summary: bool = True,
                  agent_latency: int = 0,
-                 track_index: bool = False):
+                 track_index: bool = False,
+                 verbose: bool =True):
 
         super().__init__(track_timestamp=True,
                          track_index=track_index)
@@ -73,6 +74,7 @@ class Market(Reconstruction):
         self.report_state_timestamps = report_state_timestamps
         self.match_agent_against_exe_sum = match_agent_against_exec_summary
         self.agent_latency = agent_latency  # 8790127
+        self.verbose = verbose
         # dynamic attributes
 
         # update class instance
@@ -236,7 +238,8 @@ class Market(Reconstruction):
         :return: ticksize
             int,
         """
-        prices = list(self._state[1].keys()) + list(self._state[2].keys())
+        # note: only use top levels since there can be strange prices in depth
+        prices = list(sorted(self._state[1].keys(), reverse=True))[:20]
         ticksize = math.gcd(*prices)
         return ticksize
 
@@ -326,6 +329,8 @@ class Market(Reconstruction):
         datetime_timestamp = pd.to_datetime(utct_timestamp, unit='ns')
         return datetime_timestamp
 
+    # process market trades . . . . . . . . . . . . . . . . . . . . . . . . .
+
     @staticmethod
     def _store_market_trades(message_packet):
         """
@@ -400,7 +405,6 @@ class Market(Reconstruction):
         elif message["template_id"] == 66666:
             self._order_cancel_impact(message)
 
-        # TODO: match und match_new checken ob gleiche results
         # match internal limit order book state
         # trade_list = self.match() # Old...
         trade_list = self.match_new(state_to_match=self._state)  # New...
@@ -531,42 +535,96 @@ class Market(Reconstruction):
         latency as message timestamp.
 
         Submission messages (template_id=99999) get appended to the OMS.
+
         Cancellation messages (template_id=66666) are executed by changing the
         template_id of the cancelled order message from 99999 to 33333. To
         cancel an order it has to be identifiable by the price, side,
         timestamp combination.
 
-        Cancellation messages are also appended to the OMS to have a complete
-        protocol.
+        Modification messages (template_id=44444) get executed by modifying
+        the respective order.
+
+        Cancellation and Modification messages are also appended to the OMS
+        to maintain a complete protocol.
 
         Messages submitted via simulated_update_with_agent_message() are
         stored and matched separately from the internal state and do not affect
-        the market (no market impact).
+        the internal state (no market impact).
 
         :param message:
             dict, agent message
         """
-        # set current statetime plus latency as agent message timestamp
 
+        # set current state timestamp plus latency as agent message timestamp
         message['timestamp'] = self.timestamp + self.agent_latency
         message['msg_seq_num'] = None
+        # add message_id
         message['message_id'] = len(OMS.order_list)
 
-        # Store the agent order to OMS
+        # store message to Order Management System
+        OMS(message)
+
+        # -- submission
+
         if message['template_id'] == 99999:
-            OMS(message)
             # test if agent order matching is possible
             self._simulate_agent_order_matching()
 
+        # -- cancellation
+
         elif message['template_id'] == 66666:
-            # append cancellation message to OMS
-            OMS(message)
+
+            # identify order
             cancelled_order = list(filter(
                 lambda d: d['message_id'] == message['order_message_id'],
                 OMS.order_list))[0]
-            # change template_id from 99999 to 33333 to mark as CANCELLED
+
+            # change to 33333 to mark order as CANCELLED
             cancelled_order['template_id'] = 33333
+
+        # -- modification
+
+        elif message['template_id'] == 44444:
+
+            # identify order
+            modified_order = list(filter(
+                lambda d: d['message_id'] == message['order_message_id'],
+                OMS.order_list))[0]
+
+            # add mod flag (for ex-post analysis)
+            modified_order['modification_flag'] = 1
+
+            # change price
+            if 'new_price' in message.keys():
+
+                modified_order['old_price'] = modified_order['price']
+                modified_order['price'] = message['new_price']
+
+            # change quantity
+            if 'new_quantity' in message.keys():
+
+                old_quantity = modified_order['quantity']
+                new_quantity = message['new_quantity']
+                modified_order['old_qt'] = old_quantity
+                modified_order['quantity'] = new_quantity
+
+            # change timestamp
+            # -> if limit is changed or qt is increased, priority time changes
+            # -> if just qt is decreased, priority time is
+            if "new_price" in message.keys() or new_quantity > old_quantity:
+
+                # store old timestamp
+                modified_order['old_timestamp'] = modified_order[
+                    'timestamp']
+
+                # update priority timestamp
+                modified_order['timestamp'] = message['timestamp']
+
+            # check if matching is possible
+                self._simulate_agent_order_matching()
+
         else:
+
             print('(WARNING) agent message template_id not valid.')
 
     def _simulate_agent_order_matching(self):
@@ -1079,7 +1137,7 @@ class Market(Reconstruction):
         # enough to match any agent order, this side is also not considered
         # since no matching can take place (book is not crossed).
         else:
-            print('(WARNING) Relevant State has only one side - no matching')
+            print('(WARNING) LOB not crossed - no matching possible')
 
     def __str__(self):
         """

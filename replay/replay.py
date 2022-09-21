@@ -46,7 +46,9 @@ class Replay:
                  shuffle:bool=True,
                  random_identifier:bool=False,
                  exclude_high_activity_time:bool=False,
-                 mode:str="random_episodes"):
+                 mode:str="random_episodes",
+                 *args,
+                 **kwargs):
 
         # -- static attributes
         self.identifier_list = identifier_list

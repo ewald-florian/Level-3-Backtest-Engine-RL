@@ -12,8 +12,10 @@ Interface to submit and cancel orders.
 # ---------------------------------------------------------------------------
 
 # TODO: implement assertions (ca. 20 min.)
+# TODO: order modify (20 min)
 from market.market import Market
 # from agent.agent_order import OrderManagementSystem as OMS
+
 
 class MarketInterface:
 
@@ -64,7 +66,7 @@ class MarketInterface:
         self.tc_factor = tc_factor
         self.exposure_limit = exposure_limit
 
-    # 1.) without order book impact (simulation) . . . . . . . . . . . . . . . . .
+    # 1.) without order book impact (simulation) . . . . . . . . . . . . . .
 
     @staticmethod
     def submit_order(side: int, quantity: int, limit: int = None):
@@ -116,11 +118,44 @@ class MarketInterface:
         Market.instances["ID"].update_simulation_with_agent_message(message)
 
     @staticmethod
-    def modify_order(self):
+    def modify_order(order_message_id,
+                     new_price=None,
+                     new_quantity=None):
         """
-        ...
+        template_id = 444444
+        -----
+        Zertifizierter Börsenhändler Kassamarkt Hnadbuch (Seit 168):
+
+        'Eine Orderänderung führt immer dann zu einer neuen Zeitpriorität der
+        Order, wenn entweder das Limit geändert wird oder die Orderänderung
+        einen nachteiligen Einfluss auf die Priorität der Ausführung anderer
+        Orders im Orderbuch hätte (z. B. Erhöhung des Volumens einer
+        bestehenden Order). Sollte hingegen das Volumen einer bestehenden Order
+        verkleinert werden, so bleibt die ursprüngliche Zeitpriorität
+        erhalten.' #todo: Stelle im offiziellen Release raussuchen.
+        -----
+        :param order_message_id
+            int, message_id of order to modify
+        :param new_price
+            int, new price
+        :param new_quantity
+            int, new quantity
         """
-        raise NotImplementedError("order modify not implemented yet")
+
+        message = dict()
+        # TemplateID 66666 for cancellation
+        message['template_id'] = 44444
+        # message number of the order to be cancelled
+        message['order_message_id'] = order_message_id
+
+        if new_price:
+            message['new_price'] = new_price
+
+        if new_quantity:
+            message['new_quantity'] = new_quantity
+
+        # send modification message to Market
+        Market.instances["ID"].update_simulation_with_agent_message(message)
 
     # 2.) with order book impact . . . . . . . . . . . . . . . . . . . . . .
 
@@ -170,11 +205,36 @@ class MarketInterface:
         Market.instances["ID"].update_with_agent_message_impact(message)
 
     @staticmethod
-    def modify_order_impact(self):
+    def modify_order_impact(order_message_id: int):
         """
-        ...
+        Modilfy impact order.
+
+        :param order_message_id
+            int, message_id of order to modify
+        :param new_price
+            int, new price
+        :param new_quantity
+            int, new quantity
         """
-        raise NotImplementedError("order modify not implemented yet")
+
+        message = dict()
+        # TemplateID 66666 for cancellation
+        message['template_id'] = 44444
+        # message number of the order to be cancelled
+        message['order_message_id'] = order_message_id
+
+        if new_price:
+            message['new_price'] = new_price
+
+        if new_quantity:
+            message['new_quantity'] = new_quantity
+
+        # TODO: implement processing of impact message
+        # send modification message to Market
+        Market.instances["ID"].update_with_agent_message_impact(message)
 
     def reset(self):
-        pass
+        """
+        Reset class
+        """
+        self.__init__()

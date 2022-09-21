@@ -215,7 +215,7 @@ class Episode:
         return next_message_packet
 
     # Note: Not Tested!
-    def __iter__(self) -> Generator[None, list, None]:
+    def __iter__(self):
         """
         Create episode as iterable generator which can be
         used to step the backtest internally from replay.
