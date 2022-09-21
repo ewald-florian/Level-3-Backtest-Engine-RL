@@ -25,6 +25,9 @@ class Environment(gym.Env):
 
     def __init__(self,
                  env_config: dict):
+        """
+        Set observation-space and action-space. Instantiate Replay.
+        """
 
         # TODO: obtain spaces from env_config
         self.action_space = spaces.Discrete(3)
@@ -85,3 +88,20 @@ class Environment(gym.Env):
 
         # -- reset market interface
         self.market_interface.reset()
+
+    def render(self):
+        """
+        Render the environment.
+        """
+        assert mode in ["human"], "Invalid mode"
+        # TODO
+        if mode == "human":
+            pass
+
+
+    def seed(self):
+        """
+        Set random seed for the environment.
+        """
+        pass
+
