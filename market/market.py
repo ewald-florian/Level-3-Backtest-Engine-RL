@@ -21,7 +21,7 @@ from market.market_trade import MarketTrade
 from agent.agent_order import OrderManagementSystem as OMS
 
 
-# TODO: / Debug match_n() method (impact)
+# TODO: test match_n() method (for impact)
 # TODO: If I remove liquidity from simulation state, I also have to do this
 #  in the observation space (consistency)
 
@@ -81,7 +81,7 @@ class Market(Reconstruction):
     # properties . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
     @property
-    def state_l3(self):
+    def state_l3(self) -> dict:
         """
         Level 3 limit order book representation (internal _state). state_l3 has
         a similar structure than the internal state:
@@ -142,7 +142,7 @@ class Market(Reconstruction):
         return state_l3
 
     @property
-    def state_l2(self):
+    def state_l2(self) -> dict:
         """
         Level 2 limit order book representation with aggregated quantities per
         price level, structure. If self.l2_level is defined, the output will
@@ -180,7 +180,8 @@ class Market(Reconstruction):
         return state_l2
 
     @property
-    def state_l1(self):  # transform l3 into l1
+    def state_l1(self) -> dict:
+
         """
         Level 1 limit order book representation. Structure:
 
@@ -215,7 +216,7 @@ class Market(Reconstruction):
         return state_l1
 
     @property
-    def orderpool(self):
+    def orderpool(self) -> list:
         """
         List with all order-messages which are stored in the internal state.
         :return: orderpool
@@ -229,7 +230,7 @@ class Market(Reconstruction):
         return orderpool
 
     @property
-    def ticksize(self):
+    def ticksize(self) -> int:
         """
         Ticksize.
         :return: ticksize
@@ -241,7 +242,7 @@ class Market(Reconstruction):
 
     #TODO: remove unnecessary properties but check if I used them somewhere! (e.g. I think I used best_ask somewhere)
     @property
-    def best_bid(self):
+    def best_bid(self) -> int:
         """
         Best bid price of current state.
         :return: best bid
@@ -250,7 +251,7 @@ class Market(Reconstruction):
         return max(self._state[1].keys())
 
     @property
-    def best_ask(self):
+    def best_ask(self) -> int:
         """
         Best ask price of current state.
         :return: best ask
@@ -259,7 +260,7 @@ class Market(Reconstruction):
         return min(self._state[2].keys())
 
     @property
-    def midpoint(self):  # relevant only in exchange-based setting
+    def midpoint(self) -> int:  # relevant only in exchange-based setting
         """
         Current index ('msg_seq_num'). Relevant only in exchange-based setting.
         :return midpoint
@@ -267,12 +268,12 @@ class Market(Reconstruction):
         """
         best_bid = max(self._state[1].keys())
         best_ask = min(self._state[2].keys())
-        midpoint = ((best_bid + best_ask) / 2)
+        midpoint = int((best_bid + best_ask) / 2)
 
         return midpoint
 
     @property
-    def spread(self):
+    def spread(self) -> int:
         """
         Spread of current state.
         :return: spread
@@ -285,17 +286,18 @@ class Market(Reconstruction):
         return spread
 
     @property
-    def relative_spread(self):
+    def relative_spread(self) -> float:
         """
         Relative Spread of current state.
         :return: relative spread
+            float, relative spread of current order book
         """
         spread = self.spread()
         midpoint = self.midpoint()
         return spread / midpoint
 
     @property
-    def index(self):
+    def index(self) -> int:
         """
         Current index ('msg_seq_num'). Relevant only in
         exchange-based setting.
@@ -304,7 +306,7 @@ class Market(Reconstruction):
             return self._state_index
 
     @property
-    def timestamp(self):  # relevant only in agent-based setting
+    def timestamp(self) -> int:  # relevant only in agent-based setting
         """
         Current timestamp ('timestamp') in UTCT. Relevant only
         in agent-based setting.
@@ -354,10 +356,14 @@ class Market(Reconstruction):
     #  agent order simulation WITH MARKET IMPACT . . . . . . . . . . . . . . .
 
     # TODO: Überarbeiten damit es mit MarketInterface kompatibel ist!
-    def update_with_agent_message_impact(self, message):
+    def update_with_agent_message_impact(self, message) -> list:
         """
         This method is the entry point of MarketInterface to submit and cancel
         agent orders with impact.
+
+        Note: "Market Impact" here refers to its  broader definition of
+        affecting the market by changing the internal market state. It does
+        not necessarily mean an immediate price impact on the midpoint.
 
         Updates are based on agent-based message, a simple decision to either
         submit (99999) or cancel (66666) a message that will potentially lead
@@ -383,6 +389,8 @@ class Market(Reconstruction):
         # update internal limit order book state ...
 
         message['timestamp'] = self.timestamp + self.agent_latency
+        # add impact flag to differentiate from simulated  orders
+        message['impact_flag'] = 1
 
         # TODO: add key to indicate that indicate
         # order submit
@@ -408,6 +416,11 @@ class Market(Reconstruction):
         :param message
             dict, agent submission message
         """
+        # TODO:
+        #  give order the correct timestamp with latency
+        #  give order extra key to mark as impact order
+        #  add to OMS
+        #  add to internal state
 
         # ensure that 'msg_seq_num' field exists for compatibility reasons
         message["msg_seq_num"] = None
@@ -433,6 +446,12 @@ class Market(Reconstruction):
         :param message
             dict, agent cancellation message
         """
+        # TODO:
+        #  find order by message_id
+        #  mark order as cancelled (33333)
+        #  delete order from internal state (can also be identified by msg_id)
+
+
         # extract message information
         side = message["side"]
         price = message["price"]
@@ -526,7 +545,6 @@ class Market(Reconstruction):
 
         :param message:
             dict, agent message
-        :return:
         """
         # set current statetime plus latency as agent message timestamp
 
@@ -576,10 +594,45 @@ class Market(Reconstruction):
         if trade_list:
             self._store_agent_trades(trade_list)
 
-    def _build_simulation_state(self):
+    def _build_simulation_state(self) -> dict:
         """
-        Build the simulation state.
-        :return:
+        Build the simulation state which is used to match simulated agent
+        orders against limit orders in the internal market state.
+
+        The simulation state consists of two elements. First, partial copy of
+        the internal state which only encompasses price levels which are
+        relevant for the simulated matching. Second, all active agent orders
+        (99999) with a valid timestamp (smaller or equal to market timestamp).
+        Meaning, Agent orders which are submitted but did not yet overcome
+        their latency are excluded.
+
+        The structure of the simulation_state equals the structure of the
+        internal state:
+
+            simulation_state =
+            {1:{bid_price1 : [bid_order1,...], price2: [bid_order1,...]},
+            {2:{ask_price1 : [ask_order1,...], price2: [ask_order1,...]}}
+
+        Hence, match(state_to_match) can be used to match both the internal
+        state or the simulation state.
+
+        The relevant price levels of the LOB contain the following. First, For
+        each agent order, the state must contain all contrary orders which can
+        potentially be matched. Hence for an agent-sell order all lob-buy
+        orders which are larger than or equal to its limit. For an agent buy
+        order all LOB sell orders which are smaller than or equal to ist limit.
+        Second, for each agent order, the simulation_state must contain the
+        LOB orders of the same side which are equally or more aggressively
+        priced to compare the priority. Therefore, for each agent-buy order,
+        each LOB buy order with equal or larger limit. For each agent sell
+        order each LOB sell order with equal of lower limit.
+
+        The advantage of this design for the simulation state is that it only
+        contains the necessary data and that it does not require any form of
+        deepcopy of the internal state which makes it very efficient.
+
+        :return simulation_state
+            dict, simulation_state for simulated order matching.
         """
         simulation_state = {}
         # check if active (99999) agent messages with active timestamp exist
@@ -655,12 +708,17 @@ class Market(Reconstruction):
 
             # TODO: Remove liquidity used by the agent earlier in this episode (make as optional setting) BEFORE agent masseges are appendet!
             # TODO: If I remove liquidity, I also have to do this in the observation space (to have consistency)!!!
+
             # -- add agent messages to simulation_state:
 
-            # Note1: messages can just be appended, they will be executed according to their priority time
-            # Note2: I copy the messages instead of giving a reference to the original message, this means that
-            # hence, massages in the OMS will not directly be affected by matching.
-            # Note3: account for LATENCY by selecting only messages with valid timestamp
+            # Note1: messages can just be appended, they will be executed
+            # according to their priority time
+            # Note2: I copy the messages instead of giving a reference to the
+            # original message, this means that massages in the OMS will not
+            # directly be affected by matching.Instead, matched agent orders
+            # will be processed separately in process_agent_order.
+            # Note3: account for LATENCY by selecting only messages with valid
+            # timestamp
 
             for message in OMS.order_list:
 
@@ -897,7 +955,7 @@ class Market(Reconstruction):
 
     # debugged (15.09.22), further testing required (impact orders)
     @staticmethod
-    def match_new(state_to_match):
+    def match_new(state_to_match) -> list:
         """
         Idea: use the same matching method for simulated matching without
         market impact and "real" matching with market impact by passing the
@@ -1012,8 +1070,23 @@ class Market(Reconstruction):
 
             return trade_list
 
+        # Note: This typically happens when the simulation state contains only
+        # agent orders and the agent orders are all on the same side. If the
+        # best LOB order on the same side is less aggressive than the least
+        # aggressive agent order, this LOB side is not considered since no
+        # comparison of priorities is necessary. If the most aggressive LOB
+        # order on the contrary side of the agent orders is not aggressive
+        # enough to match any agent order, this side is also not considered
+        # since no matching can take place (book is not crossed).
         else:
             print('(WARNING) Relevant State has only one side - no matching')
+
+    def __str__(self):
+        """
+        String Representation.
+        """
+        # string representation
+        pass
 
     @classmethod
     def reset_instances(cls):
