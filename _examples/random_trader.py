@@ -25,7 +25,7 @@ class RandomTrader:
     def submit_random_orders(self):
 
         lucky_number = np.random.randint(0, self.range)
-        #print(lucky_number)
+        print('Market:', type(Market.instances['ID'].timestamp_datetime))
 
         # buy order
         if lucky_number == 42:
@@ -45,6 +45,8 @@ class RandomTrader:
             self.mi.submit_order(side=2,
                             limit=best_bid,
                             quantity=lucky_number * 1e4)
+
+
 
         # cancellation
         if lucky_number == 69:
@@ -94,6 +96,7 @@ if __name__ == '__main__':
         if i%10==0:
             # log market
             print('Market:',Market.instances['ID'].state_l1)
+            print('Market:', Market.instances['ID'].timestamp_datetime)
 
 
 

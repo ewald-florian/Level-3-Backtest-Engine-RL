@@ -517,7 +517,7 @@ class AgentMetrics:
         return trading_volume * self.tc_factor
 
     # TODO: adjust str
-    def __str__(self):
+    def __str__(self, time_presentation=None):
         """
         String representation.
         """
@@ -525,15 +525,35 @@ class AgentMetrics:
         timestamp = Market.instances['ID'].timestamp
         dt_timestamp = Market.instances['ID'].timestamp_datetime
 
-        # string representation
-        string = f"""
-        ----------------------------
-        unixtime:      {timestamp}
-        datetime:       {dt_timestamp}
-        ---
-        exposure:       {self.exposure}
-        pnl_realized:   {self.pnl_realized}
-        pnl_unrealized: {self.pnl_unrealized}
-        ----------------------------
-        """
+        if not time_presentation:
+
+            # string representation
+            string = f"""
+            ----------------------------
+            unixtime:      {timestamp}
+            datetime:       {dt_timestamp}
+            ---
+            exposure:       {self.exposure}
+            pnl_realized:   {self.pnl_realized}
+            pnl_unrealized: {self.pnl_unrealized}
+            ----------------------------
+            """
+
+        else:
+            if time_presentation == 'unix':
+                time = timestamp
+            elif time_presentation == 'datetime':
+                time = dt_timestamp
+
+            # string representation
+            string = f"""
+            ----------------------------
+            time:      {time}
+            ---
+            exposure:       {self.exposure}
+            pnl_realized:   {self.pnl_realized}
+            pnl_unrealized: {self.pnl_unrealized}
+            ----------------------------
+            """
+
         return textwrap.dedent(string)

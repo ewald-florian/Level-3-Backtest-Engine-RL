@@ -47,6 +47,13 @@ class MarketInterface:
         - Note, that the orderbook can not recover in a realistic way from
         excessive agent impact executions.
 
+        Note: "Market Impact" here refers to its  broader definition of
+        affecting the market by changing the internal market state. It does
+        not necessarily mean an immediate price impact on the midpoint.
+
+        Typically, a backtest would only use either simulated ore impact agent
+        orders. But technically, it is possible to mix them.
+
         :param tc_factor
             float, transaction costs in bps (100th of %)
         :param exposure_limit

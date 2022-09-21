@@ -25,7 +25,7 @@ class SnapshotParser:
 
     def parse(f):        
         def wrapper(self,
-                    snapshot:dict):
+                    snapshot:dict) -> dict:
 
             # ...
             snapshot_output = {}
@@ -67,7 +67,7 @@ class MessagePacketParser:
 
     def parse(f):
         def wrapper(self,
-                    message_packet: list):
+                    message_packet: list) -> list:
 
 
             message_packet_output = []        
@@ -146,7 +146,7 @@ class MessagePacketParser:
     # template options . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
     @staticmethod
-    def _order_add(message): # 13100
+    def _order_add(message) -> dict: # 13100
 
         return { 
             "template_id":      13100,
@@ -159,7 +159,7 @@ class MessagePacketParser:
         }
 
     @staticmethod
-    def _order_modify(message): # 13101
+    def _order_modify(message) -> dict: # 13101
         return { 
             "template_id":      13101,
             "msg_seq_num":      int(message["MessageHeader"]["MsgSeqNum"]),
@@ -176,7 +176,7 @@ class MessagePacketParser:
         }
 
     @staticmethod
-    def _order_delete(message): # 13102
+    def _order_delete(message) -> dict: # 13102
         return { 
             "template_id":      13102,
             "msg_seq_num":      int(message["MessageHeader"]["MsgSeqNum"]),
@@ -188,14 +188,14 @@ class MessagePacketParser:
         }
 
     @staticmethod
-    def _order_mass_delete(message): # 13103
+    def _order_mass_delete(message) -> dict: # 13103
         return { 
             "template_id":      13103,
             "msg_seq_num":      int(message["MessageHeader"]["MsgSeqNum"]),
         }
 
     @staticmethod
-    def _execution_full(message): # 13104
+    def _execution_full(message) -> dict: # 13104
         return { 
             "template_id":      13104,
             "msg_seq_num":      int(message["MessageHeader"]["MsgSeqNum"]),
@@ -206,7 +206,7 @@ class MessagePacketParser:
         }
 
     @staticmethod
-    def _execution_partial(message): # 13105
+    def _execution_partial(message) -> dict: # 13105
         return { 
             "template_id":      13105,
             "msg_seq_num":      int(message["MessageHeader"]["MsgSeqNum"]),
@@ -217,7 +217,7 @@ class MessagePacketParser:
         }
 
     @staticmethod
-    def _order_modify_same_priority(message): # 13106
+    def _order_modify_same_priority(message) -> dict: # 13106
         return { 
             "template_id":      13106,
             "msg_seq_num":      int(message["MessageHeader"]["MsgSeqNum"]),
@@ -232,7 +232,7 @@ class MessagePacketParser:
         }
 
     @staticmethod
-    def _execution_summary(message, verbose=False): # 13202
+    def _execution_summary(message, verbose=False) -> dict: # 13202
         
         if message["AggressorTime"]:
                

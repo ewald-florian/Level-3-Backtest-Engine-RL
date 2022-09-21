@@ -197,7 +197,7 @@ class Episode:
         self.message_packet_list = json.load(message_list_file)[1:]
 
 
-    def __next__(self):
+    def __next__(self) -> list:
         '''
         Returns next message_packet and counts episode steps.
         __next__ can be called to step the episode externally,
@@ -215,7 +215,7 @@ class Episode:
         return next_message_packet
 
     # Note: Not Tested!
-    def __iter__(self):
+    def __iter__(self) -> Generator[None, list, None]:
         """
         Create episode as iterable generator which can be
         used to step the backtest internally from replay.
@@ -226,7 +226,7 @@ class Episode:
 
             yield next_message_packet
 
-    def __len__(self):
+    def __len__(self) -> int:
         '''
         Returns length of the current episode as number of message packets,
         relevant for training loops over episodes and the done-flag of the RL

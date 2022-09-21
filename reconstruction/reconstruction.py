@@ -138,7 +138,7 @@ class Reconstruction:
             pd.to_datetime(self._state_timestamp, unit='ns')))
 
     @SnapshotParser.parse
-    def validate_state(self, snapshot):
+    def validate_state(self, snapshot) -> bool:
         """
         Compare current _state to the specified snapshot in order to validate
         the reconstruction.
@@ -188,7 +188,7 @@ class Reconstruction:
     # exchange-based post-match update . . . . . . . . . . . . . . . . . . . .
 
     @MessagePacketParser.parse
-    def update_with_exchange_message(self, message_packet):
+    def update_with_exchange_message(self, message_packet) -> list:
         """
         Updates are based on exchange-based message packet, a set of messages
         that describe in detail each change to be made to the limit order book
@@ -207,8 +207,6 @@ class Reconstruction:
         :param message_packet:
             list, contains single messages as dicts, message types can be
             inferred from TemplateIDs
-        :return trade_list:
-            list, contains dict with execution messages
         """
 
         # assert that self._state exists
@@ -439,8 +437,6 @@ class Reconstruction:
         and delete respective order from state.
         :param message:
             dict, message
-        :return: trade
-            dict, trade information
         """
         # delete order if order is fully executed
         self._order_delete(message)
@@ -459,8 +455,6 @@ class Reconstruction:
 
         :param message:
             dict, message
-        :return: trade
-            dict, trade information
         """
         # extract message information
         side = message["side"]
