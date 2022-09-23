@@ -139,7 +139,7 @@ if __name__ == '__main__':
 
     for i in range(210): #replay.episode.__len__()):
 
-        replay.step()
+        replay.normal_step()
         moditrader.apply_strategy()
 
         if i%100==0:

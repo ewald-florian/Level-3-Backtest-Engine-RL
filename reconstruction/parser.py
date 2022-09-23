@@ -76,7 +76,7 @@ class MessagePacketParser:
             for message in message_packet:
 
                 try:
-
+                    # TODO: use match
                     # identify template_id
                     template_id = message["MessageHeader"]["TemplateID"]
                     

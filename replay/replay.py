@@ -1,6 +1,6 @@
 #!/usr/bin/env python3  Line 1
 # -*- coding: utf-8 -*- Line 2
-#----------------------------------------------------------------------------
+# ----------------------------------------------------------------------------
 # Created By  : florian
 # Created Date: 05/Sept/2022
 # version ='1.0'
@@ -11,42 +11,45 @@
 import random
 import datetime
 
-#!pip install pandas-market-calendars
+# !pip install pandas-market-calendars
 import pandas_market_calendars as mcal
 import pandas as pd
 
 import logging
+
 logging.getLogger().setLevel(logging.INFO)
 
 from replay.episode import Episode
 from market.market import Market
-from market.context import Context
+from context.context import Context
 from agent.agent_metrics import AgentMetrics
+
+# -- rl agents
+from reinforcement_learning.rl_agents.rl_agent import RlAgent
 
 
 # TODO: clean implementation after all classes are finished
 # TODO: will also be responsible for passing input arguments to all the
-# classes (i.e. latency to Market, tc_factor to AgentMetrics etc.), hence
-# these methods cannot all be static since these input argements will be
-# stored in replay.self...
-#TODO: modes to run episode as list of dates or for a continuing time period
+#  classes (i.e. latency to Market, tc_factor to AgentMetrics etc.), hence
+#  these methods cannot all be static since these input argements will be
+#  stored in replay.self...
+# TODO: modes to run episode as list of dates or for a continuing time period
+
 
 class Replay:
 
-    # DE0005190003.XETR_20220201T080007_20220201T120000
-
     def __init__(self,
-                 identifier_list:list=None,
-                 identifier: str="BMW",
-                 start_date:str="2022-02-01",
-                 end_date:str="2022-02-02",
-                 episode_length:str = "10m",
-                 frequency:str="1m",
-                 seed:int=None,
-                 shuffle:bool=True,
-                 random_identifier:bool=False,
-                 exclude_high_activity_time:bool=False,
-                 mode:str="random_episodes",
+                 identifier_list: list = None,
+                 identifier: str = "BMW",
+                 start_date: str = "2022-02-01",
+                 end_date: str = "2022-02-02",
+                 episode_length: str = "10m",
+                 frequency: str = "1m",
+                 seed: int = None,
+                 shuffle: bool = True,
+                 random_identifier: bool = False,
+                 exclude_high_activity_time: bool = False,
+                 mode: str = "random_episodes",
                  *args,
                  **kwargs):
 
@@ -74,13 +77,105 @@ class Replay:
         # -- generate new episode_start_list
         self._generate_episode_start_list()
 
+        # -- rl agent
+        self.rl_agent = RlAgent()
+
+    def rl_step(self, action=None):
+        """
+        RL-step method, to be called in the environment.step() method.
+        ---------------------------------------------------------------
+        Central Method to step the backtesting engine externally based
+        on the episode __next__() method. Can be called from an external
+        iterative training loop, for example in the "step" method of an
+        RL-environment class in Open-AI Gym convention.
+
+        :param action
+            ..., action given by the policy
+        :return observation
+            np.array(), current observation of the environment
+        :return reward
+            float, latest reward given to the agent
+        :return done
+            bool, True if episode is done
+        :return info
+            dict, additional information on the environment, can be empty
+        """
+
+        # -- market step
+        self._market_step()
+
+        # -- save context
+        state_l3 = Market.instances['ID'].state_l3
+        Context(state_l3)
+
+        # -- rl-agent step
+        #observation = []
+        #reward = 0
+        done = self.done
+        info = {}
+        ################## DEVELOPMENT AREA ##################################
+        # rl_agents can just be changed to test different set-ups
+        # -------------------------------------------------------------------
+
+        # note: all details need to be implemented in rlagent class
+        observation, reward = self.rl_agent.step(action)
+
+        #######################################################################
+
+        # -- update step_counter
+        self.step_counter += 1
+
+        # -- return
+        return observation, reward, done, info
+
+    # non-RL step . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+
+    def normal_step(self):  # for non-RL backtesting
+        """
+        External Stepping:
+        -----------------
+        Central Method to step the backtesting engine externally based
+        on the episode __next__() method.
+
+        To be used for standard backtest applications without reinforcement
+        learning.
+        """
+
+        # -- market step
+        self._market_step()
+        # -- step_counter
+        self.step_counter += 1
+
+        # store state to context
+        state_l3 = Market.instances['ID'].state_l3
+        Context(state_l3)
+
+    def _market_step(self):
+        """
+        Helper method to conduct the crucial market update operations:
+            1. check if episode is done
+            2. Receive new message packet from episode.__next__
+            3. Pass new message packet to Market
+        """
+
+        # -- check if episode is done
+        if self.step_counter >= (self.episode.__len__() - 1):
+            self.done = True
+
+        # -- update market with new message packet from episode
+        message_packet = self.episode.__next__()
+
+        # -- pass nex message packet to Market
+        Market.instances['ID'].update_simulation_with_exchange_message(
+            message_packet)
+
     # note: method is tested and debugged (20-09-22)
     def _generate_episode_start_list(self):
         """
         Generates a new episode start list which is a list of timestamps that
         can potentially be used as episode starting points.
 
-        Epsiode_start_list only contains timestamps which are in XETRA
+        Episode_start_list only contains timestamps which are in XETRA
         trading hours and account for the episode length such that the time
         between episode_start and mid- or close auction is always adequate to
         run an entire episode.
@@ -127,13 +222,12 @@ class Replay:
 
         # filter for mid auction buffer
         self.episode_start_list = list(
-            filter(lambda ts: (ts.time() > mid_auction.time() or
-                               ts.time() < mid_auction_buffer.time()),
+            filter(lambda ts: (ts.time() >= mid_auction.time() or
+                               ts.time() <= mid_auction_buffer.time()),
                    self.episode_start_list))
 
         # -- exclude high trading activity time (optional)
         if self.exclude_high_activity_time:
-
             # high trading activity time in the beginning of the trading day
             high_activity_open = '01/01/10 08:15:00'  # arbitrary date
             # account for market close
@@ -148,9 +242,10 @@ class Replay:
 
             # filter
             self.episode_start_list = list(
-                filter(lambda ts: (ts.time() > high_activity_open.time() and
-                                   ts.time() < high_activity_close.time()),
-                                    self.episode_start_list))
+                filter(lambda ts: (
+                        high_activity_open.time() <= ts.time()
+                        <= high_activity_close.time()),
+                       self.episode_start_list))
 
         # -- shuffle episode (optional
         if self.seed:
@@ -204,7 +299,7 @@ class Replay:
                 self.episode_index += 1
 
                 print("(INFO) new episode was build in attempt: {}".format(
-                    attempt+1))
+                    attempt + 1))
 
             # return if episode could not be generated
             except:
@@ -221,48 +316,6 @@ class Replay:
 
             break
 
-    # externally stepped replay . . . . . . . . . . . . . . . . . . . . . . .
-
-    def _market_step(self):
-        """
-        Helper method to conduct the crucial market update operations:
-        1. check if episode is done
-        2. Receive new message packet from episode.__next__
-        3. Pass new message packet to Market
-        """
-
-        # -- check if episode is done
-        if self.episode._step >= (self.episode.__len__() - 1):
-            self.done = True
-
-        # -- update market with new message packet from episode
-        message_packet = self.episode.__next__()
-
-        # -- pass nex message packet to Market
-        Market.instances['ID'].update_simulation_with_exchange_message(
-            message_packet)
-
-    def step(self):
-        """
-        External Stepping:
-        -----------------
-        Central Method to step the backtesting engine externally based
-        on the episode __next__() method. Can be called from an external
-        iterative training loop, for example in the "step" method of an
-        RL-environment class in Open-AI Gym convention.
-        """
-
-        # market step
-        self._market_step()
-################## DEVELOPMENT AREA ##########################################
-        state_l3 = Market.instances['ID'].state_l3
-
-
-
-
-##############################################################################
-        self.step_counter = self.step_counter + 1
-
     # internally stepped replay . . . . . . . . . . . . . . . . . . . . . . .
 
     def run_backtest(self):
@@ -274,6 +327,7 @@ class Replay:
         """
         pass
 
+    # TODO: implement the reset function clean
     # reset . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
     """
     Note: Replay is used as the entry point of the RL environment class
@@ -319,17 +373,22 @@ class Replay:
 
         self.build_new_episode()
 
-    # TODO: call all reset helper methods!
+    # TODO: call all reset helper methods! return first observation
     def reset(self):
-        # episode has to be build before _reset_market
-        # to provide new snapshot_start to Market
-        self._reset_replay()
 
-        self._reset_market(self.episode.snapshot_start)
+        # -- build n
+        self._reset_replay()
 
         # -- market state as independent class attribute
         self._reset_market(snapshot_start=self.episode.snapshot_start)
 
+        # TODO: um die erste observation zu kriegen muss ich direkt
+        # Context(l3) callen, sonst ist context leer...
+        # l3 -> Context -> MarketFeatures -> ObservationSpace
         self._reset_context()
 
-
+    def normal_reset(self):
+        """
+        Reset for non-RL applications.
+        """
+        pass

@@ -9,7 +9,7 @@
 Implementation of the reinforcement environment.
 """
 # ---------------------------------------------------------------------------
-
+import numpy as np
 import gym
 from gym import spaces
 
@@ -24,23 +24,24 @@ class Environment(gym.Env):
     """
 
     def __init__(self,
-                 env_config: dict):
+                 env_config: dict = None):
         """
         Set observation-space and action-space. Instantiate Replay.
         """
 
         # TODO: obtain spaces from env_config
-        self.action_space = spaces.Discrete(3)
-        self.observation_space = spaces.Box(np.zeros(52),
-                                            np.array([100_000_000] * 52))
+        self.action_space_arg = 3
+        self.observation_space_min = np.zeros(52)
+        self.observation_space_max = np.array([100_000_000] * 52)
 
-        # Entry Points to Level-3 Backtest Engine
-        # -- replay to step the environment
+        self.action_space = spaces.Discrete(self.action_space_arg)
+        self.observation_space = spaces.Box(self.observation_space_min,
+                                            self.observation_space_max)
+
+        # Entry Points to Level-3 Backtest Engine:
+
+        # -- instantiate replay to step the environment
         self.replay = Replay()
-        # -- market_interface to execute actions
-        # TODO: build ActionSpace as intermediary to translate policy actions
-        #  into submissions/cancellations
-        self.market_interface = MarketInterface()
 
     def step(self, action):
         """
@@ -63,19 +64,13 @@ class Environment(gym.Env):
         # assert if action is valid
         assert self.action_space.contains(action), "Invalid Action"
 
-        # -- 1.) Take action
+        # -- Take step and receive observation, reward, info
 
-        self.market_interface ...
+        observation, reward, done, info = self.replay.rl_step(action)
 
-        # -- 2.) Take step and receive observation, reward, info
-
-        observation, reward, done, info = self.replay ...
-
-        # -- 3.) Return
+        # -- Return
 
         return observation, reward, done, info
-
-
 
     def reset(self):
         """
@@ -86,9 +81,6 @@ class Environment(gym.Env):
         # -- reset replay
         self.replay.reset()
 
-        # -- reset market interface
-        self.market_interface.reset()
-
     def render(self):
         """
         Render the environment.
@@ -97,7 +89,6 @@ class Environment(gym.Env):
         # TODO
         if mode == "human":
             pass
-
 
     def seed(self):
         """

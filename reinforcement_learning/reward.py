@@ -11,7 +11,8 @@ Reward class for RL Environment.
 # ---------------------------------------------------------------------------
 from agent.agent_metrics import AgentMetrics
 #TODO: just implement each possible reward function as a new method such that
-# they can be freely choosen anc compared
+# they can be freely selected by different agents and compared
+
 
 class Reward:
 
@@ -19,6 +20,7 @@ class Reward:
     reward = None
 
     def __init__(self):
+
 
         self.agent_metrics = AgentMetrics()
         self.last_pnl = 0
@@ -35,13 +37,14 @@ class Reward:
 
     # TODO: testing
     @property
-    def pnl_difference(self):
+    def pnl_marginal(self):
         # basically, pnl of the most recent roundtrip?
         # new_pnl_real - old_pnl_real
         # Note only works when called every pnl update such that
         # self.last_pnl is updated
-        pnl_difference = self.pnl_realized() - self.last_pnl
-        self.last_pnl = self.pnl_realized()
+        pnl_difference = self.pnl_realized - self.last_pnl
+        # update last pnl
+        self.last_pnl = self.pnl_realized
         return pnl_difference
 
     def vwap_score(self):
@@ -66,4 +69,9 @@ class Reward:
         pass
 
     def reset(self):
-        pass
+        """
+        Reset reward class.
+        """
+        self.__class__.reward = None
+        self.last_pnl = 0
+        self.agent_metrics = AgentMetrics()

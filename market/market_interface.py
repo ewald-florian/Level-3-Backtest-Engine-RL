@@ -12,8 +12,11 @@ Interface to submit and cancel orders.
 # ---------------------------------------------------------------------------
 
 # TODO: implement assertions (ca. 20 min.)
-# TODO: order modify (20 min)
+
+import numpy as np
+
 from market.market import Market
+from agent.agent_order import OrderManagementSystem as OMS
 # from agent.agent_order import OrderManagementSystem as OMS
 
 
@@ -66,10 +69,12 @@ class MarketInterface:
         self.tc_factor = tc_factor
         self.exposure_limit = exposure_limit
 
+        #TODO: get ticksize
+        #self.ticksize = Market.instances['ID'].ticksize
+
     # 1.) without order book impact (simulation) . . . . . . . . . . . . . .
 
-    @staticmethod
-    def submit_order(side: int, quantity: int, limit: int = None):
+    def submit_order(self, side: int, quantity: int, limit: int = None):
         """
         For simulated orders which do not affect the market state.
         Send submission order.
@@ -86,6 +91,8 @@ class MarketInterface:
         # long/short (depends on current position if is allowed to sell,
         # e.g. long only can only sell if position_value > 0 and > estimated
         # sell volume
+
+        #self._assert_price_permitted(limit)
 
         message = dict()
         # TemplateID 99999 for submission
@@ -117,8 +124,8 @@ class MarketInterface:
         # send cancellation message to Market
         Market.instances["ID"].update_simulation_with_agent_message(message)
 
-    @staticmethod
-    def modify_order(order_message_id,
+    def modify_order(self,
+                     order_message_id,
                      new_price=None,
                      new_quantity=None):
         """
@@ -141,6 +148,8 @@ class MarketInterface:
         :param new_quantity
             int, new quantity
         """
+        if new_price:
+            self._assert_price_permitted(new_price)
 
         message = dict()
         # TemplateID 66666 for cancellation
@@ -159,9 +168,11 @@ class MarketInterface:
 
     # 2.) with order book impact . . . . . . . . . . . . . . . . . . . . . .
 
-    @staticmethod
-    def submit_order_impact(side: int, quantity: int,
-                            timestamp: int, limit: int = None):
+    def submit_order_impact(self,
+                            side: int,
+                            quantity: int,
+                            timestamp: int,
+                            limit: int = None):
         """
         Send submission order.
         :param side:
@@ -173,7 +184,8 @@ class MarketInterface:
         :param limit:
             int, limit price
         """
-        # TODO: Assert if price is in ticksize etc.
+
+        self._assert_price_permitted(limit)
 
         message = dict()
         # TemplateID 99999 for submission
@@ -204,8 +216,10 @@ class MarketInterface:
         # send cancellation message to MarketState
         Market.instances["ID"].update_with_agent_message_impact(message)
 
-    @staticmethod
-    def modify_order_impact(order_message_id: int):
+    def modify_order_impact(self,
+                            order_message_id: int,
+                            new_price: int,
+                            new_quantity: int):
         """
         Modilfy impact order.
 
@@ -216,6 +230,8 @@ class MarketInterface:
         :param new_quantity
             int, new quantity
         """
+        if new_price:
+            self._assert_price_permitted(new_price)
 
         message = dict()
         # TemplateID 66666 for cancellation
@@ -232,6 +248,28 @@ class MarketInterface:
         # TODO: implement processing of impact message
         # send modification message to Market
         Market.instances["ID"].update_with_agent_message_impact(message)
+
+    #TODO
+    def _assert_price_permitted(self, price: int):
+        """
+        Check if price respects the permitted tick size.
+        """
+        return np.gcd(self.ticksize, price) == self.ticksize
+
+    #TODO
+    def _assert_message_exists(self, order_message_id):
+        """
+        Assert of order exists and is active (template_id 99999)
+        :param order_message_id
+            int, message_id of order to be cancelled
+
+        """
+
+       #  [d for d in OMS.order_list if d['message_id'] == order_message_id]
+        pass
+    #TODO
+    def _assert_exposure_budget(self):
+        pass
 
     def reset(self):
         """

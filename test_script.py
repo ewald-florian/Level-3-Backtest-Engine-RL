@@ -9,11 +9,10 @@
 # --------------------------------------------------------------------------
 from replay.replay import Replay
 from market.market import Market
-from market.context import Context
+from context.context import Context
 from feature_engineering.market_features import MarketFeatures
 from reinforcement_learning.observation_space import ObservationSpace
 from reinforcement_learning.reward import Reward
-from market.market_trade import MarketTrade
 from market.market_interface import MarketInterface
 from agent.agent_metrics import AgentMetrics
 
@@ -30,19 +29,25 @@ if __name__ == '__main__':
 
     for i in range(replay.episode.__len__()):
 
-        replay.step()
+        replay.rl_step()
         # collect context
         Context(Market.instances['ID'].state_l3)
         # generate orders
-        if i % 1000 == 0:
+        if i % 100 == 0:
             limit = mf.best_bid()
             mi.submit_order(side=2, quantity=2220000, limit=limit)
 
-        if i % 1000 == 500:
+        if i % 100 == 2:
             limit = mf.best_ask()
             mi.submit_order(side=1, quantity=2220000, limit=limit)
+        #print("PNL")
+        #print(reward.pnl_realized)
+        #print(reward.pnl_unrealized)
+        if reward.pnl_marginal > 0:
+            print(reward.pnl_marginal)
 
-        # AgentMetrics FEBUGGING
+        '''
+        # AgentMetrics DEBUGGING
         print("filtered messages", am.get_filtered_messages(side=2))
         print("fm static", am.get_filtered_messages_static(side=2))
         print("gft", am.get_filtered_trades(side=2))
@@ -61,8 +66,7 @@ if __name__ == '__main__':
         print("exp_left", am.exposure_budget_left)
         print("tc", am.transaction_costs)
         print(am) # string repesentation
-        print()
-        print()
+        '''
 
 
 

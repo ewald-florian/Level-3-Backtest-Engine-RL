@@ -9,7 +9,7 @@
 
 
 # ---------------------------------------------------------------------------
-from market.context import Context
+from context.context import Context
 from market.market_trade import MarketTrade
 
 import numpy as np
@@ -34,6 +34,7 @@ class MarketFeatures:
     def __init__(self):
 
         # context container
+        #self.context = Context.context_list
         self.context = Context.context_list
         self.market_trade = MarketTrade.history
 

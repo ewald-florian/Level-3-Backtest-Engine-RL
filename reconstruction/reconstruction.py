@@ -11,7 +11,9 @@ Reconstruction Class. Reconstructs Market State from proprietary A7 EOBI Data.
 # ---------------------------------------------------------------------------
 
 
-# TODO __init__ Docstring anpassen
+# TODO: Theoretisch müsste man auch mit der reconstruction message (erste
+#  message im message_packet (bzw. am morgen) den snapshot_start herstellen
+#  können. -> ausprobieren
 import json
 import copy
 import pandas as pd
@@ -21,6 +23,18 @@ from reconstruction.parser import SnapshotParser
 
 
 class Reconstruction:
+    """
+    Reconstruction class is used to reconstruct the market state from
+    proprietary A7 EOBI message data (Eurex, Xetra, EEX und CME).
+
+    First, market state has to be initialized with a starting snapshot using
+    the initialize_state method.
+
+    Subsequently, the message data can be processed packet for packet where
+    the individual messages are parsed and the respective changes at the state
+    are conducted. This can be done using the update_with_exchange_message
+    method.
+    """
 
     def __init__(self,
                  track_timestamp: bool = True,
@@ -186,6 +200,84 @@ class Reconstruction:
         self._state = {1: {}, 2: {}}  # there are no price levels
 
     # exchange-based post-match update . . . . . . . . . . . . . . . . . . . .
+
+    '''
+    # NEW METHOD (MATCH instead of IF-CONDITIONS)
+    # WARNING: ONLY WORKS WITH PYTHON 3.10 OR HIGHER
+    @MessagePacketParser.parse
+    def update_with_exchange_message_new(self, message_packet) -> list:
+        """
+        Updates are based on exchange-based message packet, a set of messages
+        that describe in detail each change to be made to the limit order book
+        post-match (`_order_add`, `_order_delete`, ...). The idea is to "add
+        only unmatched liquidity at each time step".
+
+        The messages are parsed to a format similar to:
+        {'template_id': X, 'msg_seq_num': X, 'side': X, 'price': X,
+        'quantity': X, 'timestamp': X, 'time-in': X}
+
+        - time-in: TrdRegTSTimeIn
+
+        Concrete format of parsed message depends on message type
+        (template_id), see MessagePacketParser class for more information.
+
+        :param message_packet:
+            list, contains single parsed messages as dicts.
+        """
+
+        # assert that self._state exists
+        assert self._state, \
+            "(ERROR) note that an update cannot take place without self._state"
+
+        # iterate over all messages in message_packet
+        for message in message_packet:
+
+            # assert that self._state_index is smaller than 'msg_seq_num'
+            assert self._state_index <= message["msg_seq_num"], \
+                "(ERROR) update requires 'msg_seq_num' larger than index"
+
+            # -- update internal limit order book state ...
+            match message["template_id"]:
+                # order add
+                case 13100:
+                    self._order_add(message)
+                # order delete
+                case 13102:
+                    self._order_delete(message)
+                # order delete mass
+                case 13103:
+                    self._order_delete_mass()
+                # order modify
+                case 13101:
+                    self._order_modify(message)
+                # order modify same priority
+                case 13106:
+                    self._order_modify_same_priority(message)
+                # execution full
+                case 13104:
+                    self._execution_full(message)
+                # execution partial
+                case 13105:
+                    self._execution_partial(message)
+                # execution summary
+                # Note: Execution Summaries are processed in Market
+                #   Market Trades are stored to MarketTrade.history.
+                case 13202:
+                    pass
+                case _:
+                    pass
+
+        # -- update internal timestamp
+        if self.track_timestamp:
+            self._update_internal_timestamp(message_packet)
+
+        # -- update internal index
+        if self.track_index:
+            self._update_internal_state_index(message_packet)
+
+        # Note: parsed message_packet is used in Market
+        return message_packet
+    '''
 
     @MessagePacketParser.parse
     def update_with_exchange_message(self, message_packet) -> list:
@@ -364,16 +456,19 @@ class Reconstruction:
         price_level = message["price"]
         timestamp = message["timestamp"]
 
-        for position, message in enumerate(self._state[side][price_level]):
-            # search for the order with the specific timestamp
-            if message["timestamp"] == timestamp:
-                del self._state[side][price_level][position]
-                # if no order left on price level, delete price level
-                if not self._state[side][price_level]:
-                    del self._state[side][price_level]
-                return True
-        else:
-            return False
+        # TODO: use filter!
+        try:
+            for position, message in enumerate(self._state[side][price_level]):
+                # search for the order with the specific timestamp
+                if message["timestamp"] == timestamp:
+                    del self._state[side][price_level][position]
+                    # if no order left on price level, delete price level
+                    if not self._state[side][price_level]:
+                        del self._state[side][price_level]
+                    return True
+        except:
+            pass
+
 
     def _order_delete_mass(self):  # 13103
         """

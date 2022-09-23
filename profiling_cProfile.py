@@ -34,7 +34,7 @@ def run_code():
     print("Episode Len: ", replay.episode.__len__())
 
     for i in range(replay.episode.__len__()):
-        replay.step()
+        replay.rl_step()
 
 
 def main():

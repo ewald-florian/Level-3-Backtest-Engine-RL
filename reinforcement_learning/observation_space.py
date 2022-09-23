@@ -16,6 +16,12 @@ from feature_engineering.agent_features import AgentFeatures
 import numpy as np
 # TODO: Überlegen wie und wo ObservationSpace aufgerufen werden soll
 # TODO: Welche art von class attribute (einfach self? -> self.observation)
+# TODO: Eigentlich unpraktisch da ich zuerst ObservationSpace() callen müsste
+#  um die aktuelle observation zu bekommen und erst dann
+#  ObservationSpace.observation bekommen könnte...
+#  Evtl. ist es besser ObservationSpace.holistic_observation einfach direkt zu
+#  callen...
+
 
 #TODO: Concept: get "raw" features from FeatureEngineering, normalize and
 # concatenate them in ObservationSpace, pass to Neural Network (obs)
@@ -30,10 +36,12 @@ class ObservationSpace:
     def __init__(self):
 
         # -- static attributes
-        self.min_price = 258.4
-        self.max_price = 302.4
-        self.min_size = 1.0
-        self.max_size = 50614.0
+        # TODO: remove hardcode
+        self.min_price = 1_00000000
+        self.max_price = 200_00000000
+        # TODO: remove hardcode
+        self.min_qt = 1_0000
+        self.max_qt = 10000_0000
         self.ticksize = 0.1
 
         self.market_features = MarketFeatures()
@@ -54,17 +62,28 @@ class ObservationSpace:
         # I don't necessarily need historical values here,
         # can assume min_quantity = 1 and max_quantity as a
         # cap value (e.g. 10_000, depending on symbol price
-        # and liquidity...)
+        # and liquidity...),
+        # TODO: maybe I can use the standard market size or normal market size
+        #  values defined by xetra.
         # larger quantities will be capped to this value
         self.min_qt = 1
         self.max_qt = ...
 
     def market_observation(self):
+        """
+        Create market observation. This usually includes to take lob data
+        and additional features from MarketFeatures and normalize them.
+        """
         # -- market features
-        market_obs = self.market_features.level_2_plus()
-
+        market_obs = self.market_features.level_2_plus(store_timestamp=False,
+                                                       data_structure='array')
+        prices = market_obs[::3]
+        quantities = market_obs[1::3]
         # -- normalize
-
+        prices = self._min_max_norma_prices(prices)
+        quantities = self._min_max_norma_quantities(quantities)
+        market_obs[::3] = prices
+        market_obs[1::3] = quantities
 
         return market_obs
 

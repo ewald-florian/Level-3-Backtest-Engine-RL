@@ -10,7 +10,9 @@ Class to compute MarketMetrics
 """
 # ---------------------------------------------------------------------------
 
-# TODO: Gegenstück zu AgentMetrics
+# TODO: It might be interesting to compute these metrics for the entire trading
+#  day and not just for the episode... (for general purposes, not necessarily
+#  for rl)
 # AgentTrade ist nur eine Liste, hier werden die metrics berechnet
 
 
@@ -26,5 +28,10 @@ class MarketMetrics:
     def trading_volume(self):
         pass
 
+    def net_traded_flow(self):
+        """
+        Flow is the net traded volume, i.e. buy volume minus sell volume.
+        To be used as momentum and market sentiment factor.
+        """
     def reset(self):
         pass

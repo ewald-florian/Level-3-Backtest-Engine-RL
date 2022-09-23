@@ -12,6 +12,7 @@ Market Class. Matching engine of backtest library.
 # ---------------------------------------------------------------------------
 
 import math
+import sys
 
 import pandas as pd
 
@@ -38,8 +39,8 @@ class Market(Reconstruction):
 
     def __init__(self,
                  market_id: str = "ID",
-                 l3_levels: int = 10,
-                 l2_levels: int = 10,
+                 l3_levels: int = 5,
+                 l2_levels: int = 5,
                  report_state_timestamps: bool = True,
                  match_agent_against_exec_summary: bool = True,
                  agent_latency: int = 0,
@@ -75,6 +76,13 @@ class Market(Reconstruction):
         self.match_agent_against_exe_sum = match_agent_against_exec_summary
         self.agent_latency = agent_latency  # 8790127
         self.verbose = verbose
+
+        # store python verion for backward-compatibility
+        if sys.version_info[0] + sys.version_info[1] >= 13:
+            self.new_python = True
+        else:
+            self.new_python = False
+
         # dynamic attributes
 
         # update class instance
@@ -499,8 +507,15 @@ class Market(Reconstruction):
         """
 
         # -- call the reconstruction method to process historical messages.
-
         # returns the parsed message_packet
+        '''
+        if self.new_python: # match
+            parsed_message_packet = self.update_with_exchange_message_new(
+                message_packet)
+        else: # if-condition
+            parsed_message_packet = self.update_with_exchange_message_old(
+                message_packet)
+        '''
         parsed_message_packet = self.update_with_exchange_message(
             message_packet)
 
@@ -624,8 +639,9 @@ class Market(Reconstruction):
                 self._simulate_agent_order_matching()
 
         else:
+            pass
+            #print('(WARNING) agent message template_id not valid.')
 
-            print('(WARNING) agent message template_id not valid.')
 
     def _simulate_agent_order_matching(self):
         """
@@ -647,7 +663,6 @@ class Market(Reconstruction):
         if trade_list:
             self._process_executed_agent_orders(trade_list)
 
-        print(trade_list)
         # -- store executed orders to AgentTrade
         if trade_list:
             self._store_agent_trades(trade_list)
@@ -714,6 +729,11 @@ class Market(Reconstruction):
             sell_prices = []
 
             for message in OMS.order_list:
+
+                #DEBUGGING
+                print('message')
+                print(message)
+
                 # filter for order submissions (exclude cancellations):
                 # Note: account for LATENCY via timestamp
                 if message['template_id'] == 99999 and message[
@@ -739,9 +759,14 @@ class Market(Reconstruction):
             ask_threshold = max(ask_threshold_values)
             bid_threshold = min(bid_threshold_values)
 
+            #DEBUGGING
+            print('ASKTHRESH', ask_threshold)
+            print('BIDTHRESH', ask_threshold)
+
             # Bid-side-keys
             bid_keys = list(self._state[1].keys())
-            bid_keys_relevant = list(i for i in bid_keys if i >= bid_threshold)
+            if bid_keys:
+                bid_keys_relevant = list(i for i in bid_keys if i >= bid_threshold)
             # Ask-side-keys
             ask_keys = list(self._state[2].keys())
             ask_keys_relevant = list(i for i in ask_keys if i <= ask_threshold)
@@ -880,7 +905,7 @@ class Market(Reconstruction):
                            'message_id': trade['message_id'],
                            "agent_side": trade["agent_side"]}
 
-            # TODO: better to just call the class or create composition
+            # TODO: better to just call the class or create composition?
             AgentTrade(agent_trade)
 
     def _match_agent_against_execution_summary(self,
@@ -1137,7 +1162,8 @@ class Market(Reconstruction):
         # enough to match any agent order, this side is also not considered
         # since no matching can take place (book is not crossed).
         else:
-            print('(WARNING) LOB not crossed - no matching possible')
+            pass
+            #print('(WARNING) LOB not crossed - no matching possible')
 
     def __str__(self):
         """
