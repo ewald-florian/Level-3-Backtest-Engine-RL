@@ -14,6 +14,7 @@ import datetime
 # !pip install pandas-market-calendars
 import pandas_market_calendars as mcal
 import pandas as pd
+import numpy as np
 
 import logging
 
@@ -23,6 +24,7 @@ from replay.episode import Episode
 from market.market import Market
 from context.context import Context
 from agent.agent_metrics import AgentMetrics
+from reinforcement_learning.observation_space import ObservationSpace
 
 # -- rl agents
 #from reinforcement_learning.rl_agents.sample_agent import RlAgent
@@ -80,6 +82,8 @@ class Replay:
         # -- generate new episode_start_list
         self._generate_episode_start_list()
 
+        # -- observation space
+        self.observation_space = ObservationSpace()
         # -- rl agent
         """
         Note:
@@ -89,6 +93,7 @@ class Replay:
         """
         if rl_agent:
             self.rl_agent = rl_agent
+
 
     def rl_step(self, action=None):
         """
@@ -383,9 +388,38 @@ class Replay:
         self.build_new_episode()
 
     # TODO: call all reset helper methods! return first observation
-    def reset(self):
+    def rl_reset(self):
+        """
+        Reset for RL back-testing. Returns the first observation.
+        """
+        # -- build new episode
+        self._reset_replay()
 
-        # -- build n
+        # -- market state as independent class attribute
+        self._reset_market(snapshot_start=self.episode.snapshot_start)
+        self._reset_context()
+
+        first_obs = np.array([])
+        # TODO: I tested to run a few updates before returning the obs...
+        for i in range(5):
+            self._market_step()
+            # -- store initial state_l3 to context (to generate observation)
+            state_l3 = Market.instances['ID'].state_l3
+            Context(state_l3)
+            # -- get first observation
+            first_obs = self.observation_space.holistic_observation()
+            print('FIRST OBS IN REPLAY')
+            print(first_obs)
+            print('self.observation_space.market_features.context')
+            print(self.observation_space.market_features.context)
+
+        return first_obs
+
+    def normal_reset(self):
+        """
+        Reset for non-RL backtesting.
+        """
+        # -- build new episode
         self._reset_replay()
 
         # -- market state as independent class attribute
@@ -395,9 +429,3 @@ class Replay:
         # Context(l3) callen, sonst ist context leer...
         # l3 -> Context -> MarketFeatures -> ObservationSpace
         self._reset_context()
-
-    def normal_reset(self):
-        """
-        Reset for non-RL applications.
-        """
-        pass
