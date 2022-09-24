@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #----------------------------------------------------------------------------
-# Created By  : Phillipp
-# Creation Date: -
+__author__ = "phillipp"
+__date__ = "?"
 # version ='1.0'
 # ---------------------------------------------------------------------------
 """
@@ -400,7 +400,7 @@ class Reconstruction:
         # relevant messages are order_add, order_modify (and execution_summary)
         relevant_messages = list(filter(lambda d: d['template_id'] in
                                                   [13100, 13101, 13105],
-                                        message_packet))
+                                                    message_packet))
 
         if relevant_messages:
             max_timestamp = max(d["timestamp"] for d in relevant_messages)

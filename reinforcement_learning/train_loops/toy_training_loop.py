@@ -12,13 +12,33 @@ debugging.
 
 import numpy as np
 
-from agent.agent_order import OrderManagementSystem as OMS
+
 from reinforcement_learning.environment import Environment
-from market.market import Market
+from reinforcement_learning.rl_agents.sample_agent import RlAgent
+from replay.replay import Replay
+
+
+# CHANGE AGENT IM REPLAY
 
 if __name__ == '__main__':
 
-    env = Environment()
+
+    # instantiate agent
+    agent = RlAgent()
+
+    # instantiate replay and pass agent object as input argument
+    replay = Replay(rl_agent=agent)
+
+    # store replay instance in config dict
+
+    config = {"env_config":{}}
+
+    config["env_config"] = {
+        "config": {
+            "replay": replay},
+    }
+
+    env = Environment(env_config=config)
     env.reset()
 
     number_of_steps = 20000
@@ -30,12 +50,11 @@ if __name__ == '__main__':
 
         # take a random action
         action = np.random.randint(3)
-        print(action)
 
-        observation, reward, done, info = env.step(action)
+        observation, reward, done, info = env.step(action) #calls replay.rl_step(action)
 
         store = [observation, reward, done, info]
         training_list.append(store)
 
-        print(OMS.order_list)
+
 

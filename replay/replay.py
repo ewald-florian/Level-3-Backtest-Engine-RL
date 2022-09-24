@@ -25,7 +25,8 @@ from context.context import Context
 from agent.agent_metrics import AgentMetrics
 
 # -- rl agents
-from reinforcement_learning.rl_agents.rl_agent import RlAgent
+#from reinforcement_learning.rl_agents.sample_agent import RlAgent
+from reinforcement_learning.rl_agents.sample_agent import RlAgent
 
 
 # TODO: clean implementation after all classes are finished
@@ -39,6 +40,7 @@ from reinforcement_learning.rl_agents.rl_agent import RlAgent
 class Replay:
 
     def __init__(self,
+                 rl_agent: "instance of an rl agent",
                  identifier_list: list = None,
                  identifier: str = "BMW",
                  start_date: str = "2022-02-01",
@@ -51,7 +53,8 @@ class Replay:
                  exclude_high_activity_time: bool = False,
                  mode: str = "random_episodes",
                  *args,
-                 **kwargs):
+                 **kwargs
+                 ):
 
         # -- static attributes
         self.identifier_list = identifier_list
@@ -78,7 +81,14 @@ class Replay:
         self._generate_episode_start_list()
 
         # -- rl agent
-        self.rl_agent = RlAgent()
+        """
+        Note:
+        If the replay instance is going to be used for reinforcement learning,
+        the instantiated rl agent object has to be passed via input argument.
+        This way, I don't need to import different agent in replay.
+        """
+        if rl_agent:
+            self.rl_agent = rl_agent
 
     def rl_step(self, action=None):
         """
@@ -109,10 +119,9 @@ class Replay:
         Context(state_l3)
 
         # -- rl-agent step
-        #observation = []
-        #reward = 0
         done = self.done
         info = {}
+
         ################## DEVELOPMENT AREA ##################################
         # rl_agents can just be changed to test different set-ups
         # -------------------------------------------------------------------

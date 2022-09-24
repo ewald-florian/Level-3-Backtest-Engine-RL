@@ -13,8 +13,7 @@ import numpy as np
 import gym
 from gym import spaces
 
-from replay.replay import Replay
-from market.market_interface import MarketInterface
+#from replay.replay import Replay
 
 
 class Environment(gym.Env):
@@ -22,6 +21,8 @@ class Environment(gym.Env):
     Environment class for Reinforcement Learning with the Level-3 Backtest
     Engine. Follows OpenAI gym convention.
     """
+
+    metadata = {'render.modes': ['human']}
 
     def __init__(self,
                  env_config: dict = None):
@@ -41,7 +42,10 @@ class Environment(gym.Env):
         # Entry Points to Level-3 Backtest Engine:
 
         # -- instantiate replay to step the environment
-        self.replay = Replay()
+        # TODO: better config dict structure
+        self.replay = env_config["env_config"]["config"]["replay"]
+
+        #self.replay = Replay()
 
     def step(self, action):
         """

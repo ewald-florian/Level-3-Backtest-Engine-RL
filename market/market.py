@@ -730,10 +730,6 @@ class Market(Reconstruction):
 
             for message in OMS.order_list:
 
-                #DEBUGGING
-                print('message')
-                print(message)
-
                 # filter for order submissions (exclude cancellations):
                 # Note: account for LATENCY via timestamp
                 if message['template_id'] == 99999 and message[
@@ -758,10 +754,6 @@ class Market(Reconstruction):
             # compute thresholds:
             ask_threshold = max(ask_threshold_values)
             bid_threshold = min(bid_threshold_values)
-
-            #DEBUGGING
-            print('ASKTHRESH', ask_threshold)
-            print('BIDTHRESH', ask_threshold)
 
             # Bid-side-keys
             bid_keys = list(self._state[1].keys())
