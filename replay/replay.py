@@ -1,47 +1,42 @@
 #!/usr/bin/env python3  Line 1
 # -*- coding: utf-8 -*- Line 2
-# ----------------------------------------------------------------------------
-# Created By  : florian
-# Created Date: 05/Sept/2022
-# version ='1.0'
 # ---------------------------------------------------------------------------
 """ Replay Module for the Level-3 backtest engine"""
+# ---------------------------------------------------------------------------
+__author__ = "florian"
+__date__ = "2022-09-25"
+__version__ = "0.2"
 # ---------------------------------------------------------------------------
 
 # TODO: replay umstrukturieren nach RL, non-RL und general (bessere übersicht)
 
 import random
 import datetime
+import logging
+logging.getLogger().setLevel(logging.INFO)
 
-# !pip install pandas-market-calendars
+# !pip install pandas-market-calendars # -> dependeny!
 import pandas_market_calendars as mcal
 import pandas as pd
 import numpy as np
 
-import logging
-
-logging.getLogger().setLevel(logging.INFO)
-
 from replay.episode import Episode
 from market.market import Market
+from market.market_trade import MarketTrade
+from market.market_metrics import MarketMetrics
 from context.context import Context
 from agent.agent_metrics import AgentMetrics
+from agent.agent_trade import AgentTrade
+from agent.agent_order import OrderManagementSystem
 from reinforcement_learning.observation_space import ObservationSpace
-
-# -- rl agents
-#from reinforcement_learning.rl_agents.sample_agent import RlAgent
-from reinforcement_learning.rl_agents.sample_agent import RlAgent
+from reinforcement_learning.reward import Reward
 
 
-# TODO: clean implementation after all classes are finished
-# TODO: will also be responsible for passing input arguments to all the
-#  classes (i.e. latency to Market, tc_factor to AgentMetrics etc.), hence
-#  these methods cannot all be static since these input argements will be
-#  stored in replay.self...
-# TODO: modes to run episode as list of dates or for a continuing time period
-
+# TODO: add modes to run episode as list of dates or for a cont. time period
 
 class Replay:
+
+    # TODO: write class Docstring
 
     def __init__(self,
                  rl_agent: "instance of an rl agent",
@@ -59,6 +54,8 @@ class Replay:
                  *args,
                  **kwargs
                  ):
+
+        # TODO: write init docstring
 
         # -- static attributes
         self.identifier_list = identifier_list
@@ -84,18 +81,19 @@ class Replay:
         # -- generate new episode_start_list
         self._generate_episode_start_list()
 
-        # -- observation space
+        # -- observation space (for RL: first_observation)
         self.observation_space = ObservationSpace()
+
         # -- rl agent
-        """
-        Note:
-        If the replay instance is going to be used for reinforcement learning,
-        the instantiated rl agent object has to be passed via input argument.
-        This way, I don't need to import different agent in replay.
-        """
+
+        # Note:If the replay instance is going to be used for reinforcement
+        # learning, the instantiated rl agent object has to be passed via input
+        # argument.This way, I don't need to import different agent in replay.
+
         if rl_agent:
             self.rl_agent = rl_agent
 
+    # rl-step . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
     def rl_step(self, action=None):
         """
@@ -146,7 +144,7 @@ class Replay:
 
     # non-RL step . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
-    def normal_step(self):  # for non-RL backtesting
+    def normal_step(self):
         """
         External Stepping:
         -----------------
@@ -185,7 +183,8 @@ class Replay:
         Market.instances['ID'].update_simulation_with_exchange_message(
             message_packet)
 
-    # note: method is tested and debugged (20-09-22)
+    # episode management . . . . . . . . . . . . . . . . . . . . . . . . . . .
+
     def _generate_episode_start_list(self):
         """
         Generates a new episode start list which is a list of timestamps that
@@ -274,7 +273,6 @@ class Replay:
         self.episode_counter = 0
         self.episode_index = 0
 
-    # note: method is tested and debugged (20-09-22)
     def build_new_episode(self):
         """
         Use the next start timestamp in episode_start_list to build the next
@@ -292,7 +290,6 @@ class Replay:
         """
 
         # -- update episode parameters
-
         episode_start = self.episode_start_list[self.episode_index]
         episode_end = episode_start + pd.Timedelta(self.episode_length)
 
@@ -302,7 +299,6 @@ class Replay:
             identifier = self.identifier
 
         # -- build new episode
-
         for attempt in range(100):
 
             try:
@@ -334,6 +330,7 @@ class Replay:
 
     # internally stepped replay . . . . . . . . . . . . . . . . . . . . . . .
 
+    # TODO: implement (low priority since I don't need this method..)
     def run_backtest(self):
         """"
         Internal Stepping:
@@ -343,47 +340,65 @@ class Replay:
         """
         pass
 
-    # TODO: implement the reset function clean
-    # reset . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
-    """
-    Note: Replay is used as the entry point of the RL environment class
-    to the backtest-library. Therefore, replay contains a universal reset
-    method which not only resets replay but all backtest-engine classes when
-    a new episodes starts. Usually, the RL-environment calls replay.reset()
-    to reset the environment and replay.step() to step the environment.
-    """
+    # reinforcement learning reset . . . . . . . . . . . . . . . . . . . . . .
+
+    def rl_reset(self):
+        """
+        Rl_reset is an extension of base_reset which returns the first
+        observation. This is mandatory for OpenAI gym custom environments.
+        The method is only relevant for RL-based back-testing. For non-RL
+        back-testing use base_reset.
+        :return first_observation
+            np.array, first observation of the episode
+        """
+        # -- base resets resets all relevant backtest-engine classes
+        self.base_reset()
+        # -- get first observation (context needs to include initial state)
+        first_observation = self.observation_space.holistic_observation()
+        # -- reset Reward
+        _ = Reward
+
+        return first_observation
+
+        # TODO: check regularly if further resets are necessary
+        # Further Possible but not necessary resets (RL extension):
+        # ------------------------------------------
+        # ObservationSpace
+        # RlAgent
+        # ActionSpace (currently not used)
+        # ActionStorage (currently not used)
+
+    # base reset . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
     def _reset_market(self, snapshot_start):
+        """
+        Reset the Market by resetting old instances, creating a new instance,
+        and restoring the initial market state from a snapshot. The snapshot
+        can be either already parsed (Option 1: this is the case for
+        start_snapshots generated by build_new_episode) or non-parsed
+        (Option 2: raw snapshots from database). Market reset has to be called
+        in the beginning of each episode.
+
+        :param snapshot_start:
+            dict, can either be parsed or non-parsed snapshot
+        """
         # reset old market instance
         Market.reset_instances()
         # create new instance of MarketState
         _ = Market(market_id="ID")
-        # build initial state of new MarektState instance from snapshot_start
 
-        # -- from parsed snapshot (episode delivers parsed snapshots)
+        # -- initialize state from snapshot:
+
+        # Option 1) from parsed snapshot (episode delivers parsed snapshots)
         # note: parsed snapshots have "template_id" instead of "Template_ID"
         some_price = list(snapshot_start[1].keys())[0]
         if "template_id" in snapshot_start[1][some_price][0]:
             Market.instances['ID'].initialize_state_from_parsed_snapshot(
                 snapshot=snapshot_start)
 
-        # -- from un-parsed snapshot (raw snapshot from database)
+        # Option 2) from un-parsed snapshot (raw snapshot from database)
         else:
             Market.instances['ID'].initialize_state(snapshot=snapshot_start)
-
-    @staticmethod
-    def _reset_agent_metrics():
-        # instantiate agent metrics
-        _ = AgentMetrics()
-
-    @staticmethod
-    def _reset_context():
-        # reset context
-        Context.reset_context_list()
-
-    def _reset_market_interface(self):
-        # not necessarily needed
-        pass
 
     def _reset_episode(self):
         """
@@ -392,40 +407,61 @@ class Replay:
         """
         self.build_new_episode()
 
-    def rl_reset(self):
+    def base_reset(self):
         """
-        Reset for RL back-testing. Returns the first observation. This is
-        mandatory for OpenAI Gym custom environments.
-        :return first_observation
-            np.array, first observation of the episode
+        Base_reset can be used to reset the backtest engine before a new
+        episode when using external stepping for a non-RL application. For RL
+        applications use rl_reset() which includes base_reset() automatically.
+
+        Reset to be called before a new episode starts. This includes to build
+        the next episode, reset the Market and to store the first market
+        state to Context-context_list. Moreover, all class instances are reset,
+        including Context.history, MarketTrade.history, OMS.order_list and
+        AgentTrade.history.
+        The order is important: 1. reset episode, 2. reset context, 3. reset
+        market and store to context.
+
+        General Note:
+        -------------
+        Replay is used as the entry point of externally stepped back-test
+        loops to the backtest-library. Therefore, replay contains a universal
+        base_reset method which does not reset the replay class but all
+        backtest-engine classes when a new episodes starts.
+
+        Rl-Applications:
+        ----------------
+        In RL-backtests, the RL-environment calls replay.rl_reset() (which in
+        turn calls base_reset() to reset the environment and receive the first
+        observation and replay.rl_step() to step the environment and receive
+        the latest observation, reward,
+        done and info.
         """
         # -- build new episode
         self._reset_episode()
-
-        # -- market state as independent class attribute
+        # -- context
+        Context.reset_context_list()
+        # -- create new Market as independent class attribute
         self._reset_market(snapshot_start=self.episode.snapshot_start)
-        self._reset_context()
-
         # -- store initial state_l3 to context (to generate first observation)
         state_l3 = Market.instances['ID'].state_l3
         Context(state_l3)
+        # -- market trade
+        MarketTrade.reset_history()
+        # -- market metrics
+        _ = MarketMetrics()
+        # -- Order Management System
+        OrderManagementSystem.reset_history()
+        # -- AgentTrade
+        AgentTrade.reset_history()
 
-        # -- get first observation
-        first_observation = self.observation_space.holistic_observation()
+        # TODO: check regularly if further resets are necessary
+        # Further Possible but not necessary resets (general library):
+        #------------------------------------------
+        # MarketMetrics
+        # MarketInterface
+        # AgentMetrics
+        # AgentFeatures (if dynamic attributes!)
+        # MarketFeatures (if dynamic attributes!)
 
-        return first_observation
 
-    def normal_reset(self):
-        """
-        Reset for non-RL back-testing (no returns)
-        """
-        # -- build new episode
-        self._reset_episode()
 
-        # -- market state as independent class attribute
-        self._reset_market(snapshot_start=self.episode.snapshot_start)
-
-        # TODO: um die erste observation zu kriegen muss ich direkt
-        # Context(l3) callen, sonst ist context leer...
-        # l3 -> Context -> MarketFeatures -> ObservationSpace
-        self._reset_context()
