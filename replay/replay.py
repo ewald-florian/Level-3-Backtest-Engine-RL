@@ -8,14 +8,12 @@ __date__ = "2022-09-25"
 __version__ = "0.2"
 # ---------------------------------------------------------------------------
 
-# TODO: replay umstrukturieren nach RL, non-RL und general (bessere übersicht)
-
 import random
 import datetime
 import logging
 logging.getLogger().setLevel(logging.INFO)
 
-# !pip install pandas-market-calendars # -> dependeny!
+# !pip install pandas-market-calendars # -> dependency!
 import pandas_market_calendars as mcal
 import pandas as pd
 import numpy as np
@@ -39,7 +37,7 @@ class Replay:
     # TODO: write class Docstring
 
     def __init__(self,
-                 rl_agent: "instance of an rl agent",
+                 rl_agent: "instance of an rl agent" = None,
                  identifier_list: list = None,
                  identifier: str = "BMW",
                  start_date: str = "2022-02-01",

@@ -34,4 +34,7 @@ class MarketMetrics:
         To be used as momentum and market sentiment factor.
         """
     def reset(self):
-        pass
+        """
+        Reset MarketMetrics
+        """
+        self.__init__()

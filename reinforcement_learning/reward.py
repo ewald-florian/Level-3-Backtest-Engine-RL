@@ -21,7 +21,6 @@ class Reward:
 
     def __init__(self):
 
-
         self.agent_metrics = AgentMetrics()
         self.last_pnl = 0
 

@@ -457,6 +457,7 @@ class Reconstruction:
         timestamp = message["timestamp"]
 
         # TODO: use filter!
+        # note: sometimes flawed messages with non-existent price levels
         try:
             for position, message in enumerate(self._state[side][price_level]):
                 # search for the order with the specific timestamp
@@ -465,7 +466,6 @@ class Reconstruction:
                     # if no order left on price level, delete price level
                     if not self._state[side][price_level]:
                         del self._state[side][price_level]
-                    return True
         except:
             pass
 
@@ -522,9 +522,12 @@ class Reconstruction:
             "price", "quantity", "timestamp"
         ]}
 
-        for position, message in enumerate(self._state[side][price_level]):
-            if message["timestamp"] == timestamp:
-                self._state[side][price_level][position] = message_keep
+        try:
+            for position, message in enumerate(self._state[side][price_level]):
+                if message["timestamp"] == timestamp:
+                    self._state[side][price_level][position] = message_keep
+        except:
+            pass
 
     def _execution_full(self, message):  # 13104
         """
@@ -557,15 +560,19 @@ class Reconstruction:
         timestamp = message["timestamp"]
         quantity = message["quantity"]  # executed quantity
 
-        # iterate over specified price level
-        for position, message in enumerate(self._state[side][price_level]):
-            if message["timestamp"] == timestamp:
-                # subtract executed quantity
-                self._state[side][price_level][position][
-                    "quantity"] -= quantity
-                # if order has quantity 0, delete order
-                if self._state[side][price_level][position]["quantity"] == 0:
-                    self._order_delete(message)
+        # note: sometimes flawed messages with non-existent price levels
+        try:
+            # iterate over specified price level
+            for position, message in enumerate(self._state[side][price_level]):
+                if message["timestamp"] == timestamp:
+                    # subtract executed quantity
+                    self._state[side][price_level][position][
+                        "quantity"] -= quantity
+                    # if order has quantity 0, delete order
+                    if self._state[side][price_level][position]["quantity"] == 0:
+                        self._order_delete(message)
+        except:
+            pass
 
     def __str__(self):
         """

@@ -13,7 +13,8 @@ import numpy as np
 import gym
 from gym import spaces
 
-#from replay.replay import Replay
+
+# from replay.replay import Replay
 
 
 class Environment(gym.Env):
@@ -32,7 +33,7 @@ class Environment(gym.Env):
 
         # TODO: obtain spaces from env_config
         self.action_space_arg = 3
-        #self.observation_space_min = np.zeros(30)
+        # self.observation_space_min = np.zeros(30) #minmax
         self.observation_space_min = np.array([-1000_000] * 30)
         self.observation_space_max = np.array([1000_000] * 30)
 
@@ -43,15 +44,13 @@ class Environment(gym.Env):
         # Entry Points to Level-3 Backtest Engine:
 
         # -- instantiate replay to step the environment
-        # TODO: better config dict structure
 
-        # 1. For Rllib:
-        self.replay = env_config.get("config").get("replay")
-
-        #2. For own loops
-        #self.replay = env_config['env_config']['config']['replay']
-
-        #self.replay = Replay()
+        # 1. For Rllib: rllib unpacks the config dict automatically...
+        try:
+            self.replay = env_config.get("config").get("replay")
+        # 2. For other loops (e.g. toy_training_loop)
+        except:
+            self.replay = env_config['env_config']['config']['replay']
 
     def step(self, action):
         """
@@ -73,21 +72,8 @@ class Environment(gym.Env):
 
         # assert if action is valid
         assert self.action_space.contains(action), "Invalid Action"
-
         # -- Take step and receive observation, reward, info
-
         observation, reward, done, info = self.replay.rl_step(action)
-
-        """
-        #DEBUGGING
-        print("(ENVIRONMENT STEP) prints in environment")
-        print(observation)
-        print(reward)
-        print(done)
-        print(info)
-        print(10*'-')
-        """
-
         # -- Return
 
         return observation, reward, done, info
@@ -100,8 +86,6 @@ class Environment(gym.Env):
         """
         # -- reset replay
         first_obs = self.replay.rl_reset()
-        # DEBUGGING
-        #print("(ENVIRONMENT STEP) prints in environment")
 
         return first_obs
 
@@ -119,4 +103,3 @@ class Environment(gym.Env):
         Set random seed for the environment.
         """
         pass
-

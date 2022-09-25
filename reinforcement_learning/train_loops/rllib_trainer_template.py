@@ -1,12 +1,16 @@
-
-import time
+#!/usr/bin/env python3  Line 1
+# -*- coding: utf-8 -*- Line 2
+# ---------------------------------------------------------------------------
+"""Template for Rllib training loops."""
+# ----------------------------------------------------------------------------
+__author__ = "florian"
+__date__ = "2022-09-25"
+__version__ = "0.1"
+# ----------------------------------------------------------------------------
 import json
 import pprint
 
-# TODO: Ich glaube das Problem liegt darin, dass ich Markek in Replay richtig
-#  instanzieren muss damit es funktioniert... Könnte leider sein, dass die
-#  anderen klassen attribute ebenfalls irgendwie probleme machen (OMS,
-#  AgentTrade etc)
+import pandas as pd
 
 # rllib imports
 import ray
@@ -18,16 +22,10 @@ from ray.rllib.agents.ppo import DEFAULT_CONFIG as PPO_DEFAULT_CONFIG
 from reinforcement_learning.environment import Environment
 from reinforcement_learning.rl_agents.sample_agent import RlAgent
 from replay.replay import Replay
+from utils.result_path_generator import generate_result_path
 
-### change name ###
-'''
-# TODO: put this in a function in utils
-name = "test_run"
-timestr = time.strftime("_%Y%m%d_%H%M%S")
-result_dir = "/Users/florianewald/PycharmProjects/Level-3-Backtest-Engine-RL/reinforcement_learning/training_results"
-result_file = result_dir + name + timestr + "_results.csv"
-print(result_file)
-'''
+# generate pathname to store results
+result_file = generate_result_path(name='otto')
 
 # Start a new instance of Ray
 ray.init()
@@ -37,6 +35,7 @@ agent = RlAgent()
 # instantiate replay and pass agent object as input argument
 replay = Replay(rl_agent=agent)
 
+# prepare config dict for the trainer set-up
 config = PPO_DEFAULT_CONFIG
 config["env"] = Environment
 config["env_config"] = {
@@ -44,31 +43,26 @@ config["env_config"] = {
         "replay": replay},
 }
 
-#config["num_workers"] = 0
-
-config["disable_env_checking"] = True
-
+config["num_workers"] = 0
+config["disable_env_checking"] = False
 
 # Instantiate the Trainer object using above config.
 rllib_trainer = PPOTrainer(config=config)
+# print policy model
+#print(rllib_trainer.get_policy().model.base_model.summary())
 
-# print(rllib_trainer.get_policy().model.base_model.summary())
-
-num_iterations = 1
-
+# result storage
 results = []
 episode_data = []
 episode_json = []
 
-
-
+# run training loops
+num_iterations = 1
 for n in range(num_iterations):
+
     result = rllib_trainer.train()
+
     results.append(result)
-
-ray.shutdown()
-'''
-
     # store relevant metrics from the result dict to the episode dict
     episode = {
         "n": n,
@@ -83,16 +77,20 @@ ray.shutdown()
 
     # store results every iteration in case the training loop breaks
     result_df = pd.DataFrame(data=episode_data)
-    #result_df.to_csv(result_file, index=False)
+    result_df.to_csv(result_file, index=False)
     #file_name = rllib_trainer.save(checkpoint_root)
 
-    #print(f'{n:3d}: Min/Mean/Max reward: {result["episode_reward_min"]:8.4f}/{result["episode_reward_mean"]:8.4f}/{result["episode_reward_mean"]}')
+    print(f'{n:3d}: Min/Mean/Max reward: {result["episode_reward_min"]:8.4f}/{result["episode_reward_mean"]:8.4f}/{result["episode_reward_mean"]}')
 
 result_df = pd.DataFrame(data=episode_data)
 print(result_df.head())
-'''
-#result_df.to_csv(result_file, index=False)
 
+result_df.to_csv(result_file, index=False)
+
+# create checkpoint file to save trained weights
 #checkpoint_file = rllib_trainer.save()
 #print(100 * '-')
-#print(f"Trainer (at iteration {rllib_trainer.iteration} was saved in '{checkpoint_file}'!")
+#print(f"Trainer (at iteration {rllib_trainer.iteration} was saved in '{checkpoint_file}'")
+
+# shut down ray (important step since ray can occupy resources)
+ray.shutdown()

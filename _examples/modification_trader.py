@@ -35,11 +35,11 @@ class ModificationTrader:
         if self.counter == 10:
 
             # submit passive order
-            midpoint = Market.instances['ID'].midpoint
+            best_bid= Market.instances['ID'].best_bid
 
             ticksize = Market.instances['ID'].ticksize
 
-            passive_limit = midpoint - (2*ticksize)
+            passive_limit = best_bid - (2*ticksize)
 
             self.mi.submit_order(side=1,
                             limit=passive_limit,
@@ -82,11 +82,11 @@ class ModificationTrader:
         if self.counter == 150:
 
             # submit new passive order
-            midpoint = Market.instances['ID'].midpoint
+            best_bid = Market.instances['ID'].best_bid
 
             ticksize = Market.instances['ID'].ticksize
 
-            passive_limit = midpoint - (2 * ticksize)
+            passive_limit = best_bid - (2 * ticksize)
 
             self.mi.submit_order(side=1,
                                  limit=passive_limit,
