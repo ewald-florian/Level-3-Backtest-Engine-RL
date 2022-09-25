@@ -74,16 +74,20 @@ class ObservationSpace:
         Create market observation. This usually includes to take lob data
         and additional features from MarketFeatures and normalize them.
         """
+
         # -- market features
         market_obs = self.market_features.level_2_plus(store_timestamp=False,
-                                                       data_structure='array')
-        prices = market_obs[::3]
-        quantities = market_obs[1::3]
-        # -- normalize
-        prices = self._min_max_norma_prices(prices)
-        quantities = self._min_max_norma_quantities(quantities)
-        market_obs[::3] = prices
-        market_obs[1::3] = quantities
+                                                  data_structure='array')
+
+        # TODO: added this to avoid some import errors
+        if market_obs is not None:
+            prices = market_obs[::3]
+            quantities = market_obs[1::3]
+            # -- normalize
+            prices = self._min_max_norma_prices(prices)
+            quantities = self._min_max_norma_quantities(quantities)
+            market_obs[::3] = prices
+            market_obs[1::3] = quantities
 
         return market_obs
 
@@ -117,18 +121,18 @@ class ObservationSpace:
 
     def agent_observation(self):
         # based on AgentMetrics
-        pass
+        return np.array([])
 
     def holistic_observation(self):
         """
         Combine market_obs and agent_obs to one array which
         can be fed into the NN.
         """
-        market_obs = self.market_observation
-        agent_obs = self.agent_observation
+        market_obs = self.market_observation()
+        agent_obs = self.agent_observation()
 
         holistic_obs = np.append(market_obs, agent_obs)
-        #holistic_obs.astype('float32')
+        holistic_obs.astype('float32')
 
         return holistic_obs
 

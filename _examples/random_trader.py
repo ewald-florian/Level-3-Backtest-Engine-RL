@@ -76,7 +76,7 @@ if __name__ == '__main__':
                     exclude_high_activity_time=True,
                     )
 
-    replay.reset()  # -> build new episode
+    replay.rl_reset()  # -> build new episode
 
     randomtrader = RandomTrader()
 

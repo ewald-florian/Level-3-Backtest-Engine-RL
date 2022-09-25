@@ -60,7 +60,7 @@ class StreamEpisode:
         self.market_interface = MarketInterface()
         self.agent_metrics = AgentMetrics()
 
-        self.replay.reset() # -> build new episode
+        self.replay.rl_reset() # -> build new episode
         print("Number of Message Packets: ", self.replay.episode.__len__())
 
         self.template_id_map = {

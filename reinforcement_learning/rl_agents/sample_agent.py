@@ -68,10 +68,10 @@ class RlAgent:
         self.take_action(action)
 
         # make observation
-        observation = self.observation_space
+        observation = self.observation_space.holistic_observation()
 
         # receive reward
-        reward = self.reward.pnl_marginal
+        reward = self.reward.pnl_marginal # property
 
         # return
 
@@ -89,15 +89,15 @@ class RlAgent:
                                                limit=best_ask,
                                                quantity=self.quantity)
             if self.verbose:
-                print('buy submission')
+                print('(RL AGENT) buy submission')
         # sell
         elif action == 2 and best_bid:
             self.market_interface.submit_order(side=2,
                                                limit=best_bid,
                                                quantity=self.quantity)
             if self.verbose:
-                print('sell submission')
+                print('(RL AGENT) sell submission')
         # wait
         else:
             if self.verbose:
-                print('wait')
+                print('(RL AGENT) wait')

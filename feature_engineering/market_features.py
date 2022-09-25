@@ -30,13 +30,16 @@ import pandas as pd
 
 
 class MarketFeatures:
+    """
+    Compute market features based on Context and MarketTrade.
+    MarketFeatures does not use composition but directly accesses the class
+    attributes Context.context_list and MarketTrade.history. The last element
+    in Context.context list represents the current state of the market.
+    """
 
     def __init__(self):
+        pass
 
-        # context container
-        #self.context = Context.context_list
-        self.context = Context.context_list
-        self.market_trade = MarketTrade.history
 
     # based on market (context) . . . . . . . . . . . . . . . . . . . . . . . .
 
@@ -62,14 +65,14 @@ class MarketFeatures:
         """
 
         # check if context is not empty
-        if self.context:
+        if len(Context.context_list) > 0:
 
             permitted = ['array', 'df']
             if data_structure not in ['array', 'df']:
                 raise ValueError(
                     "data_structure must be one of %r." % permitted)
 
-            state_l3 = self.context[-1]
+            state_l3 = Context.context_list[-1]
             # store datapoints of current state to a list
             data_list = []
 
@@ -166,10 +169,10 @@ class MarketFeatures:
         """
 
         # check if context is not empty
-        if self.context:
+        if len(Context.context_list) > 0:
 
-            best_bid = max(self.context[-1][1].keys())
-            best_ask = min(self.context[-1][2].keys())
+            best_bid = max(Context.context_list[-1][1].keys())
+            best_ask = min(Context.context_list[-1][2].keys())
 
             return int((best_bid + best_ask)/2)
 
@@ -214,8 +217,8 @@ class MarketFeatures:
         Current best bid.
         """
         # check if context is not empty
-        if self.context:
-            best_bid = max(self.context[-1][1].keys())
+        if len(Context.context_list)>0:
+            best_bid = max(Context.context_list[-1][1].keys())
             return best_bid
 
     def best_bid_series(self):
@@ -226,8 +229,8 @@ class MarketFeatures:
         Current best ask.
         """
         # check if context is not empty
-        if self.context:
-            best_ask = min(self.context[-1][2].keys())
+        if len(Context.context_list) > 0:
+            best_ask = min(Context.context_list[-1][2].keys())
             return best_ask
 
     def best_ask_series(self):
@@ -238,7 +241,7 @@ class MarketFeatures:
         Current relative spread.
         """
         # check if context is not empty
-        if self.context:
+        if len(Context.context_list) > 0:
             best_bid = self.best_bid()
             best_ask = self.best_ask()
             midpoint = self.midpoint()
@@ -258,9 +261,9 @@ class MarketFeatures:
             float, lob imbalance
         """
         # check if context is not empty
-        if self.context:
+        if len(Context.context_list) > 0:
 
-            state_l3 = self.context[-1]
+            state_l3 = Context.context_list[-1]
 
             # aggregate the quantities for the respective number of levels
             bid_keys = list(state_l3[1].keys())[:num_levels]
@@ -307,9 +310,10 @@ class MarketFeatures:
         :param time_elapsed
             int, time since last trade
         """
-        if self.market_trade and self.context[-1][0]:
-            time_last_trade = self.market_trade[-1]['execution_time']
-            current_time = self.context[-1][0]
+        # TODO: refactor conditions
+        if MarketTrade.history and Context.context_list[-1][0]:
+            time_last_trade = MarketTrade.history[-1]['execution_time']
+            current_time = Context.context_list[-1][0]
             time_elapsed = current_time - time_last_trade
 
             return time_elapsed
@@ -318,8 +322,8 @@ class MarketFeatures:
         """
         Cumulative trading volume since beginning of episode.
         """
-        if self.market_trade:
-            cumulative_volume = sum(d['quantity'] for d in self.market_trade)
+        if len(MarketTrade.history) > 0:
+            cumulative_volume = sum(d['quantity'] for d in MarketTrade.history)
             return cumulative_volume
 
     def rolling_market_volume(self, window):
@@ -331,11 +335,11 @@ class MarketFeatures:
         :return market_vwap
             ...
         """
-        if self.market_trade:
+        if len(MarketTrade.history):
             market_vwap = (sum(d['price'] * d['quantity']
-                        for d in self.market_trade) /
+                        for d in MarketTrade.history) /
                     sum(d['quantity'] for
-                        d in self.market_trade)) * 1e-8
+                        d in MarketTrade.history)) * 1e-8
             return market_vwap
 
     #TODO: is there any interestin feature which could be used to capture

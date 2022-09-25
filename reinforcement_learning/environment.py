@@ -32,8 +32,9 @@ class Environment(gym.Env):
 
         # TODO: obtain spaces from env_config
         self.action_space_arg = 3
-        self.observation_space_min = np.zeros(52)
-        self.observation_space_max = np.array([100_000_000] * 52)
+        #self.observation_space_min = np.zeros(30)
+        self.observation_space_min = np.array([-1000_000] * 30)
+        self.observation_space_max = np.array([1000_000] * 30)
 
         self.action_space = spaces.Discrete(self.action_space_arg)
         self.observation_space = spaces.Box(self.observation_space_min,
@@ -43,7 +44,12 @@ class Environment(gym.Env):
 
         # -- instantiate replay to step the environment
         # TODO: better config dict structure
-        self.replay = env_config["env_config"]["config"]["replay"]
+
+        # 1. For Rllib:
+        self.replay = env_config.get("config").get("replay")
+
+        #2. For own loops
+        #self.replay = env_config['env_config']['config']['replay']
 
         #self.replay = Replay()
 
@@ -72,6 +78,16 @@ class Environment(gym.Env):
 
         observation, reward, done, info = self.replay.rl_step(action)
 
+        """
+        #DEBUGGING
+        print("(ENVIRONMENT STEP) prints in environment")
+        print(observation)
+        print(reward)
+        print(done)
+        print(info)
+        print(10*'-')
+        """
+
         # -- Return
 
         return observation, reward, done, info
@@ -83,7 +99,11 @@ class Environment(gym.Env):
         episode.
         """
         # -- reset replay
-        self.replay.reset()
+        first_obs = self.replay.rl_reset()
+        # DEBUGGING
+        #print("(ENVIRONMENT STEP) prints in environment")
+
+        return first_obs
 
     def render(self):
         """

@@ -17,6 +17,8 @@ from reinforcement_learning.environment import Environment
 from reinforcement_learning.rl_agents.sample_agent import RlAgent
 from replay.replay import Replay
 
+from market.market import Market
+
 
 # CHANGE AGENT IM REPLAY
 
@@ -31,12 +33,13 @@ if __name__ == '__main__':
 
     # store replay instance in config dict
 
-    config = {"env_config":{}}
+    config = {}
 
     config["env_config"] = {
         "config": {
             "replay": replay},
     }
+
 
     env = Environment(env_config=config)
     env.reset()
@@ -45,7 +48,7 @@ if __name__ == '__main__':
     training_list = []
 
     # loop
-    for step in range(1000):
+    for step in range(10):
 
 
         # take a random action
@@ -53,8 +56,11 @@ if __name__ == '__main__':
 
         observation, reward, done, info = env.step(action) #calls replay.rl_step(action)
 
-        store = [observation, reward, done, info]
-        training_list.append(store)
+        #store = [observation, reward, done, info]
+        #training_list.append(store)
+
+        # check whats going on inside the environment
+        #print(Market.instances['ID'].state_l1)
 
 
 

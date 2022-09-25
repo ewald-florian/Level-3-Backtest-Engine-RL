@@ -18,7 +18,7 @@ from agent.agent_metrics import AgentMetrics
 
 if __name__ == '__main__':
     replay = Replay()
-    replay.reset()
+    replay.rl_reset()
 
     mf = MarketFeatures()
     obs_space = ObservationSpace()

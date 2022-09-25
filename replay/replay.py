@@ -8,6 +8,8 @@
 """ Replay Module for the Level-3 backtest engine"""
 # ---------------------------------------------------------------------------
 
+# TODO: replay umstrukturieren nach RL, non-RL und general (bessere übersicht)
+
 import random
 import datetime
 
@@ -125,7 +127,7 @@ class Replay:
 
         # -- rl-agent step
         done = self.done
-        info = {}
+        info = {} #TODO: fill with relevant background infos...
 
         ################## DEVELOPMENT AREA ##################################
         # rl_agents can just be changed to test different set-ups
@@ -383,44 +385,42 @@ class Replay:
         # not necessarily needed
         pass
 
-    def _reset_replay(self):
-
+    def _reset_episode(self):
+        """
+        Reset episode by creating a new episode. Each new episode is
+        counted by the episode_counter.
+        """
         self.build_new_episode()
 
-    # TODO: call all reset helper methods! return first observation
     def rl_reset(self):
         """
-        Reset for RL back-testing. Returns the first observation.
+        Reset for RL back-testing. Returns the first observation. This is
+        mandatory for OpenAI Gym custom environments.
+        :return first_observation
+            np.array, first observation of the episode
         """
         # -- build new episode
-        self._reset_replay()
+        self._reset_episode()
 
         # -- market state as independent class attribute
         self._reset_market(snapshot_start=self.episode.snapshot_start)
         self._reset_context()
 
-        first_obs = np.array([])
-        # TODO: I tested to run a few updates before returning the obs...
-        for i in range(5):
-            self._market_step()
-            # -- store initial state_l3 to context (to generate observation)
-            state_l3 = Market.instances['ID'].state_l3
-            Context(state_l3)
-            # -- get first observation
-            first_obs = self.observation_space.holistic_observation()
-            print('FIRST OBS IN REPLAY')
-            print(first_obs)
-            print('self.observation_space.market_features.context')
-            print(self.observation_space.market_features.context)
+        # -- store initial state_l3 to context (to generate first observation)
+        state_l3 = Market.instances['ID'].state_l3
+        Context(state_l3)
 
-        return first_obs
+        # -- get first observation
+        first_observation = self.observation_space.holistic_observation()
+
+        return first_observation
 
     def normal_reset(self):
         """
-        Reset for non-RL backtesting.
+        Reset for non-RL back-testing (no returns)
         """
         # -- build new episode
-        self._reset_replay()
+        self._reset_episode()
 
         # -- market state as independent class attribute
         self._reset_market(snapshot_start=self.episode.snapshot_start)

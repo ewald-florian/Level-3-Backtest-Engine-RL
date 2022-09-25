@@ -92,6 +92,9 @@ class MarketInterface:
         # e.g. long only can only sell if position_value > 0 and > estimated
         # sell volume
 
+        # TODO: Es ist schlauer, die ticksize assertion direkt in Market zu
+        #  machen, da ich dort die ticksize sowieso habe! Gleiches gilt für
+        #  OMS für order cancellation assetion.
         #self._assert_price_permitted(limit)
 
         message = dict()
