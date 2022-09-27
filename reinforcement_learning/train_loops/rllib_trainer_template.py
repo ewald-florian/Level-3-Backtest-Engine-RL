@@ -1,5 +1,5 @@
-#!/usr/bin/env python3  Line 1
-# -*- coding: utf-8 -*- Line 2
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 # ---------------------------------------------------------------------------
 """Template for Rllib training loops."""
 # ----------------------------------------------------------------------------
@@ -19,9 +19,9 @@ from ray import tune
 from ray.rllib.agents.ppo import DEFAULT_CONFIG as PPO_DEFAULT_CONFIG
 
 # library imports
-from reinforcement_learning.environment import Environment
+from reinforcement_learning.environment.environment import Environment
 from reinforcement_learning.rl_agents.sample_agent import RlAgent
-from replay.replay import Replay
+from replay_episode.replay import Replay
 from utils.result_path_generator import generate_result_path
 
 # generate pathname to store results
@@ -30,9 +30,8 @@ result_file = generate_result_path(name='otto')
 # Start a new instance of Ray
 ray.init()
 
-# instantiate agent
 agent = RlAgent()
-# instantiate replay and pass agent object as input argument
+# instantiate replay_episode and pass agent object as input argument
 replay = Replay(rl_agent=agent)
 
 # prepare config dict for the trainer set-up
@@ -40,10 +39,10 @@ config = PPO_DEFAULT_CONFIG
 config["env"] = Environment
 config["env_config"] = {
     "config": {
-        "replay": replay},
+        "replay_episode": replay},
 }
 
-config["num_workers"] = 0
+config["num_workers"] = 2
 config["disable_env_checking"] = False
 
 # Instantiate the Trainer object using above config.
@@ -64,6 +63,11 @@ for n in range(num_iterations):
 
     results.append(result)
     # store relevant metrics from the result dict to the episode dict
+    print('(TRAINER) Result')
+    pp = pprint.PrettyPrinter(indent=4)
+    pp.pprint(results)
+
+
     episode = {
         "n": n,
         "episode_reward_min": result["episode_reward_min"],
@@ -84,7 +88,6 @@ for n in range(num_iterations):
 
 result_df = pd.DataFrame(data=episode_data)
 print(result_df.head())
-
 result_df.to_csv(result_file, index=False)
 
 # create checkpoint file to save trained weights
@@ -94,3 +97,32 @@ result_df.to_csv(result_file, index=False)
 
 # shut down ray (important step since ray can occupy resources)
 ray.shutdown()
+
+"""
+# Further Config Settings:
+--------------------------
+# --change model settings
+config["model"]["fcnet_hiddens"] = [512, 512]
+config["framework"] = "tf" 
+
+# lstm
+#config["model"]["use_lstm"] = True
+#config["model"]["max_seq_len"] = 20
+#config["model"]["lstm_cell_size"] = 256
+
+# conv
+
+config["num_workers"] = 2
+config["evaluation_interval"] = 1
+config["evaluation_duration"] = 1
+config["evaluation_duration_unit"] = "episodes"
+config["ignore_worker_failures"] = True
+
+# test some parameters
+#config["gamma"] = 1
+#config["lr"] =  5e-05
+config["train_batch_size"] = 250      # default = 4000
+config["sgd_minibatch_size"] = 50
+
+# custom model:
+"""

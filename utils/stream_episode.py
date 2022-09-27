@@ -11,7 +11,7 @@ data analysis, development, testing and debugging.
 
 some use cases:
 ---------------
-- replay specific episodes by streaming their messages
+- replay_episode specific episodes by streaming their messages
 - print individual messages
 - print various feature representations
 - test new methods
@@ -33,7 +33,7 @@ pp = pprint.PrettyPrinter(indent=4)
 
 from market.market_interface import MarketInterface
 from market.market import Market
-from replay.replay import Replay
+from replay_episode.replay import Replay
 from feature_engineering.market_features import MarketFeatures
 from agent.agent_metrics import AgentMetrics
 from agent.agent_order import OrderManagementSystem as OMS
@@ -78,7 +78,7 @@ class StreamEpisode:
 
         horizon = 2000
 
-        for i in range(horizon):  # replay.episode.__len__()):
+        for i in range(horizon):  # replay_episode.episode.__len__()):
 
             self.replay.normal_step()
             # . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .

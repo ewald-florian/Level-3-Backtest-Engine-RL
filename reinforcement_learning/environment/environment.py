@@ -14,7 +14,7 @@ import gym
 from gym import spaces
 
 
-# from replay.replay import Replay
+# from replay_episode.replay_episode import Replay
 
 
 class Environment(gym.Env):
@@ -43,14 +43,14 @@ class Environment(gym.Env):
 
         # Entry Points to Level-3 Backtest Engine:
 
-        # -- instantiate replay to step the environment
+        # -- instantiate replay_episode to step the environment
 
         # 1. For Rllib: rllib unpacks the config dict automatically...
         try:
-            self.replay = env_config.get("config").get("replay")
+            self.replay = env_config.get("config").get("replay_episode")
         # 2. For other loops (e.g. toy_training_loop)
         except:
-            self.replay = env_config['env_config']['config']['replay']
+            self.replay = env_config['env_config']['config']['replay_episode']
 
     def step(self, action):
         """
@@ -76,6 +76,9 @@ class Environment(gym.Env):
         observation, reward, done, info = self.replay.rl_step(action)
         # -- Return
 
+        if done:
+            print("(ENV) Done: ", done)
+
         return observation, reward, done, info
 
     def reset(self):
@@ -84,7 +87,7 @@ class Environment(gym.Env):
         the environment. Reset has to be called at the beginning of each
         episode.
         """
-        # -- reset replay
+        # -- reset replay_episode
         first_obs = self.replay.rl_reset()
 
         return first_obs

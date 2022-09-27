@@ -22,11 +22,11 @@ such that the actions are actually:
 
 How does the action get into the ActionSpace?
 
-Option 1: via replay
+Option 1: via replay_episode
 
     environment.step(action)
 
-        replay.step(action)
+        replay_episode.step(action)
 
             actionspace.take_action(action)
 
@@ -38,7 +38,7 @@ Option 2: Action is stored in a Action class attribute: -> Action class
     environment.step(action)
 
         Action(action)
-        replay.step()
+        replay_episode.step()
 
             action_space.take_action(Action.action)
 

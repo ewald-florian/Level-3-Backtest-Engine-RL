@@ -28,7 +28,7 @@ import cProfile, pstats
 
 def run_code():
     # ----
-    from replay.replay import Replay
+    from replay_episode.replay import Replay
     replay = Replay()
     replay.rl_reset()
     print("Episode Len: ", replay.episode.__len__())

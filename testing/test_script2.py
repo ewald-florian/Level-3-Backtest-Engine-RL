@@ -1,4 +1,4 @@
-from replay.replay import Replay
+from replay_episode.replay import Replay
 import numpy as np
 
 re = Replay(identifier="FME", start_date="2022-02-16", end_date="2022-02-16", shuffle=False, frequency="5m", exclude_high_activity_time=True)

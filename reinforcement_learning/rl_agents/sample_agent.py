@@ -10,7 +10,7 @@ Prototype No. 1 for RL Agents (SampleAgent.
 --------------------------------------------------------------------
 Idea: wrap competitive tasks in an abstract class agent
 
-- replay is responsible for done and info (and Context)
+- replay_episode is responsible for done and info (and Context)
 - RLAgent is responsible for take_action, observation, reward+
 
 There are three adjustment points for specialized agents:
@@ -26,7 +26,7 @@ Endo-to-End:
 
 for step in number_of_steps:
 
-    replay.step(self, action)
+    replay_episode.step(self, action)
     
         if self.step > (len(self.episode)):
             self.done = True
@@ -38,17 +38,18 @@ for step in number_of_steps:
         return observation, reward, done, info
 ___________________________________________________________________________
 """
+from copy import copy
 
 from market.market_interface import MarketInterface
-from reinforcement_learning.observation_space import ObservationSpace
-from reinforcement_learning.reward import Reward
+from reinforcement_learning.observation_space.observation_space import ObservationSpace
+from reinforcement_learning.reward.reward import Reward
 from feature_engineering.market_features import MarketFeatures
 
 
 class RlAgent:
 
     def __init__(self,
-                 quantity: int = 10_0000,
+                 quantity: int = 10000_0000,
                  verbose=True):
 
         # static
@@ -71,7 +72,7 @@ class RlAgent:
         observation = self.observation_space.holistic_observation()
 
         # receive reward
-        reward = self.reward.pnl_marginal # property
+        reward = copy(self.reward.pnl_realized) # property
 
         # return
 

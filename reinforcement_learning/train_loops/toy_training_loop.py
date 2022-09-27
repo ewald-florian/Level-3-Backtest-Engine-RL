@@ -13,22 +13,22 @@ __version__ = "0.1"
 
 import numpy as np
 
-from reinforcement_learning.environment import Environment
+from reinforcement_learning.environment.environment import Environment
 from reinforcement_learning.rl_agents.sample_agent import RlAgent
-from replay.replay import Replay
+from replay_episode.replay import Replay
 from market.market import Market
 
 if __name__ == '__main__':
     # instantiate agent
-    agent = RlAgent()
-    # instantiate replay and pass agent object as input argument
+    agent = RlAgent(verbose=False)
+    # instantiate replay_episode and pass agent object as input argument
     replay = Replay(rl_agent=agent)
 
-    # store replay instance in config dict
+    # store replay_episode instance in config dict
     config = {}
     config["env_config"] = {
         "config": {
-            "replay": replay},
+            "replay_episode": replay},
     }
     # instantiate and reset environment
     env = Environment(env_config=config)
@@ -37,14 +37,21 @@ if __name__ == '__main__':
     # run loop
     number_of_steps = 20000
     training_list = []
-    for step in range(10):
+
+    print("LEN EPISODE: ", replay.episode.__len__())
+
+    # run a single episode
+    for step in range(replay.episode.__len__()):
+        print(step)
         # take a random action
         action = np.random.randint(3)
         # call env.step
-        observation, reward, done, info = env.step(action) #calls replay.rl_step(action)
+        observation, reward, done, info = env.step(action) #calls replay_episode.rl_step(action)
         # track activity
-        store = [observation, reward, done, info]
-        training_list.append(store)
+        #store = [observation, reward, done, info]
+        #training_list.append(store)
+
+    print('...loop finished')
 
 
 

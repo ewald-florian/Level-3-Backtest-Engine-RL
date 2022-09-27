@@ -18,7 +18,7 @@ import pandas_market_calendars as mcal
 import pandas as pd
 import numpy as np
 
-from replay.episode import Episode
+from replay_episode.episode import Episode
 from market.market import Market
 from market.market_trade import MarketTrade
 from market.market_metrics import MarketMetrics
@@ -26,8 +26,8 @@ from context.context import Context
 from agent.agent_metrics import AgentMetrics
 from agent.agent_trade import AgentTrade
 from agent.agent_order import OrderManagementSystem
-from reinforcement_learning.observation_space import ObservationSpace
-from reinforcement_learning.reward import Reward
+from reinforcement_learning.observation_space.observation_space import ObservationSpace
+from reinforcement_learning.reward.reward import Reward
 
 
 # TODO: add modes to run episode as list of dates or for a cont. time period
@@ -42,7 +42,7 @@ class Replay:
                  identifier: str = "BMW",
                  start_date: str = "2022-02-01",
                  end_date: str = "2022-02-02",
-                 episode_length: str = "10m",
+                 episode_length: str = "1m",
                  frequency: str = "1m",
                  seed: int = None,
                  shuffle: bool = True,
@@ -84,9 +84,9 @@ class Replay:
 
         # -- rl agent
 
-        # Note:If the replay instance is going to be used for reinforcement
+        # Note:If the replay_episode instance is going to be used for reinforcement
         # learning, the instantiated rl agent object has to be passed via input
-        # argument.This way, I don't need to import different agent in replay.
+        # argument.This way, I don't need to import different agent in replay_episode.
 
         if rl_agent:
             self.rl_agent = rl_agent
@@ -171,7 +171,7 @@ class Replay:
         """
 
         # -- check if episode is done
-        if self.step_counter >= (self.episode.__len__() - 1):
+        if self.episode._step >= (self.episode.__len__() - 1):
             self.done = True
 
         # -- update market with new message packet from episode
@@ -326,7 +326,7 @@ class Replay:
 
             break
 
-    # internally stepped replay . . . . . . . . . . . . . . . . . . . . . . .
+    # internally stepped replay_episode . . . . . . . . . . . . . . . . . . . . . . .
 
     # TODO: implement (low priority since I don't need this method..)
     def run_backtest(self):
@@ -422,15 +422,15 @@ class Replay:
         General Note:
         -------------
         Replay is used as the entry point of externally stepped back-test
-        loops to the backtest-library. Therefore, replay contains a universal
-        base_reset method which does not reset the replay class but all
+        loops to the backtest-library. Therefore, replay_episode contains a universal
+        base_reset method which does not reset the replay_episode class but all
         backtest-engine classes when a new episodes starts.
 
         Rl-Applications:
         ----------------
-        In RL-backtests, the RL-environment calls replay.rl_reset() (which in
+        In RL-backtests, the RL-environment calls replay_episode.rl_reset() (which in
         turn calls base_reset() to reset the environment and receive the first
-        observation and replay.rl_step() to step the environment and receive
+        observation and replay_episode.rl_step() to step the environment and receive
         the latest observation, reward,
         done and info.
         """

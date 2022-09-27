@@ -7,7 +7,7 @@
 # --------------------------------------------------------------------------
 """ Test and debug observation_space"""
 # --------------------------------------------------------------------------
-from replay.replay import Replay
+from replay_episode.replay import Replay
 from market.market import Market
 from context.context import Context
 from feature_engineering.market_features import MarketFeatures
@@ -26,7 +26,7 @@ if __name__ == '__main__':
     am = AgentMetrics()
     mi = MarketInterface()
 
-    for i in range(10):#replay.episode.__len__()):
+    for i in range(10):#replay_episode.episode.__len__()):
         replay.rl_step()
         Context(Market.instances['ID'].state_l3)
 

@@ -2,7 +2,7 @@
 
 from market.market_interface import MarketInterface
 from market.market import Market
-from replay.replay import Replay
+from replay_episode.replay import Replay
 from agent.agent_trade import AgentTrade
 from agent.agent_metrics import AgentMetrics
 from agent.agent_order import OrderManagementSystem as OMS
@@ -137,7 +137,7 @@ if __name__ == '__main__':
 
     print("Episode Len: ", replay.episode.__len__())
 
-    for i in range(210): #replay.episode.__len__()):
+    for i in range(210): #replay_episode.episode.__len__()):
 
         replay.normal_step()
         moditrader.apply_strategy()

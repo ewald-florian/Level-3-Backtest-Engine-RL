@@ -5,7 +5,7 @@ MultiAgentReplay class
 Three alternative Set-ups / Modes:
 
 1.	Hybrid: run a normal historical backtest and let several agents submit
-impact orders ("replay the flash-crash but with..."-scenarios, or just to have
+impact orders ("replay_episode the flash-crash but with..."-scenarios, or just to have
 enough market activity for anything interesting to happen)
 
 2.	Pure simulation from snapshot: The initial state is build from a snapshot
@@ -66,11 +66,11 @@ import Agent_n
 # run simulation
 
 market = Market()
-replay = Replay()
+replay_episode = Replay()
 
 agent_n = Agent_n()
 
-replay.reset()
+replay_episode.reset()
 
 for step in steps:
 

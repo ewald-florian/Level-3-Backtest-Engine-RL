@@ -2,7 +2,7 @@
 
 from market.market_interface import MarketInterface
 from market.market import Market
-from replay.replay import Replay
+from replay_episode.replay import Replay
 from agent.agent_metrics import AgentMetrics
 from agent.agent_order import OrderManagementSystem as OMS
 

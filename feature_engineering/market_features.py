@@ -111,7 +111,6 @@ class MarketFeatures:
             else:
                 pass
 
-
     def level_2(self, store_timestamp: bool = True,
                 data_structure: str = 'df'):
         """

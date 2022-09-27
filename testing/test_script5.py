@@ -30,7 +30,7 @@
 #  entweder odere (es gibt wahrscheinlich eh keinen use case die beiden sachen zu
 #  mischen...)
 
-from replay.replay import Replay
+from replay_episode.replay import Replay
 from market.market import Market
 from context.context import Context
 from feature_engineering.market_features import MarketFeatures
