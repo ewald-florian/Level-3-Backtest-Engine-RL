@@ -76,8 +76,11 @@ class Environment(gym.Env):
         observation, reward, done, info = self.replay.rl_step(action)
         # -- Return
 
-        if done:
-            print("(ENV) Done: ", done)
+        #DEBUGGING
+        #print('(ENV) Step: ', self.replay.episode._step)
+        #print("(ENV) Done: ", done)
+        #print('(ENV) REWARD: ', reward)
+        ###
 
         return observation, reward, done, info
 
@@ -89,6 +92,8 @@ class Environment(gym.Env):
         """
         # -- reset replay_episode
         first_obs = self.replay.rl_reset()
+
+        print('(ENV)  episode len: ', self.replay.episode.__len__())
 
         return first_obs
 

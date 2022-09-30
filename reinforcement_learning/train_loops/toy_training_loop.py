@@ -20,9 +20,10 @@ from market.market import Market
 
 if __name__ == '__main__':
     # instantiate agent
-    agent = RlAgent(verbose=False)
+    agent = RlAgent(verbose=True)
     # instantiate replay_episode and pass agent object as input argument
-    replay = Replay(rl_agent=agent)
+    replay = Replay(rl_agent=agent,
+                    episode_length="10s")
 
     # store replay_episode instance in config dict
     config = {}
@@ -42,11 +43,12 @@ if __name__ == '__main__':
 
     # run a single episode
     for step in range(replay.episode.__len__()):
-        print(step)
+        #print(step)
         # take a random action
         action = np.random.randint(3)
         # call env.step
         observation, reward, done, info = env.step(action) #calls replay_episode.rl_step(action)
+        print('(LOOP) DONE: ', done)
         # track activity
         #store = [observation, reward, done, info]
         #training_list.append(store)

@@ -30,9 +30,10 @@ result_file = generate_result_path(name='otto')
 # Start a new instance of Ray
 ray.init()
 
-agent = RlAgent()
+agent = RlAgent(verbose=False)
 # instantiate replay_episode and pass agent object as input argument
-replay = Replay(rl_agent=agent)
+replay = Replay(rl_agent=agent,
+                episode_length="1m")
 
 # prepare config dict for the trainer set-up
 config = PPO_DEFAULT_CONFIG
@@ -42,8 +43,13 @@ config["env_config"] = {
         "replay_episode": replay},
 }
 
-config["num_workers"] = 2
+config["num_workers"] = 0
 config["disable_env_checking"] = False
+# TODO: 'horizon', 'soft_horizon' what is the difference?
+#  'soft' horizon ist sehr weird, startet die ganze zeit neue episoden und
+#  macht aber nichts...
+#config['horizon'] = True
+config['batch_mode'] = 'complete_episodes'
 
 # Instantiate the Trainer object using above config.
 rllib_trainer = PPOTrainer(config=config)
@@ -56,9 +62,11 @@ episode_data = []
 episode_json = []
 
 # run training loops
-num_iterations = 1
+num_iterations = 10
 for n in range(num_iterations):
 
+    # TODO: set-up trainer in a way that it resets after the done flag is true
+    #  the episode was automatically limited to 2000 steps...
     result = rllib_trainer.train()
 
     results.append(result)
@@ -66,7 +74,6 @@ for n in range(num_iterations):
     print('(TRAINER) Result')
     pp = pprint.PrettyPrinter(indent=4)
     pp.pprint(results)
-
 
     episode = {
         "n": n,

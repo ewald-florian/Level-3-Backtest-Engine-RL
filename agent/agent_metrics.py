@@ -17,10 +17,6 @@ from agent.agent_trade import AgentTrade
 from market.market import Market
 from market.market_trade import MarketTrade
 
-#TODO: is there a way to access properties withoz instantiating AgentMetrics?
-# I can use staticmethods but many methods need self...
-# Could store them in a class attribute but would compute features which
-# i dont need
 
 # TODO: testing, debugging, str, roundtrip-PnLs
 
@@ -34,10 +30,6 @@ class AgentMetrics:
         # static arguments
         self.tc_factor = tc_factor
         self.exposure_limit = exposure_limit
-
-        # TODO: better without composition?
-        self.order_list = OMS.order_list
-        self.trade_list = AgentTrade.history
 
     def get_filtered_messages(self, side=None, template_id=None):
         """
@@ -57,10 +49,10 @@ class AgentMetrics:
                                    "not valid, must be 1 or 2"
 
         if template_id:
-            assert template_id in [99999, 66666, 11111, 33333], \
+            assert template_id in [99999, 66666, 11111, 33333, 44444], \
                 "(AgentMetrics) template_id not valid"
 
-        filtered_messages = self.order_list
+        filtered_messages = OMS.order_list
 
         if filtered_messages:
             # orders must have requested market_id
@@ -75,43 +67,6 @@ class AgentMetrics:
 
             return list(filtered_messages)
 
-    @staticmethod
-    def get_filtered_messages_static(side=None, template_id=None):
-        """
-        Filter messages by side (1: Bid, 2: Ask) and template_id:
-        - 99999 = active order
-        - 66666 = cancellation message
-        - 11111 = executed order
-        - 33333 = cancelled order
-
-        :param side
-            int, 1 or 2
-        :param template_id
-            int, template_id of message
-        """
-        if side:
-            assert side in [1, 2], "(AgentMetrics) Side " \
-                                   "not valid, must be 1 or 2"
-
-        if template_id:
-            assert template_id in [99999, 66666, 11111, 33333], \
-                "(AgentMetrics) template_id not valid"
-
-        filtered_messages = OMS.order_list
-
-        if filtered_messages:
-            # orders must have requested market_id
-            if side:
-                filtered_messages = filter(lambda d: d['side'] == side,
-                                           filtered_messages)
-            # orders must have requested side
-            if template_id:
-                filtered_messages = filter(
-                    lambda d: d['template_id'] == template_id,
-                    filtered_messages)
-
-            return list(filtered_messages)
-
     def get_filtered_trades(self, side):
         """
         Filter trades by side (1 Buy, 2 Sell)
@@ -122,27 +77,7 @@ class AgentMetrics:
         assert side in [1, 2], "(AgentMetrics) Side " \
                                "not valid, must be 1 or 2"
 
-        if self.trade_list:
-
-            filtered_trades = self.trade_list
-
-            filtered_trades = filter(lambda d: d['agent_side'] == side,
-                                     filtered_trades)
-
-            return list(filtered_trades)
-
-    @staticmethod
-    def get_filtered_trades_static(side):
-        """
-        Filter trades by side (1 Buy, 2 Sell)
-
-        :param side
-            int, 1 or 2
-        """
-        assert side in [1, 2], "(AgentMetrics) Side " \
-                               "not valid, must be 1 or 2"
-
-        if self.trade_list:
+        if AgentTrade.history:
 
             filtered_trades = AgentTrade.history
 
@@ -154,11 +89,12 @@ class AgentMetrics:
     @property
     def unrealized_quantity(self):
         """
-        Quantity of assets in open trades.
+        Quantity of assets in open trades. A negative realized quantity means
+        the positions were net short.
         """
         unrealized_quantity = 0
 
-        for trade in self.trade_list:
+        for trade in AgentTrade.history:
 
             quantity = trade['executed_volume'] * 1e-4
             side = trade['agent_side']
@@ -230,7 +166,7 @@ class AgentMetrics:
         #TODO: change: exposure based on buy-in price or current marekt price -> market price
         exposure = 0
 
-        for trade in self.trade_list:
+        for trade in AgentTrade.history:
 
             side = trade['agent_side']
             price = trade['execution_price'] * 1e-8
@@ -278,7 +214,7 @@ class AgentMetrics:
         # 'long'
         if self.exposure > 0:
             buy_trades = list(filter(lambda d: d['agent_side'] == 1,
-                                     self.trade_list))
+                                     AgentTrade.history))
 
             # sort by timestamp descending -> latest trade in the beginning of the list
             sorted_trades = sorted(buy_trades, key=lambda d: d[
@@ -288,7 +224,7 @@ class AgentMetrics:
         elif self.exposure < 0:
 
             sell_trades = list(filter(lambda d: d['agent_side'] == 2,
-                                      self.trade_list))
+                                      AgentTrade.history))
             sorted_trades = sorted(sell_trades, key=lambda d: d[
                 'execution_time'])
 
@@ -319,7 +255,7 @@ class AgentMetrics:
         List of realized trades.
         """
         # TODO: Refactor...
-        realized_trades = copy.copy(self.trade_list)
+        realized_trades = copy.copy(AgentTrade.history)
         unrealized_trades = self.get_unrealized_trades
 
         if realized_trades and unrealized_trades:
@@ -334,27 +270,25 @@ class AgentMetrics:
     @property
     def vwap_buy(self):
         """
-        Vwap buy.
+        Vwap buy. Note: includes all trades, realized and not realized.
         """
-        # TODO: should the prices of unrealized trades be included?
-        vwap_buy= None
+        vwap_buy = None
 
-        if self.get_realized_trades:
+        if AgentTrade.history:
 
-            realized_trades = self.get_realized_trades
 
-            realized_buy_trades = list(filter(lambda d: d['agent_side'] == 1,
-                                              realized_trades))
+            buy_trades = list(filter(lambda d: d['agent_side'] == 1,
+                                              AgentTrade.history))
 
-            if realized_buy_trades:
+            if buy_trades:
 
                 vwap_buy = sum(trade['execution_price'] *
                                 trade['executed_volume']
-                                for trade in realized_buy_trades) / sum(
+                                for trade in buy_trades) / sum(
                                 trade['executed_volume']
-                                for trade in realized_buy_trades) * 1e-8
+                                for trade in buy_trades) * 1e-8
 
-                vwap_buy = round(vwap_buy, 2)
+                vwap_buy = round(vwap_buy, 4)
 
         return vwap_buy
 
@@ -366,23 +300,19 @@ class AgentMetrics:
 
         vwap_sell = None
 
-        if self.get_realized_trades:
+        if AgentTrade.history:
 
-            realized_trades = self.get_realized_trades
+            sell_trades = list(filter(lambda d: d['agent_side'] == 2,
+                                              AgentTrade.history))
 
-            realized_buy_trades = list(filter(lambda d: d['agent_side'] == 2,
-                                              realized_trades))
-
-            if realized_buy_trades:
+            if sell_trades:
 
                 vwap_sell = sum(trade['execution_price'] *
                                 trade['executed_volume']
-                                for trade in realized_buy_trades) / sum(
+                                for trade in sell_trades) / sum(
                                 trade['executed_volume']
-                                for trade in realized_buy_trades) * 1e-8
-                vwap_sell = round(vwap_sell, 2)
-            else:
-                vwap_sell = None
+                                for trade in sell_trades) * 1e-8
+                vwap_sell = round(vwap_sell, 4)
 
         return vwap_sell
 
@@ -438,13 +368,22 @@ class AgentMetrics:
     def pnl_realized(self):
         """
         Current realized PnL of agent.
-        """
 
+        Note: The pln_realized variable can be zero even after a lot of trading
+        activity took place when the vwap_buy and vwap_sell are equal.
+        """
         pnl_realized = 0
 
         realized_quantity = self.realized_quantity
         vwap_buy = self.vwap_buy
         vwap_sell = self.vwap_sell
+
+        # DEBUGGING
+        #print('(AgentMetrics) Trade.history: ', AgentTrade.history)
+        #print('(AgentMetrics) vwap buy: ', vwap_buy)
+        #print('(AgentMetrics) vwap sell: ', vwap_sell)
+        #print('(AgentMetrics) realized_quantity: ', realized_quantity)
+        ###
 
         if realized_quantity:
 
@@ -460,7 +399,7 @@ class AgentMetrics:
 
                     pnl_realized = realized_quantity * (vwap_buy - vwap_sell)
 
-        return round(pnl_realized, 2)
+        return pnl_realized
 
     @property
     def pnl_unrealized(self):

@@ -173,6 +173,7 @@ class Replay:
         # -- check if episode is done
         if self.episode._step >= (self.episode.__len__() - 1):
             self.done = True
+            print('(REPLAY): episode step: ', self.episode._step)
 
         # -- update market with new message packet from episode
         message_packet = self.episode.__next__()
@@ -349,6 +350,8 @@ class Replay:
         :return first_observation
             np.array, first observation of the episode
         """
+        # set done flag to false
+        self.done = False
         # -- base resets resets all relevant backtest-engine classes
         self.base_reset()
         # -- get first observation (context needs to include initial state)

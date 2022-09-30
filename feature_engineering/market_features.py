@@ -5,9 +5,7 @@
 # Created Date: 18/Sept/2022
 # version ='1.0'
 # ---------------------------------------------------------------------------
-""" Feature Engineering clas for the Level-3 backtest engine"""
-
-
+""" Feature Engineering class for the Level-3 backtest engine"""
 # ---------------------------------------------------------------------------
 from context.context import Context
 from market.market_trade import MarketTrade
@@ -43,7 +41,8 @@ class MarketFeatures:
 
     # based on market (context) . . . . . . . . . . . . . . . . . . . . . . . .
 
-    def level_2_plus(self, store_timestamp: bool = True,
+    def level_2_plus(self,
+                     store_timestamp: bool = True,
                      store_hhi: bool = True,
                      data_structure: str = 'array'):
         """
@@ -86,10 +85,14 @@ class MarketFeatures:
                     agg_qt = sum([(d['quantity']) for d in state_l3[side][price]])
 
                     if store_hhi:
-                        # herfindahl index
-                        hhi = sum([(d['quantity'] / agg_qt) ** 2 for d in
-                                   state_l3[side][price]])
-                        data_list.extend((price, agg_qt, hhi))
+                        if agg_qt > 0:
+                            # herfindahl index
+                            hhi = sum([(d['quantity'] / agg_qt) ** 2 for d in
+                                       state_l3[side][price]])
+                            data_list.extend((price, agg_qt, hhi))
+                        else:
+                            # note: if agg_qt = 0 -> division by zero error
+                            data_list.extend((price, agg_qt, 0))
                     else:
                         data_list.extend((price, agg_qt))
 
@@ -155,6 +158,10 @@ class MarketFeatures:
 
         return state_df
 
+    def level_1(self, store_timestamp: bool = True,
+                data_structure: str = 'df'):
+        pass
+
     # TODO
     def weighted_priority_time(self):
         # for each level
@@ -216,7 +223,7 @@ class MarketFeatures:
         Current best bid.
         """
         # check if context is not empty
-        if len(Context.context_list)>0:
+        if len(Context.context_list) > 0:
             best_bid = max(Context.context_list[-1][1].keys())
             return best_bid
 
@@ -227,6 +234,7 @@ class MarketFeatures:
         """
         Current best ask.
         """
+
         # check if context is not empty
         if len(Context.context_list) > 0:
             best_ask = min(Context.context_list[-1][2].keys())

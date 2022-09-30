@@ -73,6 +73,7 @@ class RlAgent:
 
         # receive reward
         reward = copy(self.reward.pnl_realized) # property
+        #print('(SAMPLE AGENT) reward: ', reward)
 
         # return
 
@@ -81,6 +82,7 @@ class RlAgent:
     # ActionSpace
     def take_action(self, action):
 
+        # submit markatable limit orders
         best_ask = self.market_features.best_ask()
         best_bid = self.market_features.best_bid()
 
@@ -90,14 +92,14 @@ class RlAgent:
                                                limit=best_ask,
                                                quantity=self.quantity)
             if self.verbose:
-                print('(RL AGENT) buy submission')
+                print('(RL AGENT) buy submission: ', best_ask)
         # sell
         elif action == 2 and best_bid:
             self.market_interface.submit_order(side=2,
                                                limit=best_bid,
                                                quantity=self.quantity)
             if self.verbose:
-                print('(RL AGENT) sell submission')
+                print('(RL AGENT) sell submission: ', best_bid)
         # wait
         else:
             if self.verbose:
