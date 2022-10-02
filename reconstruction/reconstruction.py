@@ -367,8 +367,8 @@ class Reconstruction:
         for side in self._state.keys():
             for price_level in self._state[side].keys():
                 for order in self._state[side][price_level]:
-                    if (timestamp := order["timestamp"]) > max_timestamp:
-                        max_timestamp = timestamp
+                    if (order["timestamp"]) > max_timestamp:
+                        max_timestamp = order["timestamp"]
 
         # max timestamp existent in current _state
         self._state_timestamp = max_timestamp
@@ -387,8 +387,8 @@ class Reconstruction:
                 for order in self._state[side][price_level]:
                     # Agent Masseges have None as msg_seq_num...
                     if order["msg_seq_num"]:
-                        if (index := order["msg_seq_num"]) > max_index:
-                            max_index = index
+                        if (order["msg_seq_num"]) > max_index:
+                            max_index = order["msg_seq_num"]
 
         self._state_index = max_index
 
