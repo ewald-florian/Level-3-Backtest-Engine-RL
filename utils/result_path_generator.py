@@ -10,9 +10,10 @@ __version__ = "0.1"
 import time
 
 local_dir = "/Users/florianewald/PycharmProjects/Level-3-Backtest-Engine-RL/reinforcement_learning/training_results/"
-server_dir = ""
+server_dir = "/home/jovyan/_shared_storage/temp/A7_eobi_data/downloader_working_05/"
 
-default_base_dir = local_dir
+# TODO: just make a sys statement (if mac, if linux) to avoid changing it every time...
+default_base_dir = server_dir
 
 
 def generate_result_path(name: str, base_dir: str = default_base_dir) -> str:

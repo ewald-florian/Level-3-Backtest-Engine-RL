@@ -36,14 +36,14 @@ if __name__ == '__main__':
     env.reset()
 
     # run loop
-    number_of_steps = 20000
+    number_of_steps = 20
     training_list = []
 
     print("LEN EPISODE: ", replay.episode.__len__())
 
     # run a single episode
-    for step in range(replay.episode.__len__()):
-        #print(step)
+    for step in range(number_of_steps):#replay.episode.__len__()):
+        print(step)
         # take a random action
         action = np.random.randint(3)
         # call env.step
@@ -52,6 +52,7 @@ if __name__ == '__main__':
         # track activity
         #store = [observation, reward, done, info]
         #training_list.append(store)
+        print("Market: ", Market.instances['ID'].state_l1)
 
     print('...loop finished')
 

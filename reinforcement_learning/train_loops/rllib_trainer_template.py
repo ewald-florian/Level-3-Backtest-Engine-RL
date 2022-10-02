@@ -7,6 +7,16 @@ __author__ = "florian"
 __date__ = "2022-09-25"
 __version__ = "0.1"
 # ----------------------------------------------------------------------------
+
+
+# TODO: if sys statement
+# manage GPUs
+gpuid = 'MIG-c8c5eee1-c148-5f66-9889-9759c8656d2b'
+import os
+os.environ["CUDA_VISIBLE_DEVICES"] = gpuid
+from torch.cuda import device_count
+print('Number of Devices: ', device_count())
+
 import json
 import pprint
 
@@ -24,8 +34,11 @@ from reinforcement_learning.rl_agents.sample_agent import RlAgent
 from replay_episode.replay import Replay
 from utils.result_path_generator import generate_result_path
 
+# TODO: if sys
 # generate pathname to store results
-result_file = generate_result_path(name='otto')
+#result_file = generate_result_path(name='otto')
+base_dir = "/home/jovyan/Level-3-Backtest-Engine-RL/reinforcement_learning/training_results"
+result_file = generate_result_path(name='servertest', base_dir=base_dir)
 
 # Start a new instance of Ray
 ray.init()
@@ -62,7 +75,7 @@ episode_data = []
 episode_json = []
 
 # run training loops
-num_iterations = 10
+num_iterations = 2
 for n in range(num_iterations):
 
     # TODO: set-up trainer in a way that it resets after the done flag is true
