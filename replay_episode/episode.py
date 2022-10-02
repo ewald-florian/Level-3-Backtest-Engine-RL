@@ -11,16 +11,22 @@ import json
 import os
 import copy
 import pickle
+import platform
 
 import pandas as pd
 
 from reconstruction.reconstruction import Reconstruction
 
-
 # PATH TO DATA DIRECTORY
-local = "/Users/florianewald/PycharmProjects/A7_data/"
+local="/Users/florianewald/PycharmProjects/A7_data/"
+server="/home/jovyan/_shared_storage/temp/A7_eobi_data/downloader_working_05/"
 
-PATH = local
+if platform.system() == 'Darwin':  # macos
+    PATH = local
+elif platform.system() == 'Linux':
+    PATH = server
+else:
+    raise Exception('Specify PATH in episode.py')
 
 
 class Episode:

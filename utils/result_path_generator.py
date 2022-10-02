@@ -8,12 +8,17 @@ __date__ = "2022-09-25"
 __version__ = "0.1"
 # ----------------------------------------------------------------------------
 import time
+import platform
 
 local_dir = "/Users/florianewald/PycharmProjects/Level-3-Backtest-Engine-RL/reinforcement_learning/training_results/"
 server_dir = "/home/jovyan/_shared_storage/temp/A7_eobi_data/downloader_working_05/"
 
-# TODO: just make a sys statement (if mac, if linux) to avoid changing it every time...
-default_base_dir = server_dir
+if platform.system() == 'Darwin':  # macos
+    default_base_dir = local_dir
+elif platform.system() == 'Linux':
+    default_base_dir = server_dir
+else:
+    raise Exception('Specify base_dir in result_path_generator.py')
 
 
 def generate_result_path(name: str, base_dir: str = default_base_dir) -> str:
