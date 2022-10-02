@@ -11,7 +11,6 @@ __version__ = "0.1"
 # manage GPUs if executed on server
 import platform
 if platform.system() == 'Linux':
-    # manage GPUs
     gpuid = 'MIG-c8c5eee1-c148-5f66-9889-9759c8656d2b'
     import os
     os.environ["CUDA_VISIBLE_DEVICES"] = gpuid
@@ -40,7 +39,9 @@ from utils.result_path_generator import generate_result_path
 
 # generate pathname to store results
 # NOTE: contains sys-if condition for base_dir...
-result_file = generate_result_path(name='servertest', base_dir=base_dir)
+result_file = generate_result_path(name='servertest')
+
+print("RESULT_FILE", result_file)
 
 # Start a new instance of Ray
 ray.init()
@@ -48,7 +49,7 @@ ray.init()
 agent = RlAgent(verbose=False)
 # instantiate replay_episode and pass agent object as input argument
 replay = Replay(rl_agent=agent,
-                episode_length="1m")
+                episode_length="10s")
 
 # prepare config dict for the trainer set-up
 config = PPO_DEFAULT_CONFIG
@@ -77,7 +78,7 @@ episode_data = []
 episode_json = []
 
 # run training loops
-num_iterations = 2
+num_iterations = 10
 for n in range(num_iterations):
 
     # TODO: set-up trainer in a way that it resets after the done flag is true
