@@ -8,18 +8,21 @@ __date__ = "2022-09-25"
 __version__ = "0.1"
 # ----------------------------------------------------------------------------
 
+# manage GPUs if executed on server
+import platform
+if platform.system() == 'Linux':
+    # manage GPUs
+    gpuid = 'MIG-c8c5eee1-c148-5f66-9889-9759c8656d2b'
+    import os
+    os.environ["CUDA_VISIBLE_DEVICES"] = gpuid
+    from torch.cuda import device_count
+    print('Number of Devices: ', device_count())
 
-# TODO: if sys statement
-# manage GPUs
-gpuid = 'MIG-c8c5eee1-c148-5f66-9889-9759c8656d2b'
-import os
-os.environ["CUDA_VISIBLE_DEVICES"] = gpuid
-from torch.cuda import device_count
-print('Number of Devices: ', device_count())
-
+# build ins
 import json
 import pprint
 
+# general imports
 import pandas as pd
 
 # rllib imports
@@ -34,10 +37,9 @@ from reinforcement_learning.rl_agents.sample_agent import RlAgent
 from replay_episode.replay import Replay
 from utils.result_path_generator import generate_result_path
 
-# TODO: if sys
+
 # generate pathname to store results
-#result_file = generate_result_path(name='otto')
-base_dir = "/home/jovyan/Level-3-Backtest-Engine-RL/reinforcement_learning/training_results"
+# NOTE: contains sys-if condition for base_dir...
 result_file = generate_result_path(name='servertest', base_dir=base_dir)
 
 # Start a new instance of Ray
