@@ -249,6 +249,12 @@ class MessagePacketParser:
                     "exec_id":        int(message["ExecID"])
                }
 
+        # NOTE: the explanation for the flawed executions without timestamps
+        # could be that large in scale waiver orders sometimes have the
+        # privilege of delayed post-trade reporting (check MIFID 2 for more).
+        # However, in this case, it should not be possible to have a final
+        # end state which matches the end_snapshot since we skipped the
+        # flawed messages...
         else:
             if verbose:
                 print('Flawed Message: ')

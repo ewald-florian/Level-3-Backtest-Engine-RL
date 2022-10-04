@@ -61,7 +61,6 @@ class RandomTrader:
             # log AgentMetrics
             print(self.metrics)
 
-
 if __name__ == '__main__':
 
     # inst: -> generate episode start list
