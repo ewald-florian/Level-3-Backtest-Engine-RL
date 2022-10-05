@@ -27,6 +27,7 @@ from agent.agent_order import OrderManagementSystem as OMS
 # TODO: test match_n() method (for impact)
 # TODO: If I remove liquidity from simulation state, I also have to do this
 #  in the observation space (consistency)
+# TODO: re-structure market class (make plausible sections etc.)
 
 
 class Market(Reconstruction):
@@ -370,7 +371,6 @@ class Market(Reconstruction):
 
     #  agent order simulation WITH MARKET IMPACT . . . . . . . . . . . . . . .
 
-    # TODO: Überarbeiten damit es mit MarketInterface kompatibel ist!
     def update_with_agent_message_impact(self, message) -> list:
         """
         This method is the entry point of MarketInterface to submit and cancel
@@ -433,7 +433,6 @@ class Market(Reconstruction):
             # Note: the template_id of fully executed impact orders
             # is changed to 11111 directly in match()
 
-    # TODO: adjust to new structure
     def _order_submit_impact(self, message):
         """
         Process agent submission message.
@@ -456,7 +455,6 @@ class Market(Reconstruction):
         # add impact order message to internal state
         self._state[side][price].append(message)
 
-    # TODO: adjust to new structure
     def _order_cancel_impact(self, message):
         """
         Process agent cancellation message. The order which is to be cancelled
@@ -538,7 +536,6 @@ class Market(Reconstruction):
             # update priority timestamp
             modified_order['timestamp'] = message['timestamp']
 
-    # TODO: test and debug
     def _impact_agent_order_matching(self):
         """
         Method to match simulated agent orders with the internal state.
@@ -556,7 +553,7 @@ class Market(Reconstruction):
 
     #  agent order simulation WITHOUT MARKET IMPACT . . . . . . . . . . . . .
 
-    # TODO: better name for this method
+    # TODO: better name for this crucial method
     def update_simulation_with_exchange_message(self, message_packet):
         """
         This method is the entry point for Replay to Marekt to step the
@@ -567,12 +564,10 @@ class Market(Reconstruction):
 
         # -- call the reconstruction method to process historical messages.
         # returns the parsed message_packet
-
         parsed_message_packet = self.update_with_exchange_message(
             message_packet)
 
         # -- process execution summary messages
-
         if list(filter(lambda d: d['template_id'] == 13202,
                        parsed_message_packet)):
             # store market trades
@@ -631,17 +626,15 @@ class Market(Reconstruction):
         OMS(message)
 
         # -- submission
-
         if message['template_id'] == 99999:
             # assert if price is allowed by ticksize
             assert np.gcd(self.ticksize, message['price']) == self.ticksize, \
-                'Limit not admitted by ticksize'
+                'Limit not permitted by ticksize'
 
             # test if agent order matching is possible
             self._simulate_agent_order_matching()
 
         # -- cancellation
-
         elif message['template_id'] == 66666:
 
             # identify order
@@ -653,7 +646,6 @@ class Market(Reconstruction):
             cancelled_order['template_id'] = 33333
 
         # -- modification
-
         elif message['template_id'] == 44444:
 
             # identify order
@@ -666,6 +658,10 @@ class Market(Reconstruction):
 
             # change price
             if 'new_price' in message.keys():
+                assert np.gcd(self.ticksize,
+                        message['new_price']) == self.ticksize, \
+                        'Limit not permitted by ticksize'
+
                 modified_order['old_price'] = modified_order['price']
                 modified_order['price'] = message['new_price']
 
@@ -679,6 +675,7 @@ class Market(Reconstruction):
             # change timestamp
             # -> if limit is changed or qt is increased, priority time changes
             # -> if just qt is decreased, priority time is
+            # TODO: new_quantity/old_quantity not defined (set 0 or so...)
             if "new_price" in message.keys() or new_quantity > old_quantity:
                 # store old timestamp
                 modified_order['old_timestamp'] = modified_order[
@@ -702,17 +699,15 @@ class Market(Reconstruction):
         state which only contains relevant price levels (for higher efficiency)
         """
         trade_list = None
-        # -- build simulation state
 
+        # -- build simulation state
         simulation_state = self._build_simulation_state()
 
         # -- match simulation_state, receive trade list
         if simulation_state:
-            # TODO: Development
-            #trade_list = self.match_new(state_to_match=simulation_state)
             trade_list = self.match_simulation(state_to_match=simulation_state)
 
-        # -- update OMS
+        # -- Process trades
         if trade_list:
             # -- update OMS
             self._process_executed_agent_orders(trade_list)
@@ -722,24 +717,14 @@ class Market(Reconstruction):
             if self.model_market_impact:
                 self._process_agent_exhausted_liquidity(trade_list)
 
-                # DEBUGGING
-                #print('trade_list: ', trade_list)
-                #print(20 * '-')
-                #print('agent_exhausted_liquidity: ',
-                #      self.agent_exhausted_liquidity)
-                #print(20 * '-')
-
     def _build_simulation_state(self) -> dict:
         """
         Build the simulation state which is used to match simulated agent
-        orders against limit orders in the internal market state.
+        orders against limit orders of the internal market state.
 
-        The simulation state consists of two elements. First, partial copy of
+        The simulation state is a partial copy of
         the internal state which only encompasses price levels which are
-        relevant for the simulated matching. Second, all active agent orders
-        (99999) with a valid timestamp (smaller or equal to market timestamp).
-        Meaning, Agent orders which are submitted but did not yet overcome
-        their latency are excluded.
+        relevant for the simulated matching.
 
         The structure of the simulation_state equals the structure of the
         internal state:
@@ -748,8 +733,8 @@ class Market(Reconstruction):
             {1:{bid_price1 : [bid_order1,...], price2: [bid_order1,...]},
             {2:{ask_price1 : [ask_order1,...], price2: [ask_order1,...]}}
 
-        Hence, match(state_to_match) can be used to match both the internal
-        state or the simulation state.
+        Hence, match_simulation(state_to_match) can be used to match the
+        simulation state.
 
         The relevant price levels of the LOB contain the following. First, For
         each agent order, the state must contain all contrary orders which can
@@ -784,7 +769,7 @@ class Market(Reconstruction):
             ask_threshold_values = []
 
             # -- define thresholds for relevant state
-            # (i.e. which price levels need to be present)
+            # (i.e. which price levels need to be included)
 
             # filter prices from agent messages
             buy_prices = []
@@ -851,43 +836,6 @@ class Market(Reconstruction):
                 simulation_state = self._block_agent_exhausted_liquidity(
                     state_to_match=simulation_state)
 
-            """ # NOTE: agent messages will be added separately!
-            # Note1: messages can just be appended, they will be executed
-            # according to their priority time
-            # Note2: I copy the messages instead of giving a reference to the
-            # original message, this means that massages in the OMS will not
-            # directly be affected by matching.Instead, matched agent orders
-            # will be processed separately in process_agent_order.
-            # Note3: account for LATENCY by selecting only messages with valid
-            # timestamp
-            # Note4: Impact orders are not considered, they cannot be executed
-            # in a simulated execution since this would mean they are marked
-            # as executed in OMS but stay "forever" in the internal state.
-
-            for message in OMS.order_list:
-
-                if message['template_id'] == 99999 and message[
-                    'timestamp'] <= self.timestamp and \
-                        'impact_flag' not in message.keys():
-                    # buy-order
-                    if message['side'] == 1:
-                        price = message['price']
-                        # add message if price level exists
-                        if price in simulation_state[1]:
-                            simulation_state[1][price].append(message.copy())
-                        # create new price level for message
-                        else:
-                            simulation_state[1][price] = [message.copy()]
-
-                    # sell-order
-                    if message['side'] == 2:
-                        price = message['price']
-                        if price in simulation_state[2]:
-                            simulation_state[2][price].append(message.copy())
-                        else:
-                            simulation_state[2][price] = [message.copy()]
-            """
-
         return simulation_state
 
     # debugged and tested (15.19.2022)
@@ -911,23 +859,18 @@ class Market(Reconstruction):
             if 'message_id' in trade.keys():
                 message_id = trade['message_id']
                 executed_volume = trade['quantity']
-                # TODO: actually relevant for Trade, but could also be saved in order...
-                execution_price = trade['price']
-                execution_time = trade['timestamp']
 
                 # -- filter out the affected agent messages by message-id
                 # Note: executed_order is reference to mutable message object
                 # -> message can be manipulated
-                # TODO: use d instead of message
-                message = next(
-                    filter(lambda message: message['message_id'] == message_id,
+                message = next(filter(lambda d: d['message_id'] == message_id,
                            OMS.order_list))
 
                 # -- manipulate the agent message to process the execution
 
                 # agent orders was fully executed (possibly after part.ex.)
                 if executed_volume >= message['quantity']:
-                    message['template_id'] = 11111  # -11111: fully executed
+                    message['template_id'] = 11111  # 11111: fully executed
                     if 'partial_executions' in message.keys():
                         message['partial_executions'].append(
                             message['quantity'])
@@ -1105,6 +1048,8 @@ class Market(Reconstruction):
     @staticmethod
     def match_new(state_to_match) -> list:
         """
+        For Impact Matching.
+
         The matching method can be used for both simulated matching and impact
         matching depending on the state_to_match given as input:
 
@@ -1263,27 +1208,28 @@ class Market(Reconstruction):
     #  evtl auf mehrere methoden aufteilen (z.B. _sort_agent_orders)
     def match_simulation(self, state_to_match) -> list:
         """
-        The matching method can be used for both simulated matching and impact
-        matching depending on the state_to_match given as input:
+        Match agent orders against simulation_state. Active agent_orders
+        (template_id 99999) are divided in sell_orders and buy_orders and
+        respectively sorted by price-time priority. Then, in an iterative
+        process, each agent order is appended to the simulation state,
+        matched if possible and finally non-matched leftovers of the agent
+        order are removed. This approach ensures that agent orders are
+        matched in line with their priority and no self-matching can take
+        place.
 
-            - self._state => impact matching
-            - simulation_state => simulated matching
-
-        Matching is conducted in line with priority. In both cases, executed
+        Matching is conducted in line with priority rules. Executed
         liquidity is removed from the state_to_match during the matching
         process. For partial executions, the quantity of the respective order
         is decreased for (final) full executions, the order is removed. Since
         the simulation state is just temporary, executions in the simulation_
         state do not affect the internal market state and do not directly
-        affect the agent messages in OMS. On the contrary, executions in the
-        internal state do directly affect the internal market state (market
-        impact) and also directly affect the impact agent messages in OMS.
+        affect the agent messages in OMS.
 
         The simulated state is entirely copied and does not include references
         to the internal state or the OMS. Hence, manipulating the simulation
         state does neither affect the internal state nor the OMS (agent
         messages). Instead, executed agent messages are processed separately in
-         _process_executed_agent_orders() Their template_id
+         _process_executed_agent_orders(). Their template_id
         is changed to 11111 in OMS to indicate the execution status when fully
         executed. When partially executed, the quantity is decreased, the
         executed quantity is stored under "partial_executions and the original
@@ -1293,15 +1239,21 @@ class Market(Reconstruction):
         :param state_to_match,
             dict, state which should be matched (either simulation_state or
             self._state)
+        :return trade_list
+            list, execution summaries of matching process
         """
+        # NEW VERSION (05-10-22)
 
-        # sort agent_orders according to price-time priority
+        trade_list = []
+
+        # --------------------------------------------------------------------
+
         agent_orders = list(filter(lambda d: d['template_id'] == 99999
                                         and d['timestamp'] <= self.timestamp
                                         and 'impact_flag' not in d.keys(),
-                                        OMS.order_list))
+                                        OMS.order_list.copy()))
 
-        # # buy orders: descending price, ascending time
+        # buy orders: descending price, ascending time
         agent_buy_orders = sorted(
             filter(lambda d: d['side'] == 1, agent_orders),
             key=lambda d: (-d['price'], d['timestamp']))
@@ -1310,52 +1262,51 @@ class Market(Reconstruction):
             filter(lambda d: d['side'] == 2, agent_orders),
             key=lambda d: (d['price'], d['timestamp']))
 
-        #DEBUGGING
-        print('agent_buy_orders: ', agent_buy_orders)
-        print('agent_sell_orders: ', agent_sell_orders)
+        # --------------------------------------------------------------------
 
-        # Empty trade_list
-        trade_list = []
+        for agent_side in [agent_buy_orders, agent_sell_orders]:
 
-        # iterate over agent orders:
-        for order_list in [agent_buy_orders, agent_sell_orders]:
+            side_matchable = True
 
-            # append agent order to state_to_match
-            for order in order_list:
+            for order in agent_side:
+
                 price = order['price']
                 side = order['side']
-                message_id = order['message_id']
-                # todo: name of state?
+
+                # add agent-order to simulation_state
                 if price in state_to_match[side].keys():
                     state_to_match[side][price].append(order.copy())
                 else:
                     state_to_match[side][price] = [order.copy()]
 
-                #DEBUGGING
-                #TODO: something is wrong with the quantity
-                print('state to match w agent_order: ', state_to_match[side][price])
+                # ------------------------------------------------------------
 
-                # MATCHING
-                # check if state_to_match has two order book sides
                 if state_to_match[1] and state_to_match[2]:
 
-                    # loop until best price levels cannot be matched
+                    first_iteration = True
+
                     while True:
 
                         # break if not both sides are filled with orders
                         if not state_to_match[1] or not state_to_match[2]:
+                            # break while loop
                             break
 
                         max_buy = max(state_to_match[1].keys())  # best bid
                         min_sell = min(state_to_match[2].keys())  # best ask
 
-                        # TODO: can I actually use break or does this break my overall loop?
-                        # break if order book not crossed
-                        if not max_buy >= min_sell:
-                            continue
-                            #break
+                        # flag to break outer loop
+                        if max_buy < min_sell and first_iteration:
+                            side_matchable = False
 
-                        # remove if empty
+                        first_iteration = False
+
+                        # break if order book not crossed
+                        if max_buy < min_sell:
+                            # break while loop
+                            break
+
+                        # remove if empty list
                         if not (state_to_match[1][max_buy]):
                             del state_to_match[1][max_buy]
                             continue
@@ -1370,20 +1321,14 @@ class Market(Reconstruction):
                         order_sell = sorted(state_to_match[2][min_sell],
                                             key=lambda d: d['timestamp'])[0]
 
-                        #DEBUGGING
-                        print('order_buy: ', order_buy)
-                        print('order_sell: ', order_sell)
-
-                        # TODO: in edge cases the more aggressive price is deciding
+                        # TODO: in edge cases the more aggressive price is deciding (e.g. right after opening)
                         #  not the timestamp
                         # aggressor order has later timestamp
                         order_standing, order_aggressor = sorted(
-                                                [order_buy, order_sell],
-                                                key=lambda x: x["timestamp"])
-                        #DEBUGGING
-                        print('order_standing', order_standing)
-                        print('order_aggressor', order_aggressor)
+                            [order_buy, order_sell],
+                            key=lambda x: x["timestamp"])
 
+                        # ----------------------------------------------------
                         # execution price is always the price of the standing order
                         execution_price = order_standing["price"]
                         aggressor_side = order_aggressor["side"]
@@ -1425,14 +1370,14 @@ class Market(Reconstruction):
                                 order_buy["template_id"] = 11111
                             if "message_id" in order_sell.keys():
                                 order_sell["template_id"] = 11111
-
+                        # ----------------------------------------------------
                         # append "execution summary" to trade list
                         match_execution_summary = {
                             "aggressor_side": aggressor_side,
                             "price": execution_price,
                             "timestamp": aggressor_timestamp,
                             "quantity": execution_quantity,
-                            }
+                        }
 
                         # if agent-message was matched, add message_id
                         if "message_id" in order_buy.keys():
@@ -1444,6 +1389,7 @@ class Market(Reconstruction):
                                 "message_id"]
                             match_execution_summary["agent_side"] = 2
 
+                        # TODO: this can technically not happen (remove)
                         # Edge-Case, both sides are agent orders:
                         elif ("message_id" in order_buy.keys()
                               and "message_id" in order_sell.keys()):
@@ -1459,35 +1405,24 @@ class Market(Reconstruction):
                               and "message_id" in order_sell.keys()):
                             match_execution_summary["lob_order"] = order_buy
 
-                        #DEBUGGING
-                        print("execsum: ", match_execution_summary)
-                        print("state before removal: ", state_to_match[side][price])
-
                         trade_list.append(match_execution_summary)
 
-                        # remove leftover agent order from simulation_state
-                        try:
-                            order = list(filter(lambda d:
-                                            d['message_id'] == message_id,
+                    # --------------------------------------------------------
+                    # remove leftovers of agent order after while loop
+                    try:
+                        order = list(filter(lambda d:
+                                            'message_id' in d.keys(),
                                             state_to_match[side][price]))[0]
-                            state_to_match[side][price].remove(order)
+                        state_to_match[side][price].remove(order)
+                    # if agent order is fully executed
+                    except:
+                        pass
 
-                            #DEBUGGING
-                            print("state after removal: ", state_to_match[side][price])
-                        except:
-                            pass
-
-                # Note: This typically happens when the simulation state contains only
-                # agent orders and the agent orders are all on the same side. If the
-                # best LOB order on the same side is less aggressive than the least
-                # aggressive agent order, this LOB side is not considered since no
-                # comparison of priorities is necessary. If the most aggressive LOB
-                # order on the contrary side of the agent orders is not aggressive
-                # enough to match any agent order, this side is also not considered
-                # since no matching can take place (book is not crossed).
-                else:
-                    pass
-                    # print('(WARNING) LOB not crossed - no matching possible')
+                    # --------------------------------------------------------
+                    # skip the other agent-orders on this agent_side
+                    # note: this breaks the order for-loop
+                    if not side_matchable:
+                        break
 
         return trade_list
 

@@ -4,6 +4,7 @@ from market.market_interface import MarketInterface
 from market.market import Market
 from replay_episode.replay import Replay
 from agent.agent_metrics import AgentMetrics
+from agent.agent_trade import AgentTrade
 from agent.agent_order import OrderManagementSystem as OMS
 
 import numpy as np
@@ -24,12 +25,36 @@ class Trader:
 
         # -- fill OMS with limit orders
         # buy order
-        if self.counter < 10:
+        if self.counter < 5:
             # submit order via market interface
             best_bid = Market.instances['ID'].best_bid
 
             self.mi.submit_order(side=1,
                                  limit=best_bid,
+                                 quantity=333_0000)
+
+        if 10 < self.counter < 15:
+            # submit order via market interface
+            best_ask = Market.instances['ID'].best_ask
+
+            self.mi.submit_order(side=2,
+                                 limit=best_ask,
+                                 quantity=333_0000)
+
+        if 5 < self.counter < 10:
+            # submit order via market interface
+            best_bid = Market.instances['ID'].best_bid
+
+            self.mi.submit_order(side=1,
+                                 limit=best_bid - (2*Market.instances['ID'].ticksize),
+                                 quantity=333_0000)
+
+        if 5 < self.counter < 10:
+            # submit order via market interface
+            best_ask = Market.instances['ID'].best_ask
+
+            self.mi.submit_order(side=2,
+                                 limit=best_ask + (2*Market.instances['ID'].ticksize),
                                  quantity=333_0000)
 
         if 10 < self.counter < 15:
@@ -81,6 +106,7 @@ if __name__ == '__main__':
     print("Episode Len: ", replay.episode.__len__())
 
     for i in range(33):#replay.episode.__len__()):
-        print(i)
         replay.normal_step()
         trader.trade()
+        print("AgentTrade: ", AgentTrade.history)
+        print("OMS: ", OMS.order_list)
