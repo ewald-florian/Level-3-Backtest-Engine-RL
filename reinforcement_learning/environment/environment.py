@@ -13,8 +13,10 @@ import numpy as np
 import gym
 from gym import spaces
 
-
-# from replay_episode.replay_episode import Replay
+from reinforcement_learning.action_space.action_storage import ActionStorage
+from reinforcement_learning.transition.agent_transition import AgentTransition
+from reinforcement_learning.transition.environment_transition \
+    import EnvironmentTransition
 
 
 class Environment(gym.Env):
@@ -72,16 +74,26 @@ class Environment(gym.Env):
 
         # assert if action is valid
         assert self.action_space.contains(action), "Invalid Action"
+
+        # pass action to agent via ActionStorage class attribute
+        ActionStorage(action)
+        #print("(ENV) action storage: ", ActionStorage.action)
+        # replay step (now, without action)
+        self.replay.rl_step_new()
+
+        # get AgentTransition
+        observation, reward = AgentTransition.transition
+        #print("(ENV) AgentTransition.transition: ", AgentTransition.transition)
+
+        # get EnvironmentTransition
+        done, info = EnvironmentTransition.transition
+        #print("(ENV) EnvironmentTransition.transition: ", EnvironmentTransition.transition)
+        """ # old version
         # -- Take step and receive observation, reward, info
         observation, reward, done, info = self.replay.rl_step(action)
         # -- Return
-
-        #DEBUGGING
-        #print('(ENV) Step: ', self.replay.episode._step)
-        #print("(ENV) Done: ", done)
-        #print('(ENV) REWARD: ', reward)
-        ###
-
+        """
+        # return
         return observation, reward, done, info
 
     def reset(self):

@@ -8,3 +8,7 @@ python -m rllib_trainer_template
 
 # run second trainer
 # ...
+
+# Note:
+# make executable: $chmod u+x jobs.sh
+# can be executed in terminal with $./jobs.sh

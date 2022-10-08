@@ -1,19 +1,21 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+# ---------------------------------------------------------------------------
+"""
+Abstract Observation Space class for RL-Agent
+"""
 #----------------------------------------------------------------------------
-# Created By  : florian
-# Created Date: 09/Sept/2022
-# version ='1.0'
+__author__ =  'florian'
+__date__ =  '08-10-2022'
+__version__ = '0.1'
 # ---------------------------------------------------------------------------
-"""
-Observation Space for RL-Agent when not using the abstract classes stucture.
-"""
-# ---------------------------------------------------------------------------
+
+from abc import ABC, abstractmethod
+
+import numpy as np
 
 from feature_engineering.market_features import MarketFeatures
 from feature_engineering.agent_features import AgentFeatures
-
-import numpy as np
 # TODO: Überlegen wie und wo ObservationSpace aufgerufen werden soll
 # TODO: Welche art von class attribute (einfach self? -> self.observation)
 # TODO: Eigentlich unpraktisch da ich zuerst ObservationSpace() callen müsste
@@ -27,10 +29,12 @@ import numpy as np
 # concatenate them in ObservationSpace, pass to Neural Network (obs)
 
 
-class ObservationSpace:
-
-    # class attribute
-    observation = None
+class BaseObservationSpace(ABC):
+    """
+    BaseObservationSpace is an abstract method to be subclassed by a specific
+    observation space. The abstract classes agent_observation and
+    market_observation must be implemented in the subclass.
+    """
 
     # start_date to compute latest min max prices
     def __init__(self):
@@ -47,8 +51,22 @@ class ObservationSpace:
         self.market_features = MarketFeatures()
         self.agent_features = AgentFeatures()
 
-        # -- update class attribute
-        self.__class__.instance = self.holistic_observation()
+    @abstractmethod
+    def market_observation(self):
+        """
+        Create market observation. This usually includes to take lob data
+        and additional features from MarketFeatures and normalize them.
+        """
+        raise NotImplementedError("Implement market_observation in subclass.")
+
+    @abstractmethod
+    def agent_observation(self):
+        """
+        Abstract method must be implemented in subclass. Create agent
+        observation. Usually based on agent metrics such as exposure, position
+        remaining time of the trading period, inventory.
+        """
+        raise NotImplementedError("Implement agent_observation in subclass.")
 
     # TODO: implement
     def _get_min_max_prices(self):
@@ -68,28 +86,6 @@ class ObservationSpace:
         # larger quantities will be capped to this value
         self.min_qt = 1
         self.max_qt = ...
-
-    def market_observation(self):
-        """
-        Create market observation. This usually includes to take lob data
-        and additional features from MarketFeatures and normalize them.
-        """
-
-        # -- market features
-        market_obs = self.market_features.level_2_plus(store_timestamp=False,
-                                                  data_structure='array')
-
-        # TODO: added this to avoid some import errors
-        if market_obs is not None:
-            prices = market_obs[::3]
-            quantities = market_obs[1::3]
-            # -- normalize
-            prices = self._min_max_norma_prices(prices)
-            quantities = self._min_max_norma_quantities(quantities)
-            market_obs[::3] = prices
-            market_obs[1::3] = quantities
-
-        return market_obs
 
     def _min_max_norma_prices(self, input_array):
         """
@@ -119,10 +115,6 @@ class ObservationSpace:
     def _z_score_normalization(self):
         pass
 
-    def agent_observation(self):
-        # based on AgentMetrics
-        return np.array([])
-
     def holistic_observation(self):
         """
         Combine market_obs and agent_obs to one array which
@@ -136,5 +128,3 @@ class ObservationSpace:
 
         return holistic_obs
 
-    def reset(self):
-        pass

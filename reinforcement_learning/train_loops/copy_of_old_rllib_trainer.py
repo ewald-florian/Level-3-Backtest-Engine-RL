@@ -9,7 +9,7 @@ import pandas as pd
 from ray.rllib.agents.ppo import DEFAULT_CONFIG as PPO_DEFAULT_CONFIG
 import time
 from reinforcement_learning.environment.environment import Environment
-from reinforcement_learning.rl_agents.sample_agent import RlAgent
+from reinforcement_learning.agent_prototypes.sample_agent import RlAgent
 from replay_episode.replay import Replay
 from utils.result_path_generator import generate_result_path
 

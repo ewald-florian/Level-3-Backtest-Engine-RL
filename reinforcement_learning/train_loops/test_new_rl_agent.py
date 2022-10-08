@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # ---------------------------------------------------------------------------
-"""Template for Rllib training loops."""
+"""Test new abstract class structure of RL Agent"""
 # ----------------------------------------------------------------------------
 __author__ = "florian"
-__date__ = "2022-09-25"
+__date__ = "2022-10-08"
 __version__ = "0.1"
 # ----------------------------------------------------------------------------
 
@@ -32,7 +32,9 @@ from ray.rllib.agents.ppo import DEFAULT_CONFIG as PPO_DEFAULT_CONFIG
 
 # library imports
 from reinforcement_learning.environment.environment import Environment
-from reinforcement_learning.agent_prototypes.sample_agent import RlAgent
+#from reinforcement_learning.agent_prototypes.sample_agent import RlAgent
+from reinforcement_learning.base_agent.special_agent_template \
+    import SpecialAgent
 from replay_episode.replay import Replay
 from utils.result_path_generator import generate_result_path
 
@@ -46,10 +48,10 @@ print("RESULT_FILE", result_file)
 # Start a new instance of Ray
 ray.init()
 
-agent = RlAgent(verbose=False)
+agent = SpecialAgent(verbose=False)
 # instantiate replay_episode and pass agent object as input argument
 replay = Replay(rl_agent=agent,
-                episode_length="1m")
+                episode_length="20s")
 
 # prepare config dict for the trainer set-up
 config = PPO_DEFAULT_CONFIG

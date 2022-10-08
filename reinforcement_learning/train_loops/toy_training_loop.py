@@ -14,7 +14,7 @@ __version__ = "0.1"
 import numpy as np
 
 from reinforcement_learning.environment.environment import Environment
-from reinforcement_learning.rl_agents.sample_agent import RlAgent
+from reinforcement_learning.agent_prototypes.sample_agent import RlAgent
 from replay_episode.replay import Replay
 from market.market import Market
 

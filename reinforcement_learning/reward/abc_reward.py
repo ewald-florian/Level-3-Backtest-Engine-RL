@@ -1,23 +1,25 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+# ---------------------------------------------------------------------------
+"""
+Abstract Reward class for RL-Agent
+"""
 #----------------------------------------------------------------------------
-# Created By  : florian
-# Created Date: 17/Sept/2022
-# version ='1.0'
+__author__ =  'florian'
+__date__ =  '08-10-2022'
+__version__ = '0.1'
 # ---------------------------------------------------------------------------
-"""
-Reward class for RL Environment.
-"""
-# ---------------------------------------------------------------------------
+
+from abc import ABC, abstractmethod
+
 from agent.agent_metrics import AgentMetrics
 #TODO: just implement each possible reward function as a new method such that
 # they can be freely selected by different agents and compared
 
 
-class Reward:
+class BaseReward(ABC):
     """
-    Collection of various reward functions which can be called by
-    RL agents.
+    Abstract reward class to be subclassed.
     """
 
     # class attribute
@@ -27,6 +29,15 @@ class Reward:
 
         self.agent_metrics = AgentMetrics()
         self.last_pnl = 0
+
+    @abstractmethod
+    def receive_reward(self):
+        """
+        Abstract method to be implemented in subclass. This could either be
+        a custom reward function or just calling a standard reward function
+        as given by the properties below.
+        """
+        raise NotImplementedError("Implement receive_reward in subclass.")
 
     @property
     def pnl_unrealized(self):

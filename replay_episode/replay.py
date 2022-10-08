@@ -6,11 +6,13 @@
 __author__ = "florian"
 __date__ = "2022-09-25"
 __version__ = "0.2"
+
 # ---------------------------------------------------------------------------
 
 import random
 import datetime
 import logging
+
 logging.getLogger().setLevel(logging.INFO)
 
 # !pip install pandas-market-calendars # -> dependency!
@@ -26,8 +28,11 @@ from context.context import Context
 from agent.agent_metrics import AgentMetrics
 from agent.agent_trade import AgentTrade
 from agent.agent_order import OrderManagementSystem
-from reinforcement_learning.observation_space.observation_space import ObservationSpace
+from reinforcement_learning.observation_space.observation_space \
+    import ObservationSpace
 from reinforcement_learning.reward.reward import Reward
+from reinforcement_learning.transition.environment_transition \
+    import EnvironmentTransition
 
 
 # TODO: add modes to run episode as list of dates or for a cont. time period
@@ -92,7 +97,44 @@ class Replay:
             self.rl_agent = rl_agent
 
     # rl-step . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+    # Note: new rl_step 2022-10-08
+    def rl_step_new(self):
+        """
+        RL-step method, to be called in the environment.step() method.
+        ---------------------------------------------------------------
+        Central Method to step the backtesting engine externally based
+        on the episode __next__() method. Can be called from an external
+        iterative training loop, for example in the "step" method of an
+        RL-environment class in Open-AI Gym convention.
 
+        Done and info are stored to EnvironmentTransition.transition which
+        can be accessed by Environment. Observation and Reward are received
+        in the agent.step and stores to AgentTransition.transition which can
+        be accessed by Environment as well.
+        """
+        # -- market step
+        self._market_step()
+        # -- save context
+        state_l3 = Market.instances['ID'].state_l3
+        Context(state_l3)
+
+        # -- store done, info to env transition
+        done = self.done
+        info = {}  # TODO: fill info dict
+        EnvironmentTransition(done, info)
+        #print('(ENV): done ', done)
+        #print('(ENV) info ', info)
+        #print("(REPLAY) env_transition: ", EnvironmentTransition.transition)
+        # -- rl_agent
+        self.rl_agent.step()
+        # -- update step_counter
+        self.step_counter += 1
+
+        # note: rl_step_new does not have own returns, obs and rew are
+        # returned via AgentTransition, done info is returned via
+        # EnvironmentTransition
+
+    # Note: old rl step which returned obs, reward, done, info
     def rl_step(self, action=None):
         """
         RL-step method, to be called in the environment.step() method.
@@ -122,11 +164,12 @@ class Replay:
         Context(state_l3)
 
         # -- rl-agent step
+        # TODO: I could store this in an EnvTransition class...
         done = self.done
-        info = {} #TODO: fill with relevant background infos...
+        info = {}  # TODO: fill with relevant background infos...
 
         ################## DEVELOPMENT AREA ##################################
-        # rl_agents can just be changed to test different set-ups
+        # agent_prototypes can just be changed to test different set-ups
         # -------------------------------------------------------------------
 
         # note: all details need to be implemented in rlagent class
@@ -173,7 +216,6 @@ class Replay:
         # -- check if episode is done
         if self.episode._step >= (self.episode.__len__() - 1):
             self.done = True
-            print('(REPLAY): episode step: ', self.episode._step)
 
         # -- update market with new message packet from episode
         message_packet = self.episode.__next__()
@@ -457,12 +499,9 @@ class Replay:
 
         # TODO: check regularly if further resets are necessary
         # Further Possible but not necessary resets (general library):
-        #------------------------------------------
+        # ------------------------------------------
         # MarketMetrics
         # MarketInterface
         # AgentMetrics
         # AgentFeatures (if dynamic attributes!)
         # MarketFeatures (if dynamic attributes!)
-
-
-
