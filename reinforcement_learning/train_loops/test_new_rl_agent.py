@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # ---------------------------------------------------------------------------
-"""Test new abstract class structure of RL Agent"""
+"""Trainer Loop to test new abstract class structure of RL Agent"""
 # ----------------------------------------------------------------------------
 __author__ = "florian"
 __date__ = "2022-10-08"
@@ -33,7 +33,7 @@ from ray.rllib.agents.ppo import DEFAULT_CONFIG as PPO_DEFAULT_CONFIG
 # library imports
 from reinforcement_learning.environment.environment import Environment
 #from reinforcement_learning.agent_prototypes.sample_agent import RlAgent
-from reinforcement_learning.base_agent.special_agent_template \
+from reinforcement_learning.base_agent.special_agent_example \
     import SpecialAgent
 from replay_episode.replay import Replay
 from utils.result_path_generator import generate_result_path

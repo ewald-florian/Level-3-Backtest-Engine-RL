@@ -29,7 +29,7 @@ if __name__ == '__main__':
 
     for i in range(replay.episode.__len__()):
 
-        replay.rl_step()
+        replay.rl_step_old()
         # collect context
         Context(Market.instances['ID'].state_l3)
         # generate orders

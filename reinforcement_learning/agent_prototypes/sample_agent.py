@@ -6,6 +6,10 @@ __date__ = "2022-09-21"
 __version__ = "0.1"
 # ----------------------------------------------------------------------------
 """
+
+***NOTE: THIS IS AN OLD VERSION OF AN SAMPLE AGENT!***
+***FROM BEFORE THE CANGE TO THE ABSTRACT CLASS STRUCTURE***
+
 Prototype No. 1 for RL Agents (SampleAgent.
 --------------------------------------------------------------------
 Idea: wrap competitive tasks in an abstract class agent

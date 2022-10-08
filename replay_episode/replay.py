@@ -28,14 +28,12 @@ from context.context import Context
 from agent.agent_metrics import AgentMetrics
 from agent.agent_trade import AgentTrade
 from agent.agent_order import OrderManagementSystem
-from reinforcement_learning.observation_space.observation_space \
-    import ObservationSpace
-from reinforcement_learning.reward.reward import Reward
-from reinforcement_learning.transition.environment_transition \
+from reinforcement_learning.transition.env_transition \
     import EnvironmentTransition
-
+from reinforcement_learning.action_space.action_storage import ActionStorage
 
 # TODO: add modes to run episode as list of dates or for a cont. time period
+
 
 class Replay:
 
@@ -85,20 +83,20 @@ class Replay:
         self._generate_episode_start_list()
 
         # -- observation space (for RL: first_observation)
-        self.observation_space = ObservationSpace()
+        #self.observation_space = ObservationSpace()
 
         # -- rl agent
 
-        # Note:If the replay_episode instance is going to be used for reinforcement
-        # learning, the instantiated rl agent object has to be passed via input
-        # argument.This way, I don't need to import different agent in replay_episode.
+        # Note:If the replay_episode instance is going to be used for rl,
+        # the instantiated rl agent object has to be passed as input arg.
+        # This way, I don't need to import different agent in replay_episode.
 
         if rl_agent:
             self.rl_agent = rl_agent
 
     # rl-step . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
     # Note: new rl_step 2022-10-08
-    def rl_step_new(self):
+    def rl_step(self):
         """
         RL-step method, to be called in the environment.step() method.
         ---------------------------------------------------------------
@@ -111,6 +109,11 @@ class Replay:
         can be accessed by Environment. Observation and Reward are received
         in the agent.step and stores to AgentTransition.transition which can
         be accessed by Environment as well.
+
+        Note:
+        method does not have own returns, obs and rew are
+        returned via AgentTransition, done info is returned via
+        EnvironmentTransition.
         """
         # -- market step
         self._market_step()
@@ -130,12 +133,8 @@ class Replay:
         # -- update step_counter
         self.step_counter += 1
 
-        # note: rl_step_new does not have own returns, obs and rew are
-        # returned via AgentTransition, done info is returned via
-        # EnvironmentTransition
-
     # Note: old rl step which returned obs, reward, done, info
-    def rl_step(self, action=None):
+    def rl_step_old(self, action=None):
         """
         RL-step method, to be called in the environment.step() method.
         ---------------------------------------------------------------
@@ -244,7 +243,7 @@ class Replay:
         it is possible to define a specific seed using the seed argumen.
         """
 
-        # xetra trading calendar (trading hours, weekends, holydays)
+        # Xetra trading calendar (trading hours, weekends, holidays)
         xetr = mcal.get_calendar('XETR')
         schedule = xetr.schedule(start_date=self.start_date,
                                  end_date=self.end_date)
@@ -303,7 +302,7 @@ class Replay:
                         <= high_activity_close.time()),
                        self.episode_start_list))
 
-        # -- shuffle episode (optional
+        # -- shuffle episode (optional)
         if self.seed:
             random.seed(self.seed)
 
@@ -369,7 +368,7 @@ class Replay:
 
             break
 
-    # internally stepped replay_episode . . . . . . . . . . . . . . . . . . . . . . .
+    # internally stepped replay_episode . . . . . . . . . . . . . . . . . .
 
     # TODO: implement (low priority since I don't need this method..)
     def run_backtest(self):
@@ -396,12 +395,16 @@ class Replay:
         self.done = False
         # -- base resets resets all relevant backtest-engine classes
         self.base_reset()
+        # -- reset ActionStorage
+        ActionStorage.reset()
+        # -- reset RL-Agent
+        # Note: MarketInterface, Reward, ObservationSpace are reset
+        # inside agent.reset()
+        self.rl_agent.reset()
         # -- get first observation (context needs to include initial state)
-        first_observation = self.observation_space.holistic_observation()
-        # -- reset Reward
-        _ = Reward
+        first_obs = self.rl_agent.observation_space.holistic_observation()
 
-        return first_observation
+        return first_obs
 
         # TODO: check regularly if further resets are necessary
         # Further Possible but not necessary resets (RL extension):

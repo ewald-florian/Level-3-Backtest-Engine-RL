@@ -15,7 +15,7 @@ from gym import spaces
 
 from reinforcement_learning.action_space.action_storage import ActionStorage
 from reinforcement_learning.transition.agent_transition import AgentTransition
-from reinforcement_learning.transition.environment_transition \
+from reinforcement_learning.transition.env_transition \
     import EnvironmentTransition
 
 
@@ -79,7 +79,7 @@ class Environment(gym.Env):
         ActionStorage(action)
         #print("(ENV) action storage: ", ActionStorage.action)
         # replay step (now, without action)
-        self.replay.rl_step_new()
+        self.replay.rl_step()
 
         # get AgentTransition
         observation, reward = AgentTransition.transition

@@ -2,10 +2,12 @@
 # -*- coding: utf-8 -*-
 # ---------------------------------------------------------------------------
 """
-TEMPLATE for RL-Agent Prototypes.
----------------------------------
+Example for the usage of the Template for RL-Agent Prototypes.
+--------------------------------
 A Prototype of a 'Special Agent' has to be build using a construct of
 abstract- and subclasses. The SpecialAgent is then controlled from replay.
+
+This is a simple PnL trader as example.
 
 - ObservationSpace subclasses BaseObservationSpace, the abstract methods which
     need to be implemented are agent_observation and market_observation.
@@ -26,17 +28,15 @@ This template can be copied to implement a new prototype. Prototypes should
 have a unique and meaningful name and be located in the agent_prototypes
 package.
 """
-# ----------------------------------------------------------------------------
-__author__ = 'florian'
-__date__ = '2022-10-08'
+#----------------------------------------------------------------------------
+__author__ =  'florian'
+__date__ =  '2022-10-08'
 __version__ = '0.1'
-
 # ---------------------------------------------------------------------------
-# TODO: reset agent afer each episode... (to be called inside replay)
+#TODO: reset agent afer each episode... (to be called inside replay)
 from copy import copy
 
 import numpy as np
-import pandas as pd
 
 from market.market_interface import MarketInterface
 from feature_engineering.market_features import MarketFeatures
@@ -53,41 +53,38 @@ class ObservationSpace(BaseObservationSpace):
     Subclass of BaseObservationSpace to implement the observation for a
     specific agent. The abstract methods market_observation and
     agent_observation need to be implemented.
-
-    Note:
-    ----
-    The returns of market_obs and agent_obs are concatenated in the
-    method holistic_observation inherited from the parent class which can
-    be directly called by the rl-agent to receive the holistic observation.
-
-    Normalization has to be be defined inside the abstract methods. The parent
-    class provides some helpful normalization methods which can be used for
-    that step.
     """
-
     def __init__(self):
         """
-        Initiate parent class with super function. This may be relevant for
-        normalization parameters such as min-max prices and quantities.
+        Initiate parent class via super function.
         """
         super().__init__()
 
     def market_observation(self) -> np.array:
         """
-        Implement the market observation, the public part of the agents
-        observation space.
+        Implement the market observation.
         """
         # -- market features
-        market_obs = ...
+        market_obs = self.market_features.level_2_plus(store_timestamp=False,
+                                                  data_structure='array')
+
+        # TODO: added this to avoid some import errors
+        if market_obs is not None:
+            prices = market_obs[::3]
+            quantities = market_obs[1::3]
+            # -- normalize
+            prices = self._min_max_norma_prices(prices)
+            quantities = self._min_max_norma_quantities(quantities)
+            market_obs[::3] = prices
+            market_obs[1::3] = quantities
+
         return market_obs
 
     def agent_observation(self) -> np.array:
         """
-        Implement the agent observation. The private part of the agents
-        observation space.
+        Implement the agent observation.
         """
-        agent_obs = ...
-        return agent_obs
+        return np.array([])
 
 
 class Reward(BaseReward):
@@ -96,40 +93,22 @@ class Reward(BaseReward):
     The abc method receive_reward needs to be implemented.
     """
     def __init__(self):
-        """
-        Instantiate parent class.
-        """
         super().__init__()
 
     def receive_reward(self):
-        """
-        Returns reward. This abstract method should be implemented to
-        specify the reward function for the specific agent. The reward
-        function can either be new custom reward function or be based on the
-        collection of standard reward functions in the parent class.
-        :return reward
-            ..., current reward for the rl-agent
-        """
-        reward = ...
+        reward = self.pnl_realized
         return reward
 
 
 class SpecialAgent(RlBaseAgent):
     """
     Template for SpecialAgents which are based on specific reward and
-    observation space which together with the specific take_action method
-    constitute the characteristic of the special agent.
-
-    Note:
-    -----
-    - SpecialAgent is a placeholder, change to meaningful name.
-    - Each SpecialAgent can be stored in a single py file together with its
-        corresponding Reward and ObservationSpace classes.
-    - Write complementary documentation for the implemented methods of the
-        SpecialAgent
+    observation space.
     """
     def __init__(self,
-                 verbose=True):
+                 quantity: int = 10000_0000,
+                 verbose=True
+                 ):
         """
         When initialized, SpecialAgent builds compositions of MarketInterface,
         Reward and ObservationSpace. Note that Reward and ObservationSpace
@@ -138,7 +117,7 @@ class SpecialAgent(RlBaseAgent):
         specific reward function.
         """
         # static
-        super().__init__()
+        self.quantity = quantity
         self.verbose = verbose
 
         # compositions
@@ -148,22 +127,24 @@ class SpecialAgent(RlBaseAgent):
 
         self.market_features = MarketFeatures()
 
-    # TODO: this method does not really need to be adjusted I could almost
-    #  add it to the abstract parent class.
     def step(self):
         """
         Step executes the action, gets a new observation, receives the reward
         and returns reward and observation.
         """
-        # -- take action
+        # get action from ActionStorage
         action = ActionStorage.action
+        #print('(AGENT) action ', action)
         self._take_action(action)
-        # -- make observation
+
         observation = copy(self.observation_space.holistic_observation())
-        # -- receive reward
         reward = copy(self.reward.receive_reward())
-        # -- pass agent transition
+        #print('(AGENT) reward: ', reward)
+        #print('(AGENT) observation: ', observation)
+
+        # pass obs, reward to Env via AgentTransition.transition
         AgentTransition(observation, reward)
+        #print('(AGENT) AgentTransition: ', AgentTransition.transition)
 
     def _take_action(self, action):
         """
@@ -171,16 +152,32 @@ class SpecialAgent(RlBaseAgent):
         :param action,
             ..., next action
         """
-        pass
+        # submit marketable limit orders
+        best_ask = self.market_features.best_ask()
+        best_bid = self.market_features.best_bid()
+
+        # buy
+        if action == 1 and best_ask:
+            self.market_interface.submit_order(side=1,
+                                               limit=best_ask,
+                                               quantity=self.quantity)
+            if self.verbose:
+                print('(RL AGENT) buy submission: ', best_ask)
+        # sell
+        elif action == 2 and best_bid:
+            self.market_interface.submit_order(side=2,
+                                               limit=best_bid,
+                                               quantity=self.quantity)
+            if self.verbose:
+                print('(RL AGENT) sell submission: ', best_bid)
+        # wait
+        else:
+            if self.verbose:
+                print('(RL AGENT) wait')
 
     def reset(self):
-        """
-        Reset SpecialAgent before each new episode. Basically, copy the
-        __init__ method. Make sure to add all additional static and
-        dynamic attributes.
-        """
-        # TODO: add all attributes of the special agent
         super().__init__()
+        self.quantity = self.quantity
         self.verbose = self.verbose
 
         # compositions
@@ -188,3 +185,4 @@ class SpecialAgent(RlBaseAgent):
         self.reward.reset()
         self.observation_space.reset()
         self.market_features.reset()
+

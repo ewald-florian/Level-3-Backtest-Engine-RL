@@ -27,7 +27,7 @@ if __name__ == '__main__':
     mi = MarketInterface()
 
     for i in range(10):#replay_episode.episode.__len__()):
-        replay.rl_step()
+        replay.rl_step_old()
         Context(Market.instances['ID'].state_l3)
 
         print(mf.best_ask())
