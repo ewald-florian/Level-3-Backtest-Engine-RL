@@ -356,6 +356,7 @@ class MarketFeatures:
     # orderbook). It is in general an important discussion that the agent
     # is confronted with a "partially observable" environment.
 
-
+    def reset(self):
+        pass
 
 
