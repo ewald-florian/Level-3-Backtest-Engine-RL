@@ -128,3 +128,6 @@ class BaseObservationSpace(ABC):
 
         return holistic_obs
 
+    def reset(self):
+        pass
+
