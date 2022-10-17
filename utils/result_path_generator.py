@@ -10,15 +10,15 @@ __version__ = "0.1"
 import time
 import platform
 
-local_dir = "/Users/florianewald/PycharmProjects/Level-3-Backtest-Engine-RL/reinforcement_learning/training_results/"
-server_dir = "/home/jovyan/Level-3-Backtest-Engine-RL/reinforcement_learning/training_results/"
+local_dir = "/Users/florianewald/PycharmProjects/Level-3-Backtest-Engine-RL/reinforcement_learning/train_results/"
+server_dir = "/home/jovyan/Level-3-Backtest-Engine-RL/reinforcement_learning/train_results/"
 
 if platform.system() == 'Darwin':  # macos
     default_base_dir = local_dir
 elif platform.system() == 'Linux':
     default_base_dir = server_dir
 else:
-    raise Exception('Specify base_dir in result_path_generator.py')
+    raise Exception('Specify base_dir in utils/result_path_generator.py')
 
 
 def generate_result_path(name: str, base_dir: str = default_base_dir) -> str:
