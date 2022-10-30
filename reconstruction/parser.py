@@ -84,6 +84,8 @@ class MessagePacketParser:
                     # packet header
                     if template_id == 13005:
                         continue
+                    elif template_id == 13003:
+                        continue
                     
                     # order add
                     elif template_id == 13100:
