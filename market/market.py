@@ -35,7 +35,7 @@ class Market(Reconstruction):
     instances = dict()
 
     """
-    # TODO: Write Market class docstring.
+    # TODO: Write new Market class docstring.
     """
 
     def __init__(self,
@@ -46,6 +46,7 @@ class Market(Reconstruction):
                  match_agent_against_exec_summary: bool = True,
                  agent_latency: int = 0,
                  track_index: bool = False,
+                 store_arrival_price = True,
                  verbose: bool = True):
 
         super().__init__(track_timestamp=True,
@@ -76,6 +77,7 @@ class Market(Reconstruction):
         self.report_state_timestamps = report_state_timestamps
         self.match_agent_against_exe_sum = match_agent_against_exec_summary
         self.agent_latency = agent_latency  # in ns, e.g 8790127
+        self.store_arrival_price = store_arrival_price
         self.verbose = verbose
 
         # store python version for backward-compatibility
@@ -406,6 +408,9 @@ class Market(Reconstruction):
         # add message_id
         message['message_id'] = len(OMS.order_list)
         # append message to OMS.order_list
+        # TODO: message arrival price (impact)
+        if self.store_arrival_price:
+            message['arrival_price'] = self.midpoint
         OMS(message)
 
         # order submit
@@ -556,7 +561,7 @@ class Market(Reconstruction):
     # TODO: better name for this crucial method
     def update_simulation_with_exchange_message(self, message_packet):
         """
-        This method is the entry point for Replay to Marekt to step the
+        This method is the entry point of Replay to Market to step the
         market environment.
 
         Update market messages and check if agent matching is possible.
@@ -621,7 +626,9 @@ class Market(Reconstruction):
         message['msg_seq_num'] = None
         # add message_id
         message['message_id'] = len(OMS.order_list)
-
+        # TODO: message['arrival_price'] (also for trade_history)
+        if self.store_arrival_price:
+            message['arrival_price'] = self.midpoint
         # store message to Order Management System
         OMS(message)
 

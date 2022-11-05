@@ -437,6 +437,16 @@ class AgentMetrics:
 
         return round(pnl_unreal, 2)
 
+    # TODO: implement
+    def implementation_shortfall(self):
+        """
+        Compute Implementation Shortfall.
+        """
+
+        realized_trades = self.get_realized_trades()
+        return realized_trades
+
+
     @property
     def exposure_budget_left(self):
         """

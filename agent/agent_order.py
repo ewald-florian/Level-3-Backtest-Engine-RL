@@ -11,6 +11,7 @@
 
 # Should later replace Market.agent_message_list
 # TODO: log order submissions/cancellations
+import pandas as pd
 
 
 class OrderManagementSystem:  # OMS
@@ -20,7 +21,7 @@ class OrderManagementSystem:  # OMS
 
     def __init__(self,
                  message: dict,
-                 verbose: bool =True):
+                 verbose: bool = True):
         """
         Store agent messages (submissions and cancellations)
          in class attribute order_list.
@@ -41,9 +42,7 @@ class OrderManagementSystem:  # OMS
             side = message["side"]
             limit = message["price"]
             quantity = message["quantity"]
-            # TODO: include latency
             timestamp = message["timestamp"]
-            # TODO
             # if verbose:
             #    print()
             # print(f'(INFO) Agent Order Submitted: Side: {side} | Price: {price} | Quantity: {quantity}')
@@ -79,8 +78,8 @@ class OrderManagementSystem:  # OMS
         return len(self.__class__.order_list)
 
     @classmethod
-    def reset_history(class_reference):
+    def reset_history(cls):
         """
         Reset order_list.
         """
-        del class_reference.order_list[:]
+        del cls.order_list[:]

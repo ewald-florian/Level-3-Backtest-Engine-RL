@@ -7,7 +7,7 @@ debugging. Does not include Reinforcement Learning or any form of ML.
 """
 # ----------------------------------------------------------------------------
 __author__ = "florian"
-__date__ = "2022-09-21"
+__date__ = "2022-11-05"
 __version__ = "0.1"
 # ----------------------------------------------------------------------------
 
@@ -18,13 +18,13 @@ from reinforcement_learning.agent_prototypes.sample_agent import RlAgent
 from replay_episode.replay import Replay
 from market.market import Market
 
-from reinforcement_learning.base_agent.special_agent_example \
-    import SpecialAgent
+from reinforcement_learning.agent_prototypes.is_agent \
+    import ISAgent
 
 if __name__ == '__main__':
     # instantiate agent
     #agent = RlAgent(verbose=True)
-    agent = SpecialAgent()
+    agent = ISAgent()
     # instantiate replay_episode and pass agent object as input argument
     replay = Replay(rl_agent=agent,
                     episode_length="10s")

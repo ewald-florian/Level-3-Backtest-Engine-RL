@@ -66,6 +66,7 @@ class AgentTrade: # vs MarketTrade
         return len(self.__class__.history)
 
     #TODO: implement helpful properties...
+    # this is rather for agent_metrics...
     @property
     def vwap_buy(self):
         pass
