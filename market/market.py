@@ -915,7 +915,8 @@ class Market(Reconstruction):
                            'execution_price': trade['price'],
                            'aggressor_side': trade['aggressor_side'],
                            'message_id': trade['message_id'],
-                           "agent_side": trade["agent_side"]}
+                           'agent_side': trade["agent_side"],
+                           'arrival_price': trade["arrival_price"]}
             # store in AgentTrade.history
             AgentTrade(agent_trade)
 
@@ -1040,7 +1041,8 @@ class Market(Reconstruction):
                                 "timestamp": aggressor_timestamp,
                                 "quantity": execution_quantity,
                                 "message_id": message_id,
-                                "agent_side": agent_order['side']}
+                                "agent_side": agent_order['side'],
+                                "arrival_price": agent_order['arrival_price']}
 
                             trade_list.append(match_execution_summary)
                             # remove executed_order from executed_orders
@@ -1176,15 +1178,20 @@ class Market(Reconstruction):
                                            "quantity": execution_quantity,
                                            }
 
-                # if agent-message was matched, add message_id
+                # if agent-message was matched, add message_id, agent side
+                #  and arrival price
                 if "message_id" in order_buy.keys():
                     match_execution_summary["message_id"] = order_buy[
                         "message_id"]
                     match_execution_summary["agent_side"] = 1
+                    match_execution_summary["arrival_price"] = order_buy[
+                        "arrival_price"]
                 elif "message_id" in order_sell.keys():
                     match_execution_summary["message_id"] = order_sell[
                         "message_id"]
                     match_execution_summary["agent_side"] = 2
+                    match_execution_summary["arrival_price"] = order_sell[
+                        "arrival_price"]
                 # TODO: Eigenausführungen verhindern (illegal und sinnlos für RL)?
                 # Edge-Case, both sides are agent orders:
                 elif "message_id" in order_buy.keys() and "message_id" in \
@@ -1391,10 +1398,14 @@ class Market(Reconstruction):
                             match_execution_summary["message_id"] = order_buy[
                                 "message_id"]
                             match_execution_summary["agent_side"] = 1
+                            match_execution_summary["arrival_price"] = \
+                                order_buy["arrival_price"]
                         elif "message_id" in order_sell.keys():
                             match_execution_summary["message_id"] = order_sell[
                                 "message_id"]
                             match_execution_summary["agent_side"] = 2
+                            match_execution_summary["arrival_price"] = \
+                                order_sell["arrival_price"]
 
                         # TODO: this can technically not happen (remove)
                         # Edge-Case, both sides are agent orders:

@@ -1,5 +1,5 @@
-#!/usr/bin/env python3  Line 1
-# -*- coding: utf-8 -*- Line 2
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 # ---------------------------------------------------------------------------
 """
 Step the RL environment with random action for developing, testing and
@@ -27,7 +27,7 @@ if __name__ == '__main__':
     agent = ISAgent()
     # instantiate replay_episode and pass agent object as input argument
     replay = Replay(rl_agent=agent,
-                    episode_length="10s")
+                    episode_length="1m")
 
     # store replay_episode instance in config dict
     config = {}
@@ -40,7 +40,7 @@ if __name__ == '__main__':
     env.reset()
 
     # run loop
-    number_of_steps = 20
+    number_of_steps = 5
     training_list = []
 
     print("LEN EPISODE: ", replay.episode.__len__())

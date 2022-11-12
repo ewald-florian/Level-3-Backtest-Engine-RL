@@ -3,6 +3,10 @@
 # ---------------------------------------------------------------------------
 """
 Agent based on implementation shortfall.
+
+IS = side * (execution_price-arrival_price) / arrival_price
+
+see Raja Velu p. 337.
 """
 #----------------------------------------------------------------------------
 __author__ =  'florian'
@@ -72,11 +76,28 @@ class Reward(BaseReward):
     def __init__(self):
         super().__init__()
 
+        # dynamic attributes
+        self.number_of_trades = 0
+
     # TODO: move finished is-reward into BaseReward later and only call it here
+    # TODO: "marginal is": 0 for no trade, IS of last trade for trade
+    #  kann man über len(trade_list) machen, immer wenn sich diese verändert
+    #  ähnlich wie bei PnL (dort war es halt easy weil ich einfach diff nehmen konnte)
     def receive_reward(self):
-        #reward = self.pnl_realized
-        reward = self.agent_metrics.implementation_shortfall()
-        print("REWARD: ", reward)
+
+        # set is to 0
+        latest_trade_is = 0
+        new_number_of_trades = 0
+        # only if there is a trade list already
+        if self.agent_metrics.get_realized_trades:
+            new_number_of_trades = len(self.agent_metrics.get_realized_trades)
+
+        # update is only if there is a new trade (sparse reward)
+        if new_number_of_trades > self.number_of_trades:
+            latest_trade_is = self.agent_metrics.latest_trade_is
+        # return is as reward
+        reward = latest_trade_is
+        print("IS reward", reward)
         return reward
 
 
@@ -86,7 +107,7 @@ class ISAgent(RlBaseAgent):
     observation space.
     """
     def __init__(self,
-                 quantity: int = 10000_0000,
+                 quantity: int = 10_0000,
                  verbose=True
                  ):
         """
@@ -138,14 +159,14 @@ class ISAgent(RlBaseAgent):
 
         # buy
         if action == 1 and best_ask:
-            self.market_interface.submit_order(side=1,
+            self.market_interface.submit_order(side=1, #1
                                                limit=best_ask,
                                                quantity=self.quantity)
             if self.verbose:
                 print('(RL AGENT) buy submission: ', best_ask)
         # sell
         elif action == 2 and best_bid:
-            self.market_interface.submit_order(side=2,
+            self.market_interface.submit_order(side=2, #2
                                                limit=best_bid,
                                                quantity=self.quantity)
             if self.verbose:

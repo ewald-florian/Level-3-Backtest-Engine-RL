@@ -38,7 +38,6 @@ class MarketFeatures:
     def __init__(self):
         pass
 
-
     # based on market (context) . . . . . . . . . . . . . . . . . . . . . . . .
 
     def level_2_plus(self,

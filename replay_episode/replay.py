@@ -93,6 +93,9 @@ class Replay:
 
         if rl_agent:
             self.rl_agent = rl_agent
+        # for non-RL applications
+        else:
+            self.rl_agent = None
 
     # rl-step . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
     # Note: new rl_step 2022-10-08
@@ -391,6 +394,7 @@ class Replay:
         :return first_observation
             np.array, first observation of the episode
         """
+
         # set done flag to false
         self.done = False
         # -- base resets resets all relevant backtest-engine classes
@@ -400,7 +404,8 @@ class Replay:
         # -- reset RL-Agent
         # Note: MarketInterface, Reward, ObservationSpace are reset
         # inside agent.reset()
-        self.rl_agent.reset()
+        if self.rl_agent:
+            self.rl_agent.reset()
         # -- get first observation (context needs to include initial state)
         first_obs = self.rl_agent.observation_space.holistic_observation()
 
@@ -411,6 +416,7 @@ class Replay:
         # ------------------------------------------
         # ObservationSpace
         # RlAgent
+        # AgentFeatures
         # ActionSpace (currently not used)
         # ActionStorage (currently not used)
 

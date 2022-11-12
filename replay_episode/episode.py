@@ -94,7 +94,6 @@ class Episode:
         #self.episode_start = pd.Timestamp('2022-02-16 08:10:00+0000', tz='UTC')
         #self.episode_end = pd.Timestamp('2022-02-16 08:20:00+0000', tz='UTC')
 
-
         start_date_str = self.episode_start.strftime("%Y%m%d")
         start_hour = self.episode_start.strftime("%H")
 
@@ -189,7 +188,7 @@ class Episode:
         del self.reconstruction._state
 
     # note: for development uses
-    def load_specific_files(self, base_path:str):
+    def load_specific_files(self, base_path: str):
         '''
         Load episode from specific base_path
         '''
@@ -201,7 +200,6 @@ class Episode:
         self.snapshot_start = json.load(snapshot_start_file)[0]
         self.snapshot_end = json.load(snapshot_end_file)
         self.message_packet_list = json.load(message_list_file)[1:]
-
 
     def __next__(self) -> list:
         '''

@@ -31,6 +31,10 @@ class AgentMetrics:
         self.tc_factor = tc_factor
         self.exposure_limit = exposure_limit
 
+        # dynamic attributes
+        # TODO: check if there is a better solution (maybe better in Reward...)
+        self.last_number_of_trades = 0
+
     def get_filtered_messages(self, side=None, template_id=None):
         """
         Filter messages by side (1: Bid, 2: Ask) and template_id:
@@ -443,8 +447,64 @@ class AgentMetrics:
         Compute Implementation Shortfall.
         """
 
-        realized_trades = self.get_realized_trades()
-        return realized_trades
+        implementation_shortfall = 0
+
+        realized_trades = self.get_realized_trades
+        new_number_of_trades = len(realized_trades)
+
+        # todo: last_number_of_trades
+        if new_number_of_trades > last_number_of_trades:
+            last_trade = realized_trades[-1]
+            is_side = 1 if last_trade['agent_side'] == 1 else -1
+            execution_price = last_trade['execution_price']
+            arrival_price = last_trade['arrival_price']
+            implementation_shortfall = is_side * execution_price / arrival_price
+            # update number of trades
+            self.number_of_trades = new_number_of_trades
+
+        return implementation_shortfall
+
+    @property
+    def latest_trade_is(self):
+        """
+        Implementation shortfall of the latest trade. This function can e.g. be
+        called in Reward. Note: this way, the is does not account for the
+        volume of the trade.
+        """
+        print("AgentTrade", AgentTrade.history)
+        realized_trades = self.get_realized_trades
+        latest_trade = realized_trades[-1]
+        is_side = 1 if latest_trade['agent_side'] == 1 else -1
+        execution_price = latest_trade['execution_price']
+        arrival_price = latest_trade['arrival_price']
+        # see Velu p. 337
+        last_is = is_side * (execution_price - arrival_price) / arrival_price
+        return last_is
+
+    @property
+    def overall_is(self):
+        """
+        Volume weighted implementation shortfall of all filled trades.
+        Note: If there are both buy and sell orders, overall implementation
+        may not be very meaningful.
+        """
+        # TODO: muss ich das getrennt für buy und sell machen?
+        #  sons hebt sich das ja gegenseitig auf...
+        realized_trades = self.get_realized_trades
+        volume_sum = 0
+        weighted_trade_is_sum = 0
+        for trade in realized_trades:
+            is_side = 1 if trade['agent_side'] == 1 else -1
+            execution_price = trade['execution_price']
+            arrival_price = trade['arrival_price']
+            volume = trade['execution_volume']
+            volume_sum += volume
+            weighted_trade_is = is_side * (execution_price -
+                                           arrival_price) / arrival_price
+            weighted_trade_is_sum += weighted_trade_is
+
+        overall_is = weighted_trade_is_sum / volume_sum
+        return overall_is
 
 
     @property
