@@ -75,6 +75,8 @@ class Episode:
         self.snapshot_end = None
         self.snapshot_start = None
         self.message_packet_list = None
+        self.episode_start_unix = None
+        self.episode_end_unix = None
 
         # map stock ETR to ISIN
         self.isin_dict = {"BMW": "DE0005190003",
@@ -140,10 +142,10 @@ class Episode:
         self.reconstruction.initialize_state(snapshot=snapshot_start)
 
         # convert to unix
-        episode_start_unix = (self.episode_start - pd.Timestamp(
+        self.episode_start_unix = (self.episode_start - pd.Timestamp(
             "1970-01-01", tz='UTC')) // pd.Timedelta('1ns')
 
-        episode_end_unix = (self.episode_end - pd.Timestamp(
+        self.episode_end_unix = (self.episode_end - pd.Timestamp(
             "1970-01-01",tz='UTC')) // pd.Timedelta('1ns')
 
         # run reconstruction until episode start is reached
@@ -151,11 +153,11 @@ class Episode:
 
             self.reconstruction.update_with_exchange_message(message_packet)
 
-            if int(message_packet[0]['TransactTime']) > episode_start_unix:
+            if int(message_packet[0]['TransactTime']) > self.episode_start_unix:
                 break
 
         # assert deviation
-        assert (self.reconstruction._state_timestamp - episode_start_unix
+        assert (self.reconstruction._state_timestamp - self.episode_start_unix
                 ) < 6e10, "Divergence at Episode Snapshot larger 1 Min"
 
         # set episode_start_snapshot
@@ -164,20 +166,20 @@ class Episode:
 
         # filter message list for episode messages
         self.message_packet_list = list(filter(lambda p:
-                            int(p[0]['TransactTime']) > episode_start_unix and
-                            int(p[0]['TransactTime']) < episode_end_unix,
+                            int(p[0]['TransactTime']) > self.episode_start_unix and
+                            int(p[0]['TransactTime']) < self.episode_end_unix,
                             copy.deepcopy(message_packet_list)))
 
         # assert deviation
         if self.message_packet_list:
             assert abs(int(self.message_packet_list[0][0]
-                           ['TransactTime']) - episode_start_unix
+                           ['TransactTime']) - self.episode_start_unix
                        ) < 6e10, "Divergence at Episode Start larger 1 Min"
 
         if self.message_packet_list:
             assert abs(
                 int(self.message_packet_list[-1][0]
-                    ['TransactTime']) - episode_end_unix
+                    ['TransactTime']) - self.episode_end_unix
                 ) < 6e10, "Divergence at Episode Start larger 1 Min"
 
         # -- free up interpreter memory

@@ -31,6 +31,7 @@ from agent.agent_order import OrderManagementSystem
 from reinforcement_learning.transition.env_transition \
     import EnvironmentTransition
 from reinforcement_learning.action_space.action_storage import ActionStorage
+from feature_engineering.agent_features import AgentFeatures
 
 # TODO: add modes to run episode as list of dates or for a cont. time period
 

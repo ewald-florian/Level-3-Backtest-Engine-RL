@@ -64,7 +64,6 @@ class TimeInventoryAgent:
         self.remaining_inventory = parent_order_size
         self.number_of_trades = 0
 
-
     def apply_strategy(self):
 
         # -- TIME
