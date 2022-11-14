@@ -2,10 +2,26 @@
 
 Idea to solve the variable problem:
 
-Agent strores variables to AgentContext class attributes
+Agent stores variables to AgentContext class attributes
 AgentFeatures can access AgentContext to compute stuff
 ObservationSpace can access AgentFeatures
-Agent can access ObersvationSpace to get obs
+Agent can access ObservationSpace to get obs.
+
+Observation
+-----------
+Agent-Observation:
+- normalized remaining inventory
+- normalized remaining time
+Market-Observation
+- 5 levels of normalized LOB
+
+
+Action
+------
+- Sell or wait, fixed quantity, marketable limit order
+
+Reward
+------
 """
 
 from copy import copy
@@ -62,7 +78,8 @@ class ObservationSpace(BaseObservationSpace):
         """
         Implement the agent observation.
         """
-        time = self.agent_features.remaining_time
+        # Note: very common agent state, see e.g. Beling/Liu
+        time = self.agent_features.elapsed_time
         inv = self.agent_features.remaining_inventory
         agent_obs = np.array([time, inv])
         #DEBUGGING
@@ -72,7 +89,7 @@ class ObservationSpace(BaseObservationSpace):
 
 class Reward(BaseReward):
     """
-    Subclass of base reward to implement the reward for specific agent.
+    Subclass of BaseReward to implement the reward for a specific agent.
     The abc method receive_reward needs to be implemented.
     """
     def __init__(self):
@@ -127,7 +144,6 @@ class TimeInventoryAgent1(RlBaseAgent):
         current_time = Market.instances['ID'].timestamp
         # define start and end-time in the first episode
         if self.first_step:
-            # TODO: I actually do not need class variables, can just use start_time...
             start_time = current_time
             # DEBUGGING
             print("CT", current_time)

@@ -16,17 +16,6 @@ import numpy as np
 
 from feature_engineering.market_features import MarketFeatures
 from feature_engineering.agent_features import AgentFeatures
-# TODO: Überlegen wie und wo ObservationSpace aufgerufen werden soll
-# TODO: Welche art von class attribute (einfach self? -> self.observation)
-# TODO: Eigentlich unpraktisch da ich zuerst ObservationSpace() callen müsste
-#  um die aktuelle observation zu bekommen und erst dann
-#  ObservationSpace.observation bekommen könnte...
-#  Evtl. ist es besser ObservationSpace.holistic_observation einfach direkt zu
-#  callen...
-
-
-#TODO: Concept: get "raw" features from FeatureEngineering, normalize and
-# concatenate them in ObservationSpace, pass to Neural Network (obs)
 
 
 class BaseObservationSpace(ABC):

@@ -16,6 +16,16 @@ from agent.agent_metrics import AgentMetrics
 #TODO: just implement each possible reward function as a new method such that
 # they can be freely selected by different agents and compared
 
+# TODO: TWAP-Comparisions are difficult for me since I, to some part assume
+#  a market impact, I cannot just run TWAP and RL in parallel sicne they would
+#  "stel" liquidity of each other... One effortful solution would be to take
+#  the exact same episode, run both TWAP and RL separately one after another
+#  and then compare performance... could only be used for a sparse reward in
+#  the end, would be rather inefficient. Same goes for VWAP
+
+# TODO: for a short trading horizon like 1 min, VWAP is not really interesting
+#  as benchmark.
+
 
 class BaseReward(ABC):
     """

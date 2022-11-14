@@ -32,6 +32,7 @@ from reinforcement_learning.transition.env_transition \
     import EnvironmentTransition
 from reinforcement_learning.action_space.action_storage import ActionStorage
 from feature_engineering.agent_features import AgentFeatures
+from context.agent_context import AgentContext
 
 # TODO: add modes to run episode as list of dates or for a cont. time period
 
@@ -407,6 +408,10 @@ class Replay:
         # inside agent.reset()
         if self.rl_agent:
             self.rl_agent.reset()
+        # -- Reset AgentContext
+        AgentContext.reset()
+        # -- Reset AgentFeatures
+        AgentFeatures.reset()
         # -- get first observation (context needs to include initial state)
         first_obs = self.rl_agent.observation_space.holistic_observation()
 

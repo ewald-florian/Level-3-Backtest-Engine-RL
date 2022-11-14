@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """Agent Context to store important attributes"""
+
 __author__ = "florian"
 __date__ = "2022-11-13"
 __version__ = "0.1"
 
 
 class AgentContext:
-    """Class to store relevant Agent-Parameters.
+    """Class to store relevant Agent-Parameters in class attributes.
 
     AgentContext can be used in Agent to update the class attributes and
     store the parameters. Afterwards, the parameters can be accessed by

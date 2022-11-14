@@ -14,50 +14,26 @@ from market.market import Market
 from agent.agent_order import OrderManagementSystem
 from agent.agent_trade import AgentTrade
 from context.agent_context import AgentContext
-# TODO:
-#  MarketFeatures greift auf Context und auf MarketTrade zurück
-#  AgentFeatures könnte auf Agent, AgentTrade, OMS zurückgreifen
-#  MarketFeatures braucht keinerlei Klassenvariablen, alles wird on the fly
-#  berechent, hier könnte ich schon einige Variablen gebrauchen:
-#  start_time --> replay.episode
-#  episode_length --> replay.episode
-#  end_time (kann ich selbst berechnen) --> replay.episode
-#  initial_inventory --> replay.rl_agent
-#  ==> Ich muss AgentMetrics in Replay nach Episode und Agent resetten
-#  und mir diese variablen von replay.episode und von Agent holen
-#  Remaining Inventory:
-#  Ich brauche Initial Inventory als static attribute
-#  Die Trades und so könnte ich mir on the fly holen
-#  Elapsed / Remaining Time:
-#  Ich muss den Ersten timestamp abfangen, den rest kann ich mir direkt von
-#  Market.timestamp holen
-#
-
-# TODO: AgentFeatures can just a a composition inside the agent!
-#  but how do I get the timstamps there? I could use the first iteration trick
-#  außerdem muss ja eigentlich ObservationSpace auf AgentFeatures zugreifen...
-
-# TODO: Vielleicht macht es mehr Sinn, die AgentFeatures Klasse
-#  weg zu lassen und das direkt in agent zu implementieren...? Es ist
-#  eigentlich auch relativ Strategiespezifisch / nur für OE zugeschnitten
-
-# TODO: Eine Möglichkeit wäre, initial inventory einfach als class
-#  attribut in Agent zu speichern, dann kann AgentTrade darauf zugreifen
 
 
 class AgentFeatures:
+    """Class to compute agent-features such as remaining time or remaining
+    inventory. AgentFeatures is used by ObservationSpace to include the
+    agent-state / private-state into the observation."""
 
     def __init__(self):
+        """Initializing sets the number_of_trades and the executed_quantity
+        to 0. These are then counted during the episode."""
 
         self.number_of_trades = 0
-        self.executed_volume = 0
+        self.executed_quantity = 0
 
     @property
     def remaining_inventory(self, normalize=True):
         """Remaining inventory."""
         if AgentContext.initial_inventory:
             initial_inventory = AgentContext.initial_inventory
-            # Only update executed_volume when new trades happened
+            # Only update executed_quantity when new trades happened
             num_new_trades = len(AgentTrade.history) - self.number_of_trades
             if num_new_trades:
                 # Sum All Trades:
@@ -69,9 +45,9 @@ class AgentFeatures:
                     self.number_of_trades += 1
 
                 # update executed volume
-                self.executed_volume = sum_quantity
+                self.executed_quantity = sum_quantity
 
-            remaining_inventory = initial_inventory - self.executed_volume
+            remaining_inventory = initial_inventory - self.executed_quantity
 
             # Normalize between 0 and 1 by dividing by the initial inventory
             if normalize:
@@ -134,4 +110,6 @@ class AgentFeatures:
         pass
 
     def reset(self):
-        pass
+        """Reset AgentFeatures"""
+        self.number_of_trades = 0
+        self.executed_quantity = 0
