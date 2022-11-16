@@ -43,8 +43,8 @@ from reinforcement_learning.observation_space.abc_observation_space \
 from reinforcement_learning.base_agent.abc_base_agent import RlBaseAgent
 from reinforcement_learning.transition.agent_transition import AgentTransition
 from reinforcement_learning.action_space.action_storage import ActionStorage
-
 from context.agent_context import AgentContext
+from agent.agent_trade import AgentTrade
 
 
 class ObservationSpace(BaseObservationSpace):
@@ -88,7 +88,7 @@ class ObservationSpace(BaseObservationSpace):
         inv = self.agent_features.remaining_inventory
         agent_obs = np.array([time, inv])
         #DEBUGGING
-        print("ObservationSpace agent_obs:", agent_obs)
+        #print("ObservationSpace agent_obs:", agent_obs)
         return agent_obs
 
 
@@ -106,18 +106,18 @@ class Reward(BaseReward):
         # TODO: I use the IS reward taken from is_agent
         # set is to 0
         latest_trade_is = 0
-        new_number_of_trades = 0
-        # only if there is a trade list already
-        if self.agent_metrics.get_realized_trades:
-            new_number_of_trades = len(self.agent_metrics.get_realized_trades)
+        # Check if new trades occured.
+        num_new_trades = len(AgentTrade.history) - self.number_of_trades
+        if num_new_trades:
+            # Get volume-weighted latest_trade_is from agent_metrics method.
+            #print("NUM NEW TRADES", num_new_trades)
+            latest_trade_is = self.agent_metrics.latest_trade_is(number_of_latest_trades=num_new_trades)
+            # Update class intern trade counter.
+            self.number_of_trades = len(AgentTrade.history)
 
-        # update is only if there is a new trade (sparse reward)
-        if new_number_of_trades > self.number_of_trades:
-            latest_trade_is = self.agent_metrics.latest_trade_is
-            self.number_of_trades = new_number_of_trades
         # return is as reward
         reward = latest_trade_is
-        print("IS reward", reward)
+        #print("NEW IS reward", reward)
         return reward
 
 
@@ -167,12 +167,12 @@ class TimeInventoryAgent1(RlBaseAgent):
         if self.first_step:
             start_time = current_time
             # DEBUGGING
-            print("CT", current_time)
-            print("EL", self.episode_length)
+            #print("CT", current_time)
+            #print("EL", self.episode_length)
             end_time = current_time + self.episode_length
             self.first_step = False
-            print("start_time: ", start_time)
-            print("end_time: ", end_time)
+            #print("start_time: ", start_time)
+            #print("end_time: ", end_time)
             # Add start_time, end_time, time_delta to AgentContext
             AgentContext.update_start_time(start_time=start_time)
             AgentContext.update_end_time(end_time)
@@ -194,7 +194,7 @@ class TimeInventoryAgent1(RlBaseAgent):
 
         observation = copy(self.observation_space.holistic_observation())
         #DEBUGGING
-        print("AGENT observation: ", observation)
+        #print("AGENT observation: ", observation)
         reward = copy(self.reward.receive_reward())
         #print('(AGENT) reward: ', reward)
         #print('(AGENT) observation: ', observation)

@@ -465,7 +465,6 @@ class AgentMetrics:
         return implementation_shortfall
 
     # TODO: Testing
-    @property
     def latest_trade_is(self, number_of_latest_trades):
         """
         Implementation shortfall of the latest trade. This function can e.g. be
@@ -476,6 +475,7 @@ class AgentMetrics:
             computed.
         """
         print("LATEST TRADE IS - AgentMetrics")
+        last_is = 0
         realized_trades = self.get_realized_trades
         latest_trades = realized_trades[-number_of_latest_trades:]
         sum_quantity = 0
@@ -490,8 +490,9 @@ class AgentMetrics:
             trade_is = is_side*(execution_price-arrival_price)/arrival_price
             weighted_is = trade_is * quantity
             sum_weighted_is += weighted_is
-
-        last_is = sum_weighted_is / sum_quantity
+        # If positive, divide by sum
+        if sum_weighted_is:
+            last_is = sum_weighted_is / sum_quantity
         return last_is
 
     @property
