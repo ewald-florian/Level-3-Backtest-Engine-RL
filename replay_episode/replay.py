@@ -410,8 +410,6 @@ class Replay:
             self.rl_agent.reset()
         # -- Reset AgentContext
         AgentContext.reset()
-        # -- Reset AgentFeatures
-        AgentFeatures.reset()
         # -- get first observation (context needs to include initial state)
         first_obs = self.rl_agent.observation_space.holistic_observation()
 

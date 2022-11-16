@@ -9,8 +9,8 @@ IS = side * (execution_price-arrival_price) / arrival_price
 see Raja Velu p. 337.
 """
 #----------------------------------------------------------------------------
-__author__ =  'florian'
-__date__ =  '2022-11-05'
+__author__ = 'florian'
+__date__ = '2022-11-05'
 __version__ = '0.1'
 # ---------------------------------------------------------------------------
 #TODO: reset agent afer each episode... (to be called inside replay)

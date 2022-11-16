@@ -464,21 +464,34 @@ class AgentMetrics:
 
         return implementation_shortfall
 
+    # TODO: Testing
     @property
-    def latest_trade_is(self):
+    def latest_trade_is(self, number_of_latest_trades):
         """
         Implementation shortfall of the latest trade. This function can e.g. be
         called in Reward. Note: this way, the is does not account for the
         volume of the trade.
+        :param number_of_latest_trades
+            int, number of latest trades for which the weighted is should be
+            computed.
         """
-        print("AgentTrade", AgentTrade.history)
+        print("LATEST TRADE IS - AgentMetrics")
         realized_trades = self.get_realized_trades
-        latest_trade = realized_trades[-1]
-        is_side = 1 if latest_trade['agent_side'] == 1 else -1
-        execution_price = latest_trade['execution_price']
-        arrival_price = latest_trade['arrival_price']
-        # see Velu p. 337
-        last_is = is_side * (execution_price - arrival_price) / arrival_price
+        latest_trades = realized_trades[-number_of_latest_trades:]
+        sum_quantity = 0
+        sum_weighted_is = 0
+        for trade in latest_trades:
+            is_side = 1 if trade['agent_side'] == 1 else -1
+            execution_price = trade['execution_price']
+            arrival_price = trade['arrival_price']
+            quantity = trade['execution_quantity']
+            sum_quantity += quantity
+            # see Velu p. 337
+            trade_is = is_side*(execution_price-arrival_price)/arrival_price
+            weighted_is = trade_is * quantity
+            sum_weighted_is += weighted_is
+
+        last_is = sum_weighted_is / sum_quantity
         return last_is
 
     @property

@@ -2,6 +2,8 @@
 # -*- coding: utf-8 -*-
 # ---------------------------------------------------------------------------
 """
+AGENTID = 161122
+
 Step the RL environment with random action for developing, testing and
 debugging. Does not include Reinforcement Learning or any form of ML.
 """
@@ -49,7 +51,7 @@ if __name__ == '__main__':
     for step in range(replay.episode.__len__()):
         print(step)
         # take a random action
-        action = np.random.randint(3)
+        action = np.random.randint(2)
         # call env.step
         observation, reward, done, info = env.step(action) #calls replay_episode.rl_step(action)
         print('(LOOP) DONE: ', done)

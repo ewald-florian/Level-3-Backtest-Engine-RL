@@ -118,5 +118,10 @@ class BaseObservationSpace(ABC):
         return holistic_obs
 
     def reset(self):
+        """
+        Note: the ObservationSpace must be composed freshly in agent every
+        time the agent gets resetted, this resets the ObservationSpace
+        and the compositions inside ObservationSpace automatically.
+        """
         pass
 

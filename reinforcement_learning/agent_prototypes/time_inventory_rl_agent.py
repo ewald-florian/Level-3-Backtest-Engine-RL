@@ -1,5 +1,8 @@
 """Test Time and Inventory RL agent
 
+match agent to loop:
+AGENTID = 161122 # -> just use the date as agent ID
+
 Idea to solve the variable problem:
 
 Agent stores variables to AgentContext class attributes
@@ -13,8 +16,7 @@ Agent-Observation:
 - normalized remaining inventory
 - normalized remaining time
 Market-Observation
-- 5 levels of normalized LOB
-
+- 5 levels of normalized LOB (Level 2+)
 
 Action
 ------
@@ -23,6 +25,9 @@ Action
 Reward
 ------
 """
+__author__ = "florian"
+__date__ = "2022-11-13"
+__version__ = "0.1"
 
 from copy import copy
 
@@ -94,9 +99,25 @@ class Reward(BaseReward):
     """
     def __init__(self):
         super().__init__()
+        # dynamic attributes
+        self.number_of_trades = 0
 
     def receive_reward(self):
-        reward = self.pnl_realized
+        # TODO: I use the IS reward taken from is_agent
+        # set is to 0
+        latest_trade_is = 0
+        new_number_of_trades = 0
+        # only if there is a trade list already
+        if self.agent_metrics.get_realized_trades:
+            new_number_of_trades = len(self.agent_metrics.get_realized_trades)
+
+        # update is only if there is a new trade (sparse reward)
+        if new_number_of_trades > self.number_of_trades:
+            latest_trade_is = self.agent_metrics.latest_trade_is
+            self.number_of_trades = new_number_of_trades
+        # return is as reward
+        reward = latest_trade_is
+        print("IS reward", reward)
         return reward
 
 
@@ -108,7 +129,7 @@ class TimeInventoryAgent1(RlBaseAgent):
     def __init__(self,
                  initial_inventory: int = 10000_0000,
                  verbose=True,
-                 episode_length = "1m",
+                 episode_length="1m",
                  ):
         """
         When initialized, SpecialAgent builds compositions of MarketInterface,
@@ -160,11 +181,11 @@ class TimeInventoryAgent1(RlBaseAgent):
             AgentContext.update_initial_inventory(self.initial_inventory)
 
             # DEBUGGING
-            print("AC:")
-            print("start_time", AgentContext.start_time)
-            print("end_time", AgentContext.end_time)
-            print("episode_length", AgentContext.episode_length)
-            print("initial_inventory", AgentContext.initial_inventory)
+            #print("AC:")
+            #print("start_time", AgentContext.start_time)
+            #print("end_time", AgentContext.end_time)
+            #print("episode_length", AgentContext.episode_length)
+            #print("initial_inventory", AgentContext.initial_inventory)
 
         # get action from ActionStorage
         action = ActionStorage.action
@@ -200,16 +221,8 @@ class TimeInventoryAgent1(RlBaseAgent):
             if self.verbose:
                 print('(RL AGENT) buy submission: ', best_bid)
 
-        # also sell! since this is a prototype for execution agents
-        elif action == 2 and best_bid:
-            if action == 1 and best_ask:
-                self.market_interface.submit_order(side=2,
-                                                   limit=best_bid,
-                                                   quantity=self.quantity)
-            if self.verbose:
-                print('(RL AGENT) buy submission: ', best_bid)
         # wait
-        else:
+        else:  # action == 0
             if self.verbose:
                 print('(RL AGENT) wait')
 
