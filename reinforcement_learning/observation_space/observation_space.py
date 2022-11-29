@@ -9,22 +9,14 @@
 Observation Space for RL-Agent when not using the abstract classes stucture.
 """
 # ---------------------------------------------------------------------------
+import numpy as np
 
 from feature_engineering.market_features import MarketFeatures
 from feature_engineering.agent_features import AgentFeatures
 
-import numpy as np
-# TODO: Überlegen wie und wo ObservationSpace aufgerufen werden soll
-# TODO: Welche art von class attribute (einfach self? -> self.observation)
-# TODO: Eigentlich unpraktisch da ich zuerst ObservationSpace() callen müsste
-#  um die aktuelle observation zu bekommen und erst dann
-#  ObservationSpace.observation bekommen könnte...
-#  Evtl. ist es besser ObservationSpace.holistic_observation einfach direkt zu
-#  callen...
-
-
-#TODO: Concept: get "raw" features from FeatureEngineering, normalize and
-# concatenate them in ObservationSpace, pass to Neural Network (obs)
+# Note: min max prices are stored for normalization in RL
+from reinforcement_learning.observation_space.minmaxprices \
+    import MinMaxPriceStorage
 
 
 class ObservationSpace:
@@ -36,10 +28,12 @@ class ObservationSpace:
     def __init__(self):
 
         # -- static attributes
-        # TODO: remove hardcode
-        self.min_price = 1_00000000
-        self.max_price = 200_00000000
-        # TODO: remove hardcode
+
+        #self.min_price = 1_00000000
+        #self.max_price = 200_00000000
+        self.min_price = MinMaxPriceStorage.min_price
+        self.max_price = MinMaxPriceStorage.max_price
+
         self.min_qt = 1_0000
         self.max_qt = 10000_0000
         self.ticksize = 0.1

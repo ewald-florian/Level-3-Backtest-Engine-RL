@@ -17,6 +17,10 @@ import pandas as pd
 
 from reconstruction.reconstruction import Reconstruction
 
+# Note: min max prices are stored for normalization in RL
+from reinforcement_learning.observation_space.minmaxprices \
+    import MinMaxPriceStorage
+
 # PATH TO DATA DIRECTORY
 local="/Users/florianewald/PycharmProjects/A7_data/"
 server="/home/jovyan/_shared_storage/temp/A7_eobi_data/downloader_working_05/"
@@ -126,7 +130,6 @@ class Episode:
         if not base_path:
             print("...Base_Path not found")
 
-
         # load files from base_path
         snapshot_start_path = open(f"{PATH + base_path}/snapshot_start.json")
         #snapshot_end_path = open(f"{PATH + base_path}/snapshot_end.json")
@@ -135,7 +138,7 @@ class Episode:
         # (start snapshots are sometimes in a list)
         snapshot_start = json.load(snapshot_start_path)[0]
         #snapshot_end = json.load(snapshot_end_path)
-        # slice out the first message (self.reconstruction message)
+        # slice out the first message (reconstruction message)
         message_packet_list = json.load(message_list_path)[1:]
 
         # load state from snapshot_start
@@ -164,11 +167,22 @@ class Episode:
         self.snapshot_start = copy.deepcopy(self.reconstruction._state)
         # faster: pickle.loads(pickle.dumps(self.reconstruction._state, -1))
 
+        # Store level-20 bid/ask as initial min/max prices for normalization
+        if self.snapshot_start:
+            buy_prices = list(self.snapshot_start[1].keys())
+            buy_prices.sort(reverse=True)
+            level_20_buy = buy_prices[20]
+            MinMaxPriceStorage.update_min_price(level_20_buy)
+            sell_prices = list(self.snapshot_start[2].keys())
+            sell_prices.sort(reverse=False)
+            level_20_sell = sell_prices[20]
+            MinMaxPriceStorage.update_max_price(level_20_sell)
+
         # filter message list for episode messages
         self.message_packet_list = list(filter(lambda p:
-                            int(p[0]['TransactTime']) > self.episode_start_unix and
-                            int(p[0]['TransactTime']) < self.episode_end_unix,
-                            copy.deepcopy(message_packet_list)))
+                    int(p[0]['TransactTime']) > self.episode_start_unix and
+                    int(p[0]['TransactTime']) < self.episode_end_unix,
+                    copy.deepcopy(message_packet_list)))
 
         # assert deviation
         if self.message_packet_list:
@@ -180,7 +194,7 @@ class Episode:
             assert abs(
                 int(self.message_packet_list[-1][0]
                     ['TransactTime']) - self.episode_end_unix
-                ) < 6e10, "Divergence at Episode Start larger 1 Min"
+                ) < 6e10, "Divergence at Episode End larger 1 Min"
 
         # -- free up interpreter memory
         del snapshot_start
