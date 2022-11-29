@@ -464,6 +464,7 @@ class AgentMetrics:
 
         return implementation_shortfall
 
+
     # TODO: Testing
     def latest_trade_is(self, number_of_latest_trades):
         """
@@ -474,25 +475,25 @@ class AgentMetrics:
             int, number of latest trades for which the weighted is should be
             computed.
         """
-        print("LATEST TRADE IS - AgentMetrics")
         last_is = 0
         realized_trades = self.get_realized_trades
-        latest_trades = realized_trades[-number_of_latest_trades:]
-        sum_quantity = 0
-        sum_weighted_is = 0
-        for trade in latest_trades:
-            is_side = 1 if trade['agent_side'] == 1 else -1
-            execution_price = trade['execution_price']
-            arrival_price = trade['arrival_price']
-            quantity = trade['execution_quantity']
-            sum_quantity += quantity
-            # see Velu p. 337
-            trade_is = is_side*(execution_price-arrival_price)/arrival_price
-            weighted_is = trade_is * quantity
-            sum_weighted_is += weighted_is
-        # If positive, divide by sum
-        if sum_weighted_is:
-            last_is = sum_weighted_is / sum_quantity
+        if realized_trades:
+            latest_trades = realized_trades[-number_of_latest_trades:]
+            sum_quantity = 0
+            sum_weighted_is = 0
+            for trade in latest_trades:
+                is_side = 1 if trade['agent_side'] == 1 else -1
+                execution_price = trade['execution_price']
+                arrival_price = trade['arrival_price']
+                quantity = trade['executed_volume']
+                sum_quantity += quantity
+                # see Velu p. 337
+                trade_is = is_side*(execution_price-arrival_price)/arrival_price
+                weighted_is = trade_is * quantity
+                sum_weighted_is += weighted_is
+            # If positive, divide by sum
+            if sum_weighted_is:
+                last_is = sum_weighted_is / sum_quantity
         return last_is
 
     @property
@@ -511,7 +512,7 @@ class AgentMetrics:
             is_side = 1 if trade['agent_side'] == 1 else -1
             execution_price = trade['execution_price']
             arrival_price = trade['arrival_price']
-            volume = trade['execution_volume']
+            volume = trade['executed_volume']
             volume_sum += volume
             weighted_trade_is = is_side * (execution_price -
                                            arrival_price) / arrival_price
@@ -519,7 +520,6 @@ class AgentMetrics:
 
         overall_is = weighted_trade_is_sum / volume_sum
         return overall_is
-
 
     @property
     def exposure_budget_left(self):

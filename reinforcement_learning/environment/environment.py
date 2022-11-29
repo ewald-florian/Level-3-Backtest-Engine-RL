@@ -34,10 +34,10 @@ class Environment(gym.Env):
         """
 
         # TODO: obtain spaces from env_config
-        self.action_space_arg = 3
+        self.action_space_arg = 2
         # self.observation_space_min = np.zeros(30) #minmax
-        self.observation_space_min = np.array([-1000_000] * 30)
-        self.observation_space_max = np.array([1000_000] * 30)
+        self.observation_space_min = np.array([-1000_000] * 32)
+        self.observation_space_max = np.array([1000_000] * 32)
 
         self.action_space = spaces.Discrete(self.action_space_arg)
         self.observation_space = spaces.Box(self.observation_space_min,
