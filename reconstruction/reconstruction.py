@@ -312,8 +312,8 @@ class Reconstruction:
             # plus some tolerance
             assert self._state_index <= (message["msg_seq_num"] + 10), \
                 "(ERROR) update requires 'msg_seq_num' larger than index. " \
-                "state_index: {} message_index: {}".format(self._state_index,
-                                                        message["msg_seq_num"])
+                "state_index: {} message_index: {} message: {}".format(self._state_index,
+                                            message["msg_seq_num"], message)
 
             # -- update internal limit order book state ...
 
