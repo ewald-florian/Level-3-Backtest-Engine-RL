@@ -53,7 +53,7 @@ ray.init()
 
 agent = TimeInventoryAgent1(verbose=False)
 # instantiate replay_episode and pass agent object as input argument
-replay = Replay(rl_agent=agent, episode_length="1m")
+replay = Replay(rl_agent=agent, episode_length="1m", )
 
 # prepare config dict for the trainer set-up
 config = PPO_DEFAULT_CONFIG

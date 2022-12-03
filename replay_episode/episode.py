@@ -22,8 +22,15 @@ from reinforcement_learning.observation_space.minmaxprices \
     import MinMaxPriceStorage
 
 # PATH TO DATA DIRECTORY
-local="/Users/florianewald/PycharmProjects/A7_data/"
+# old dataset
+# local="/Users/florianewald/PycharmProjects/A7_data/"
+# local new sample with Bayer january and february 2021
+local="/Users/florianewald/PycharmProjects/A7_NEW_SAMPLE/"
+# old dataset on server
 server="/home/jovyan/_shared_storage/temp/A7_eobi_data/downloader_working_05/"
+# TODO: nvme and server path
+# new dataset on nvme
+# nvme = "/Volumes/WD_BLUE_NVME/A7_DATA/"
 
 if platform.system() == 'Darwin':  # macos
     PATH = local
@@ -84,10 +91,20 @@ class Episode:
 
         # map stock ETR to ISIN
         self.isin_dict = {"BMW": "DE0005190003",
-                        "FME": "DE0005785802"}
+                        "FME": "DE0005785802",
+                        # BAYER
+                        "BAY": "DE000BAY0017",
+                        # TELEKOM
+                        "DTE": "DE0005557508",
+                        # SAP
+                        "SAP": "DE0007164600",
+                        # ALLIANZ
+                        "ALV": "DE0008404005",
+                        # LINDE
+                        "LIN": "IE00BZ12WP82"}
 
         # -- instantiate reconstruction
-        # instantiate reconstuction
+        # instantiate reconstuction composition
         self.reconstruction = Reconstruction()
 
         # -- load episide
@@ -110,6 +127,7 @@ class Episode:
         # (...T08... -> morning, ...T12... -> afternoon)
 
         # trading_time
+        # TODO: adjust for summer time
         # Note: 12:00 UTC (CET would be 13)
         if int(start_hour) < 12:
             trading_time = "T08"
