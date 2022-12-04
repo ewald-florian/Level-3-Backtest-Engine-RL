@@ -464,7 +464,6 @@ class AgentMetrics:
 
         return implementation_shortfall
 
-
     # TODO: Testing
     def latest_trade_is(self, number_of_latest_trades):
         """
@@ -492,7 +491,7 @@ class AgentMetrics:
                 weighted_is = trade_is * quantity
                 sum_weighted_is += weighted_is
             # If positive, divide by sum
-            if sum_weighted_is:
+            if sum_weighted_is and sum_quantity:
                 last_is = sum_weighted_is / sum_quantity
         return last_is
 

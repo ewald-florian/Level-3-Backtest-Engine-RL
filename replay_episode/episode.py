@@ -103,11 +103,18 @@ class Episode:
                         # LINDE
                         "LIN": "IE00BZ12WP82"}
 
+        # max quantities for normalization (90% quantile)
+        self.max_qt_dict = {'BAY': 3878,
+                            'SAP': 3024,
+                            'LIN': 2657,
+                            'ALV': 1790,
+                            'DTE': 25256}
+
         # -- instantiate reconstruction
         # instantiate reconstuction composition
         self.reconstruction = Reconstruction()
 
-        # -- load episide
+        # -- load episode
         self.load_episode_data()
 
     # TODO: profiling
@@ -127,7 +134,7 @@ class Episode:
         # (...T08... -> morning, ...T12... -> afternoon)
 
         # trading_time
-        # TODO: adjust for summer time
+        # TODO: adjust for summer time (07, 11)
         # Note: 12:00 UTC (CET would be 13)
         if int(start_hour) < 12:
             trading_time = "T08"
@@ -187,6 +194,7 @@ class Episode:
 
         # Store level-20 bid/ask as initial min/max prices for normalization
         if self.snapshot_start:
+            # prices
             buy_prices = list(self.snapshot_start[1].keys())
             buy_prices.sort(reverse=True)
             level_20_buy = buy_prices[20]
@@ -195,6 +203,9 @@ class Episode:
             sell_prices.sort(reverse=False)
             level_20_sell = sell_prices[20]
             MinMaxPriceStorage.update_max_price(level_20_sell)
+            # quantities (select max-qt from dict)
+            asset_max_qt = self.max_qt_dict[self.identifier]
+            MinMaxPriceStorage.update_max_qt(asset_max_qt)
 
         # filter message list for episode messages
         self.message_packet_list = list(filter(lambda p:
@@ -213,6 +224,9 @@ class Episode:
                 int(self.message_packet_list[-1][0]
                     ['TransactTime']) - self.episode_end_unix
                 ) < 6e10, "Divergence at Episode End larger 1 Min"
+
+        # Assert if message list is long enough
+        assert len(self.message_packet_list) > 0, "Message List Empty"
 
         # -- free up interpreter memory
         del snapshot_start

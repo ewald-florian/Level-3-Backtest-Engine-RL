@@ -16,6 +16,8 @@ import numpy as np
 
 from feature_engineering.market_features import MarketFeatures
 from feature_engineering.agent_features import AgentFeatures
+from reinforcement_learning.observation_space.minmaxprices \
+    import MinMaxPriceStorage
 
 
 class BaseObservationSpace(ABC):
@@ -27,15 +29,12 @@ class BaseObservationSpace(ABC):
 
     # start_date to compute latest min max prices
     def __init__(self):
+        # TODO: include if self.min /self.max etc. to avoid error
+        #self.min_price = MinMaxPriceStorage.min_price
+        #self.max_price = MinMaxPriceStorage.max_price
 
-        # -- static attributes
-        # TODO: remove hardcode
-        self.min_price = 1_00000000
-        self.max_price = 200_00000000
-        # TODO: remove hardcode
-        self.min_qt = 1_0000
-        self.max_qt = 10000_0000
-        self.ticksize = 0.1
+        #self.min_qt = 1_0000
+        #self.max_qt = MinMaxPriceStorage.max_qt
 
         self.market_features = MarketFeatures()
         self.agent_features = AgentFeatures()
@@ -57,31 +56,12 @@ class BaseObservationSpace(ABC):
         """
         raise NotImplementedError("Implement agent_observation in subclass.")
 
-    # TODO: implement
-    def _get_min_max_prices(self):
-        # avoid look-ahead bias...
-        # compute min max of the last episode
-        # multiply with some margin multiplier or so
-        self.min_price = ...
-        self.max_price = ...
-
-    def _get_min_max_quantities(self):
-        # I don't necessarily need historical values here,
-        # can assume min_quantity = 1 and max_quantity as a
-        # cap value (e.g. 10_000, depending on symbol price
-        # and liquidity...),
-        # TODO: maybe I can use the standard market size or normal market size
-        #  values defined by xetra.
-        # larger quantities will be capped to this value
-        self.min_qt = 1
-        self.max_qt = ...
-
     def _min_max_norma_prices(self, input_array):
         """
         Scales values between 0 and 1.
         """
-        scaled_prices = (input_array - self.min_price)/(
-                    self.max_price - self.min_price)
+        scaled_prices = (input_array - MinMaxPriceStorage.min_price)/(
+            MinMaxPriceStorage.max_price - MinMaxPriceStorage.min_price)
 
         return scaled_prices
 
@@ -89,8 +69,8 @@ class BaseObservationSpace(ABC):
         """
         Scales values between 0 and 1.
         """
-        scaled_quantities = (input_array - self.min_qt)/(
-                    self.max_qt - self.min_qt)
+        scaled_quantities = (input_array - MinMaxPriceStorage.min_qt)/(
+                    MinMaxPriceStorage.max_qt - MinMaxPriceStorage.min_qt)
 
         return scaled_quantities
 

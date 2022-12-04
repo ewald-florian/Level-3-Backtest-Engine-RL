@@ -6,7 +6,7 @@
 # version ='1.0'
 # ---------------------------------------------------------------------------
 """
-Observation Space for RL-Agent when not using the abstract classes stucture.
+Observation Space for RL-Agent when not using the abstract classes structure.
 """
 # ---------------------------------------------------------------------------
 import numpy as np
@@ -35,33 +35,13 @@ class ObservationSpace:
         self.max_price = MinMaxPriceStorage.max_price
 
         self.min_qt = 1_0000
-        self.max_qt = 10000_0000
-        self.ticksize = 0.1
+        self.max_qt = MinMaxPriceStorage.max_qt
 
         self.market_features = MarketFeatures()
         self.agent_features = AgentFeatures()
 
         # -- update class attribute
         self.__class__.instance = self.holistic_observation()
-
-    # TODO: implement
-    def _get_min_max_prices(self):
-        # avoid look-ahead bias...
-        # compute min max of the last episode
-        # multiply with some margin multiplier or so
-        self.min_price = ...
-        self.max_price = ...
-
-    def _get_min_max_quantities(self):
-        # I don't necessarily need historical values here,
-        # can assume min_quantity = 1 and max_quantity as a
-        # cap value (e.g. 10_000, depending on symbol price
-        # and liquidity...),
-        # TODO: maybe I can use the standard market size or normal market size
-        #  values defined by xetra.
-        # larger quantities will be capped to this value
-        self.min_qt = 1
-        self.max_qt = ...
 
     def market_observation(self):
         """
@@ -127,6 +107,9 @@ class ObservationSpace:
 
         holistic_obs = np.append(market_obs, agent_obs)
         holistic_obs.astype('float32')
+
+        # DEBUGGING
+        print("MAX QT", self.max_qt)
 
         return holistic_obs
 

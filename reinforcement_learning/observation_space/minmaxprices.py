@@ -27,6 +27,10 @@ class MinMaxPriceStorage:
     # class attributes
     max_price = None
     min_price = None
+    # min qt is always 1.
+    min_qt = 1_0000
+    # max qt depends on the asset.
+    max_qt = None
 
     def __init__(self):
         """
@@ -42,7 +46,7 @@ class MinMaxPriceStorage:
         :param initial_min_price
             int, initial min price
         """
-        cls.min_price = initial_min_price * 0.8
+        cls.min_price = int(initial_min_price * 0.8)
 
     @classmethod
     def update_max_price(cls, initial_max_price):
@@ -52,7 +56,21 @@ class MinMaxPriceStorage:
         :param initial_max_price
             int, initial max price of episode
         """
-        cls.max_price = initial_max_price * 1.2
+        cls.max_price = int(initial_max_price * 1.2)
+
+    @classmethod
+    def update_max_qt(cls, max_qt_asset):
+        """The maximum value for normalization for the specific asset of the
+        next episode.
+        :param max_qt_asset
+            int, max qt of the specific asset.
+        """
+        # Account for the fact that EOBI adds 4 decimals.
+        cls.max_qt = int(max_qt_asset * 1_0000)
+
+    @classmethod
+    def update_min_qt(cls, max_qt_asset):
+        pass
 
     @classmethod
     def reset(cls):
