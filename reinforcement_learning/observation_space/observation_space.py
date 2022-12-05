@@ -15,8 +15,8 @@ from feature_engineering.market_features import MarketFeatures
 from feature_engineering.agent_features import AgentFeatures
 
 # Note: min max prices are stored for normalization in RL
-from reinforcement_learning.observation_space.minmaxprices \
-    import MinMaxPriceStorage
+from reinforcement_learning.observation_space.minmaxvalues \
+    import MinMaxValues
 
 
 class ObservationSpace:
@@ -31,11 +31,11 @@ class ObservationSpace:
 
         #self.min_price = 1_00000000
         #self.max_price = 200_00000000
-        self.min_price = MinMaxPriceStorage.min_price
-        self.max_price = MinMaxPriceStorage.max_price
+        self.min_price = MinMaxValues.min_price
+        self.max_price = MinMaxValues.max_price
 
         self.min_qt = 1_0000
-        self.max_qt = MinMaxPriceStorage.max_qt
+        self.max_qt = MinMaxValues.max_qt
 
         self.market_features = MarketFeatures()
         self.agent_features = AgentFeatures()

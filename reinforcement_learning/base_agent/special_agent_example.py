@@ -73,8 +73,8 @@ class ObservationSpace(BaseObservationSpace):
             prices = market_obs[::3]
             quantities = market_obs[1::3]
             # -- normalize
-            prices = self._min_max_norma_prices(prices)
-            quantities = self._min_max_norma_quantities(quantities)
+            prices = self._min_max_norma_prices_clipped(prices)
+            quantities = self._min_max_norma_quantities_clipped(quantities)
             market_obs[::3] = prices
             market_obs[1::3] = quantities
 

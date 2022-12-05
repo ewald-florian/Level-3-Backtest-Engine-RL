@@ -1,23 +1,34 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-# ---------------------------------------------------------------------------
-"""
-Agent based on implementation shortfall.
+"""Test an agent with more action possibilities.
 
-IS = side * (execution_price-arrival_price) / arrival_price
+match agent to loop:
+AGENTID = 051222 # -> just use the date as agent ID
 
-see Raja Velu p. 337.
+Observation
+-----------
+Agent-Observation:
+- normalized remaining inventory
+- normalized remaining time
+Market-Observation
+- 5 levels of normalized LOB (Level 2+)
+
+Action
+------
+- TODO
+
+Reward
+- TODO
+------
 """
-#----------------------------------------------------------------------------
-__author__ = 'florian'
-__date__ = '2022-11-05'
-__version__ = '0.1'
-# ---------------------------------------------------------------------------
-#TODO: reset agent afer each episode... (to be called inside replay)
+__author__ = "florian"
+__date__ = "2022-11-13"
+__version__ = "0.1"
+
 from copy import copy
 
 import numpy as np
+import pandas as pd
 
+from market.market import Market
 from market.market_interface import MarketInterface
 from feature_engineering.market_features import MarketFeatures
 from reinforcement_learning.reward.abc_reward import BaseReward
@@ -26,6 +37,8 @@ from reinforcement_learning.observation_space.abc_observation_space \
 from reinforcement_learning.base_agent.abc_base_agent import RlBaseAgent
 from reinforcement_learning.transition.agent_transition import AgentTransition
 from reinforcement_learning.action_space.action_storage import ActionStorage
+from context.agent_context import AgentContext
+from agent.agent_trade import AgentTrade
 
 
 class ObservationSpace(BaseObservationSpace):
@@ -48,7 +61,6 @@ class ObservationSpace(BaseObservationSpace):
         market_obs = self.market_features.level_2_plus(store_timestamp=False,
                                                   data_structure='array')
 
-        # TODO: added this to avoid some import errors
         if market_obs is not None:
             prices = market_obs[::3]
             quantities = market_obs[1::3]
@@ -64,51 +76,39 @@ class ObservationSpace(BaseObservationSpace):
         """
         Implement the agent observation.
         """
-        return np.array([])
+        # Use standard agent obs with elapsed time and remaining inventory.
+        agent_obs = self.standard_agent_observation
+        print("AgentObs: ", agent_obs)
+
+        return agent_obs
 
 
-# TODO: include implementation_shortfall into reward!
 class Reward(BaseReward):
     """
-    Subclass of base reward to implement the reward for specific agent.
+    Subclass of BaseReward to implement the reward for a specific agent.
     The abc method receive_reward needs to be implemented.
     """
     def __init__(self):
         super().__init__()
-
         # dynamic attributes
         self.number_of_trades = 0
 
-    # TODO: move finished is-reward into BaseReward later and only call it here
-    # TODO: "marginal is": 0 for no trade, IS of last trade for trade
-    #  kann man über len(trade_list) machen, immer wenn sich diese verändert
-    #  ähnlich wie bei PnL (dort war es halt easy weil ich einfach diff nehmen konnte)
     def receive_reward(self):
-
-        # set is to 0
-        latest_trade_is = 0
-        new_number_of_trades = 0
-        # only if there is a trade list already
-        if self.agent_metrics.get_realized_trades:
-            new_number_of_trades = len(self.agent_metrics.get_realized_trades)
-
-        # update is only if there is a new trade (sparse reward)
-        if new_number_of_trades > self.number_of_trades:
-            latest_trade_is = self.agent_metrics.latest_trade_is
-        # return is as reward
-        reward = latest_trade_is
-        print("IS reward", reward)
+        # TODO: Try out a sparse reward.
+        # Last trade IS.
+        reward = self.last_trade_is()
         return reward
 
 
-class ISAgent(RlBaseAgent):
+class TimeInventoryAgent1(RlBaseAgent):
     """
     Template for SpecialAgents which are based on specific reward and
     observation space.
     """
     def __init__(self,
-                 quantity: int = 10_0000,
-                 verbose=True
+                 initial_inventory: int = 10000_0000,
+                 verbose=True,
+                 episode_length="1m",
                  ):
         """
         When initialized, SpecialAgent builds compositions of MarketInterface,
@@ -118,14 +118,19 @@ class ISAgent(RlBaseAgent):
         specific reward function.
         """
         # static
-        self.quantity = quantity
+        self.initial_inventory = initial_inventory
         self.verbose = verbose
+        self.quantity = 10_0000
+        # Convert episode_length to nanoseconds
+        self.episode_length = pd.to_timedelta(episode_length).delta
+
+        # dynamic
+        self.first_step = True
 
         # compositions
         self.market_interface = MarketInterface()
         self.reward = Reward()
         self.observation_space = ObservationSpace()
-
         self.market_features = MarketFeatures()
 
     def step(self):
@@ -133,19 +138,16 @@ class ISAgent(RlBaseAgent):
         Step executes the action, gets a new observation, receives the reward
         and returns reward and observation.
         """
+
         # get action from ActionStorage
         action = ActionStorage.action
-        #print('(AGENT) action ', action)
         self._take_action(action)
 
         observation = copy(self.observation_space.holistic_observation())
         reward = copy(self.reward.receive_reward())
-        #print('(AGENT) reward: ', reward)
-        #print('(AGENT) observation: ', observation)
 
         # pass obs, reward to Env via AgentTransition.transition
         AgentTransition(observation, reward)
-        #print('(AGENT) AgentTransition: ', AgentTransition.transition)
 
     def _take_action(self, action):
         """
@@ -157,22 +159,16 @@ class ISAgent(RlBaseAgent):
         best_ask = self.market_features.best_ask()
         best_bid = self.market_features.best_bid()
 
-        # buy
-        if action == 1 and best_ask:
-            self.market_interface.submit_order(side=1, #1
-                                               limit=best_ask,
-                                               quantity=self.quantity)
-            if self.verbose:
-                print('(RL AGENT) buy submission: ', best_ask)
         # sell
-        elif action == 2 and best_bid:
-            self.market_interface.submit_order(side=2, #2
+        if action == 1 and best_ask:
+            self.market_interface.submit_order(side=2,
                                                limit=best_bid,
                                                quantity=self.quantity)
             if self.verbose:
-                print('(RL AGENT) sell submission: ', best_bid)
+                print('(RL AGENT) buy submission: ', best_bid)
+
         # wait
-        else:
+        else:  # action == 0
             if self.verbose:
                 print('(RL AGENT) wait')
 
@@ -186,4 +182,3 @@ class ISAgent(RlBaseAgent):
         self.reward.reset()
         self.observation_space.reset()
         self.market_features.reset()
-

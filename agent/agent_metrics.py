@@ -487,7 +487,8 @@ class AgentMetrics:
                 quantity = trade['executed_volume']
                 sum_quantity += quantity
                 # see Velu p. 337
-                trade_is = is_side*(execution_price-arrival_price)/arrival_price
+                trade_is = is_side*(
+                        execution_price-arrival_price)/arrival_price
                 weighted_is = trade_is * quantity
                 sum_weighted_is += weighted_is
             # If positive, divide by sum

@@ -18,8 +18,9 @@ import pandas as pd
 from reconstruction.reconstruction import Reconstruction
 
 # Note: min max prices are stored for normalization in RL
-from reinforcement_learning.observation_space.minmaxprices \
-    import MinMaxPriceStorage
+from reinforcement_learning.observation_space.minmaxvalues \
+    import MinMaxValues
+from context.agent_context import AgentContext
 
 # PATH TO DATA DIRECTORY
 # old dataset
@@ -198,14 +199,19 @@ class Episode:
             buy_prices = list(self.snapshot_start[1].keys())
             buy_prices.sort(reverse=True)
             level_20_buy = buy_prices[20]
-            MinMaxPriceStorage.update_min_price(level_20_buy)
+            MinMaxValues.update_min_price(level_20_buy)
             sell_prices = list(self.snapshot_start[2].keys())
             sell_prices.sort(reverse=False)
             level_20_sell = sell_prices[20]
-            MinMaxPriceStorage.update_max_price(level_20_sell)
+            MinMaxValues.update_max_price(level_20_sell)
             # quantities (select max-qt from dict)
             asset_max_qt = self.max_qt_dict[self.identifier]
-            MinMaxPriceStorage.update_max_qt(asset_max_qt)
+            MinMaxValues.update_max_qt(asset_max_qt)
+            # Get start_time, end_time and episode duration for AgentContex
+            AgentContext.update_start_time(self.episode_start_unix)
+            AgentContext.update_end_time(self.episode_end_unix)
+            episode_duration = self.episode_end_unix - self.episode_start_unix
+            AgentContext.update_episode_length(episode_duration)
 
         # filter message list for episode messages
         self.message_packet_list = list(filter(lambda p:

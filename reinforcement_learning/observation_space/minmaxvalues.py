@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""MinMaxPriceStorage to store min and max for episode normalization."""
+"""MinMaxValues to store min and max for episode normalization."""
 
 __author__ = "florian"
 __date__ = "2022-11-29"
 __version__ = "0.1"
 
 
-class MinMaxPriceStorage:
-    """Class to store minimum and maximum prices for normalization.
+class MinMaxValues:
+    """Class to store minimum and maximum prices and qt for normalization.
 
     This is a storage class. The min and max prices at the beginning
     of each episode are stored in this class as class attributes. The initial
@@ -19,6 +19,9 @@ class MinMaxPriceStorage:
     the episode. The deviation factor has to be adjusted manually in the
     classmethods since the class does not need to be instantiated to be used
     as storage.
+
+    The max qt is updated when a new episode is generated inside the episode
+    class.
 
     Note: Since the update-methods are classmethods, it is possible to
     update the class attributes even without instantiating the class before.

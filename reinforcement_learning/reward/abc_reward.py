@@ -13,6 +13,7 @@ __version__ = '0.1'
 from abc import ABC, abstractmethod
 
 from agent.agent_metrics import AgentMetrics
+from agent.agent_trade import AgentTrade
 #TODO: just implement each possible reward function as a new method such that
 # they can be freely selected by different agents and compared
 
@@ -39,6 +40,8 @@ class BaseReward(ABC):
 
         self.agent_metrics = AgentMetrics()
         self.last_pnl = 0
+        # Agent Trade counter for trade specific rewards
+        self.number_of_trades = 0
 
     @abstractmethod
     def receive_reward(self):
@@ -48,6 +51,22 @@ class BaseReward(ABC):
         as given by the properties below.
         """
         raise NotImplementedError("Implement receive_reward in subclass.")
+
+    @property
+    def last_trade_is(self):
+        """Returns 0 if no trade happened and IS of last trade if a new
+        trade happened. """
+        # set is to 0
+        latest_trade_is = 0
+        # Check if new trades occured.
+        num_new_trades = len(AgentTrade.history) - self.number_of_trades
+        if num_new_trades:
+            # Get volume-weighted latest_trade_is from agent_metrics method.
+            latest_trade_is = self.agent_metrics.latest_trade_is(number_of_latest_trades=num_new_trades)
+            # Update class intern trade counter.
+            self.number_of_trades = len(AgentTrade.history)
+        # return is as reward
+        return latest_trade_is
 
     @property
     def pnl_unrealized(self):

@@ -54,6 +54,8 @@ class AgentContext:
     def reset(cls):
         """
         Reset class attributes.
+        NOTE: AgentContext has to be reset before the Agent! However,
+        since the values will be overwritten, reset is not necessary.
         """
         cls.start_time = None
         cls.end_time = None

@@ -409,7 +409,7 @@ class Replay:
         if self.rl_agent:
             self.rl_agent.reset()
         # -- Reset AgentContext
-        AgentContext.reset()
+        # AgentContext.reset()
         # -- get first observation (context needs to include initial state)
         first_obs = self.rl_agent.observation_space.holistic_observation()
 
@@ -423,6 +423,7 @@ class Replay:
         # AgentFeatures
         # ActionSpace (currently not used)
         # ActionStorage (currently not used)
+        # AgentContext.reset() careful! has to be reset BEFORE the agent
 
     # base reset . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 

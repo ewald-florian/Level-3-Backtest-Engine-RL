@@ -32,16 +32,20 @@ class Environment(gym.Env):
         """
         Set observation-space and action-space. Instantiate Replay.
         """
+        # Get obs and action sizes from config dict.
+        observation_size = env_config['observation_size']
+        action_size = env_config['action_size']
 
-        # TODO: obtain spaces from env_config
-        self.action_space_arg = 2
-        # self.observation_space_min = np.zeros(30) #minmax
-        self.observation_space_min = np.array([-1000_000] * 32)
-        self.observation_space_max = np.array([1000_000] * 32)
-
-        self.action_space = spaces.Discrete(self.action_space_arg)
+        # Define observation space.
+        # TODO: I could use tighter boundaries to spot errors but this could
+        #  also brek the code sometimes.
+        self.observation_space_min = np.array([-10000] * observation_size)
+        self.observation_space_max = np.array([10000] * observation_size)
         self.observation_space = spaces.Box(self.observation_space_min,
                                             self.observation_space_max)
+
+        # Define action space
+        self.action_space = spaces.Discrete(action_size)
 
         # Entry Points to Level-3 Backtest Engine:
 
@@ -77,18 +81,18 @@ class Environment(gym.Env):
 
         # pass action to agent via ActionStorage class attribute
         ActionStorage(action)
-        #print("(ENV) action storage: ", ActionStorage.action)
+        # print("(ENV) action storage: ", ActionStorage.action)
         # replay step (now, without action)
         self.replay.rl_step()
 
         # get AgentTransition
         observation, reward = AgentTransition.transition
-        #print("(ENV) AgentTransition.transition: ", AgentTransition.transition)
+        # print("(ENV) AgentTransition.transition: ", AgentTransition.transition)
         print("STEP OBS: ", observation)
 
         # get EnvironmentTransition
         done, info = EnvironmentTransition.transition
-        #print("(ENV) EnvironmentTransition.transition: ", EnvironmentTransition.transition)
+        # print("(ENV) EnvironmentTransition.transition: ", EnvironmentTransition.transition)
         """ # old version
         # -- Take step and receive observation, reward, info
         observation, reward, done, info = self.replay.rl_step(action)

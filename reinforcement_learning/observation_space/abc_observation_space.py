@@ -16,8 +16,8 @@ import numpy as np
 
 from feature_engineering.market_features import MarketFeatures
 from feature_engineering.agent_features import AgentFeatures
-from reinforcement_learning.observation_space.minmaxprices \
-    import MinMaxPriceStorage
+from reinforcement_learning.observation_space.minmaxvalues \
+    import MinMaxValues
 
 
 class BaseObservationSpace(ABC):
@@ -29,13 +29,11 @@ class BaseObservationSpace(ABC):
 
     # start_date to compute latest min max prices
     def __init__(self):
-        # TODO: include if self.min /self.max etc. to avoid error
-        #self.min_price = MinMaxPriceStorage.min_price
-        #self.max_price = MinMaxPriceStorage.max_price
-
-        #self.min_qt = 1_0000
-        #self.max_qt = MinMaxPriceStorage.max_qt
-
+        """
+        Usually, BaseObserbationSpace is initialiued via super in
+        the respective ObservationSpace. Initialization builds compositions
+        of MarketFeatures and AgentFeatures.
+        """
         self.market_features = MarketFeatures()
         self.agent_features = AgentFeatures()
 
@@ -56,12 +54,39 @@ class BaseObservationSpace(ABC):
         """
         raise NotImplementedError("Implement agent_observation in subclass.")
 
+    def _min_max_norma_prices_clipped(self, input_array):
+        """
+        Scales values between 0 and 1 with clipping of outliers to max.
+        """
+
+        scaled_prices = (input_array - MinMaxValues.min_price) / (
+                MinMaxValues.max_price - MinMaxValues.min_price)
+
+        # Clip outliers
+        scaled_prices[scaled_prices > 1] = 1
+        scaled_prices[scaled_prices < 0] = 0
+
+        return scaled_prices
+
+    def _min_max_norma_quantities_clipped(self, input_array):
+        """
+        Scales values between 0 and 1 with clipping of outliers to max.
+        """
+        scaled_quantities = (input_array - MinMaxValues.min_qt) / (
+                MinMaxValues.max_qt - MinMaxValues.min_qt)
+
+        # Clip outliers
+        scaled_quantities[scaled_quantities > 1] = 1
+        scaled_quantities[scaled_quantities < 0] = 0
+
+        return scaled_quantities
+
     def _min_max_norma_prices(self, input_array):
         """
         Scales values between 0 and 1.
         """
-        scaled_prices = (input_array - MinMaxPriceStorage.min_price)/(
-            MinMaxPriceStorage.max_price - MinMaxPriceStorage.min_price)
+        scaled_prices = (input_array - MinMaxValues.min_price) / (
+                MinMaxValues.max_price - MinMaxValues.min_price)
 
         return scaled_prices
 
@@ -69,8 +94,8 @@ class BaseObservationSpace(ABC):
         """
         Scales values between 0 and 1.
         """
-        scaled_quantities = (input_array - MinMaxPriceStorage.min_qt)/(
-                    MinMaxPriceStorage.max_qt - MinMaxPriceStorage.min_qt)
+        scaled_quantities = (input_array - MinMaxValues.min_qt) / (
+                MinMaxValues.max_qt - MinMaxValues.min_qt)
 
         return scaled_quantities
 
@@ -96,6 +121,19 @@ class BaseObservationSpace(ABC):
         holistic_obs.astype('float32')
 
         return holistic_obs
+
+    @property
+    def standard_agent_observation(self) -> np.array:
+        """
+        This is the standard agent observation it consist of two values:
+        1. elapsed time
+        2. elapsed inventory.
+        """
+        # Note: very common agent state, see e.g. Beling/Liu
+        time = self.agent_features.elapsed_time
+        inv = self.agent_features.remaining_inventory
+        agent_obs = np.array([time, inv])
+        return agent_obs
 
     def reset(self):
         """

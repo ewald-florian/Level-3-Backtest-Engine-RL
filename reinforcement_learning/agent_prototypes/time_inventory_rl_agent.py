@@ -67,13 +67,12 @@ class ObservationSpace(BaseObservationSpace):
         market_obs = self.market_features.level_2_plus(store_timestamp=False,
                                                   data_structure='array')
 
-        # TODO: added this to avoid some import errors
         if market_obs is not None:
             prices = market_obs[::3]
             quantities = market_obs[1::3]
             # -- normalize
-            prices = self._min_max_norma_prices(prices)
-            quantities = self._min_max_norma_quantities(quantities)
+            prices = self._min_max_norma_prices_clipped(prices)
+            quantities = self._min_max_norma_quantities_clipped(quantities)
             market_obs[::3] = prices
             market_obs[1::3] = quantities
 
@@ -83,12 +82,10 @@ class ObservationSpace(BaseObservationSpace):
         """
         Implement the agent observation.
         """
-        # Note: very common agent state, see e.g. Beling/Liu
-        time = self.agent_features.elapsed_time
-        inv = self.agent_features.remaining_inventory
-        agent_obs = np.array([time, inv])
-        #DEBUGGING
-        #print("ObservationSpace agent_obs:", agent_obs)
+        # Use standard agent obs with elapsed time and remaining inventory.
+        agent_obs = self.standard_agent_observation
+        print("AgentObs: ", agent_obs)
+
         return agent_obs
 
 
@@ -100,7 +97,7 @@ class Reward(BaseReward):
     def __init__(self):
         super().__init__()
         # dynamic attributes
-        self.number_of_trades = 0
+        #self.number_of_trades = 0
 
     def receive_reward(self):
         # TODO: I use the IS reward taken from is_agent
@@ -110,14 +107,13 @@ class Reward(BaseReward):
         num_new_trades = len(AgentTrade.history) - self.number_of_trades
         if num_new_trades:
             # Get volume-weighted latest_trade_is from agent_metrics method.
-            #print("NUM NEW TRADES", num_new_trades)
             latest_trade_is = self.agent_metrics.latest_trade_is(number_of_latest_trades=num_new_trades)
             # Update class intern trade counter.
             self.number_of_trades = len(AgentTrade.history)
 
         # return is as reward
         reward = latest_trade_is
-        #print("NEW IS reward", reward)
+        print(reward)
         return reward
 
 
@@ -159,49 +155,16 @@ class TimeInventoryAgent1(RlBaseAgent):
         Step executes the action, gets a new observation, receives the reward
         and returns reward and observation.
         """
-        # **NEW PART FOR AGENT OBSERVATION**
-        # -- TIME and INITIAL INVENTORY
-        # Get timestamp from Market in Unix format.
-        current_time = Market.instances['ID'].timestamp
-        # define start and end-time in the first episode
-        if self.first_step:
-            start_time = current_time
-            # DEBUGGING
-            #print("CT", current_time)
-            #print("EL", self.episode_length)
-            end_time = current_time + self.episode_length
-            self.first_step = False
-            #print("start_time: ", start_time)
-            #print("end_time: ", end_time)
-            # Add start_time, end_time, time_delta to AgentContext
-            AgentContext.update_start_time(start_time=start_time)
-            AgentContext.update_end_time(end_time)
-            AgentContext.update_episode_length(self.episode_length)
-            # Add initial inventory to AgentContext
-            AgentContext.update_initial_inventory(self.initial_inventory)
-
-            # DEBUGGING
-            #print("AC:")
-            #print("start_time", AgentContext.start_time)
-            #print("end_time", AgentContext.end_time)
-            #print("episode_length", AgentContext.episode_length)
-            #print("initial_inventory", AgentContext.initial_inventory)
 
         # get action from ActionStorage
         action = ActionStorage.action
-        #print('(AGENT) action ', action)
         self._take_action(action)
 
         observation = copy(self.observation_space.holistic_observation())
-        #DEBUGGING
-        #print("AGENT observation: ", observation)
         reward = copy(self.reward.receive_reward())
-        #print('(AGENT) reward: ', reward)
-        #print('(AGENT) observation: ', observation)
 
         # pass obs, reward to Env via AgentTransition.transition
         AgentTransition(observation, reward)
-        #print('(AGENT) AgentTransition: ', AgentTransition.transition)
 
     def _take_action(self, action):
         """

@@ -10,6 +10,8 @@
 
 # ---------------------------------------------------------------------------
 
+import pandas as pd
+
 from market.market import Market
 from agent.agent_order import OrderManagementSystem
 from agent.agent_trade import AgentTrade
@@ -65,8 +67,11 @@ class AgentFeatures:
             bool, normalized between 0 and 1 if set to True
         """
         if AgentContext.start_time:
+            # Market time in unix.
             current_time = Market.instances['ID'].timestamp
+            # Start_time in unix.
             start_time = AgentContext.start_time
+            # Difference.
             elapsed_time = current_time-start_time
             if normalize:
                 episode_length = AgentContext.episode_length
