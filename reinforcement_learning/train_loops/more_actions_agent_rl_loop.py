@@ -3,11 +3,11 @@
 # ---------------------------------------------------------------------------
 """Trainer Loop to test new abstract class structure of RL Agent
 
-AGENTID = 161122
+AGENTID = 051222
 """
 # ----------------------------------------------------------------------------
 __author__ = "florian"
-__date__ = "2022-11-17"
+__date__ = "2022-12-05"
 __version__ = "0.1"
 # ----------------------------------------------------------------------------
 
@@ -35,7 +35,6 @@ from ray.rllib.agents.ppo import DEFAULT_CONFIG as PPO_DEFAULT_CONFIG
 
 # library imports
 from reinforcement_learning.environment.environment import Environment
-#from reinforcement_learning.agent_prototypes.sample_agent import RlAgent
 from reinforcement_learning.agent_prototypes.more_actions_rl_agent \
     import MoreActionsAgent
 from replay_episode.replay import Replay
@@ -51,7 +50,7 @@ print("RESULT_FILE", result_file)
 # Start a new instance of Ray
 ray.init()
 
-agent = MoreActionsAgent(verbose=False)
+agent = MoreActionsAgent(verbose=True)
 # instantiate replay_episode and pass agent object as input argument
 replay = Replay(rl_agent=agent, episode_length="1m", )
 
@@ -64,7 +63,7 @@ config["env_config"] = {
 }
 # Size of the observation space
 config["env_config"]["observation_size"] = 32
-config["env_config"]["action_size"] = 13
+config["env_config"]["action_size"] = 2
 
 config["num_workers"] = 0
 config["disable_env_checking"] = False

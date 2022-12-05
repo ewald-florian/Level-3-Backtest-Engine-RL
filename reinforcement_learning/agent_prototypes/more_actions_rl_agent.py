@@ -20,7 +20,7 @@ Reward
 ------
 """
 __author__ = "florian"
-__date__ = "2022-11-13"
+__date__ = "2022-12-05"
 __version__ = "0.1"
 
 from copy import copy
@@ -78,8 +78,6 @@ class ObservationSpace(BaseObservationSpace):
         """
         # Use standard agent obs with elapsed time and remaining inventory.
         agent_obs = self.standard_agent_observation
-        print("AgentObs: ", agent_obs)
-
         return agent_obs
 
 
@@ -96,14 +94,14 @@ class Reward(BaseReward):
     def receive_reward(self):
         # TODO: Try out a sparse reward.
         # Last trade IS.
-        reward = self.last_trade_is()
+        reward = self.last_trade_is
         return reward
 
 
-class TimeInventoryAgent1(RlBaseAgent):
+class MoreActionsAgent(RlBaseAgent):
     """
-    Template for SpecialAgents which are based on specific reward and
-    observation space.
+    Agent with a larger action space, e.g. selection between different
+    limits and quantities.
     """
     def __init__(self,
                  initial_inventory: int = 10000_0000,
@@ -158,19 +156,87 @@ class TimeInventoryAgent1(RlBaseAgent):
         # submit marketable limit orders
         best_ask = self.market_features.best_ask()
         best_bid = self.market_features.best_bid()
+        ticksize = Market.instances["ID"].ticksize
 
-        # sell
-        if action == 1 and best_ask:
+        # define several price limits
+        buy_market = best_ask + 100*ticksize  # defacto market-order
+        buy_limit_1 = best_ask
+        buy_limit_2 = best_ask + ticksize
+        buy_limit_3 = best_ask + 2*ticksize
+
+        # define several quantities (ratios of initial inv)
+        # 5% of initial env
+        qt_1 = self.initial_inventory * 0.05
+        # 10% of initial env
+        qt_2 = self.initial_inventory * 0.10
+        # 20% of initial env
+        qt_3 = self.initial_inventory * 0.20
+
+
+        # Note: For now, I have 4 limits and 3 quantities plus "wait" option.
+        # -> I need 3*4 + 1 = 13 actions
+
+        order_limit = None
+        order_quantity = None
+
+        if action == 0:
+            pass
+
+        elif action == 1:
+            order_limit = buy_market
+            order_quantity = qt_1
+
+        elif action == 2:
+            order_limit = buy_market
+            order_quantity = qt_2
+
+        elif action == 3:
+            order_limit = buy_market
+            order_quantity = qt_3
+
+        elif action == 4:
+            order_limit = buy_limit_1
+            order_quantity = qt_1
+
+        elif action == 5:
+            order_limit = buy_limit_1
+            order_quantity = qt_2
+
+        elif action == 6:
+            order_limit = buy_limit_1
+            order_quantity = qt_3
+
+        elif action == 7:
+            order_limit = buy_limit_2
+            order_quantity = qt_1
+
+        elif action == 8:
+            order_limit = buy_limit_2
+            order_quantity = qt_2
+
+        elif action == 9:
+            order_limit = buy_limit_2
+            order_quantity = qt_3
+
+        elif action == 10:
+            order_limit = buy_limit_3
+            order_quantity = qt_1
+
+        elif action == 11:
+            order_limit = buy_limit_3
+            order_quantity = qt_2
+
+        elif action == 12:
+            order_limit = buy_limit_3
+            order_quantity = qt_3
+
+        # Place order via market interface.
+        if action > 0:
             self.market_interface.submit_order(side=2,
-                                               limit=best_bid,
-                                               quantity=self.quantity)
+                                               limit=order_limit,
+                                               quantity=order_quantity)
             if self.verbose:
-                print('(RL AGENT) buy submission: ', best_bid)
-
-        # wait
-        else:  # action == 0
-            if self.verbose:
-                print('(RL AGENT) wait')
+                print(f'(RL AGENT) Submission: limit: {order_limit}  qt: {order_quantity}')
 
     def reset(self):
         super().__init__()
