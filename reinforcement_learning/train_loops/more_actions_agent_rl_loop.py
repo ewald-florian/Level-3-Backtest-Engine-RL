@@ -31,7 +31,8 @@ import pandas as pd
 import ray
 from ray.rllib.agents.ppo import PPOTrainer
 from ray import tune
-from ray.rllib.agents.ppo import DEFAULT_CONFIG as PPO_DEFAULT_CONFIG
+# Note: DEFAULT_CONFIG is depreciated.
+# from ray.rllib.agents.ppo import DEFAULT_CONFIG as PPO_DEFAULT_CONFIG
 
 # library imports
 from reinforcement_learning.environment.environment import Environment
@@ -55,7 +56,7 @@ agent = MoreActionsAgent(verbose=True)
 replay = Replay(rl_agent=agent, episode_length="1m", )
 
 # prepare config dict for the trainer set-up
-config = PPO_DEFAULT_CONFIG
+config = {}   # depreciated: config = PPO_DEFAULT_CONFIG
 config["env"] = Environment
 config["env_config"] = {
     "config": {

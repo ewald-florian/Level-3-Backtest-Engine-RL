@@ -27,8 +27,9 @@ from context.agent_context import AgentContext
 # local="/Users/florianewald/PycharmProjects/A7_data/"
 # local new sample with Bayer january and february 2021
 local="/Users/florianewald/PycharmProjects/A7_NEW_SAMPLE/"
-# old dataset on server
-server="/home/jovyan/_shared_storage/temp/A7_eobi_data/downloader_working_05/"
+# dataset on server
+# TODO: This only works for BAY so far, put all data in one folder!
+server_new = "/home/jovyan/_shared_storage/temp/A7_eobi_data_flo/DE000BAY0017/"
 # TODO: nvme and server path
 # new dataset on nvme
 # nvme = "/Volumes/WD_BLUE_NVME/A7_DATA/"
@@ -36,7 +37,7 @@ server="/home/jovyan/_shared_storage/temp/A7_eobi_data/downloader_working_05/"
 if platform.system() == 'Darwin':  # macos
     PATH = local
 elif platform.system() == 'Linux':
-    PATH = server
+    PATH = server_new
 else:
     raise Exception('Specify PATH in episode.py')
 
