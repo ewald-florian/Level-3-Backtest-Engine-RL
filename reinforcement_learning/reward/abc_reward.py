@@ -37,6 +37,7 @@ class BaseReward(ABC):
     reward = None
 
     def __init__(self):
+        """To be initialized in specific reward class."""
 
         self.agent_metrics = AgentMetrics()
         self.last_pnl = 0
@@ -58,15 +59,31 @@ class BaseReward(ABC):
         trade happened. """
         # set is to 0
         latest_trade_is = 0
-        # Check if new trades occured.
+        # Check if new trades occurred.
         num_new_trades = len(AgentTrade.history) - self.number_of_trades
         if num_new_trades:
             # Get volume-weighted latest_trade_is from agent_metrics method.
-            latest_trade_is = self.agent_metrics.latest_trade_is(number_of_latest_trades=num_new_trades)
+            latest_trade_is = self.agent_metrics.latest_trade_is(
+                number_of_latest_trades=num_new_trades)
             # Update class intern trade counter.
             self.number_of_trades = len(AgentTrade.history)
         # return is as reward
         return latest_trade_is
+
+    def episode_end_is(self, last_episode_step):
+        """IS over all trades at the end of the episode. This method returns
+        the overall is over all trades, in order to be used as terminal reward
+        it needs the input argument last_episode_step which is a boolean
+        that should only be True if the environment is in the last episode.
+        :param last_episode_step
+            bool, True if last_episode_step False otherwise.
+        """
+        episode_end_is = 0
+        if last_episode_step:
+            episode_end_is = self.agent_metrics.all_trade_is()
+        return episode_end_is
+
+
 
     @property
     def pnl_unrealized(self):

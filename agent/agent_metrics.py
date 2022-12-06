@@ -441,28 +441,38 @@ class AgentMetrics:
 
         return round(pnl_unreal, 2)
 
-    # TODO: implement
-    def implementation_shortfall(self):
+    # TODO: TEST
+    def all_trade_is(self):
         """
         Compute Implementation Shortfall.
         """
 
-        implementation_shortfall = 0
-
+        overall_is = 0
+        sum_quantity = 0
+        sum_weighted_is = 0
+        # Get all realized trades.
         realized_trades = self.get_realized_trades
-        new_number_of_trades = len(realized_trades)
-
-        # todo: last_number_of_trades
-        if new_number_of_trades > last_number_of_trades:
-            last_trade = realized_trades[-1]
-            is_side = 1 if last_trade['agent_side'] == 1 else -1
-            execution_price = last_trade['execution_price']
-            arrival_price = last_trade['arrival_price']
-            implementation_shortfall = is_side * execution_price / arrival_price
-            # update number of trades
-            self.number_of_trades = new_number_of_trades
-
-        return implementation_shortfall
+        if realized_trades:
+            # Iterate over all trades.
+            for trade in realized_trades:
+                # Relevant numbers.
+                is_side = 1 if trade['agent_side'] == 1 else -1
+                execution_price = trade['execution_price']
+                arrival_price = trade['arrival_price']
+                quantity = trade['executed_volume']
+                # Count the sum of quantities of all trades.
+                sum_quantity += quantity
+                # see Velu p. 337
+                trade_is = is_side * (
+                        execution_price - arrival_price) / arrival_price
+                # Weight IS with quantity.
+                weighted_is = trade_is * quantity
+                # Count the sum of weighted IS over all trades.
+                sum_weighted_is += weighted_is
+            # If positive, divide by sum (avoid zero division)
+            if sum_weighted_is and sum_quantity:
+                overall_is = sum_weighted_is / sum_quantity
+        return overall_is
 
     # TODO: Testing
     def latest_trade_is(self, number_of_latest_trades):
