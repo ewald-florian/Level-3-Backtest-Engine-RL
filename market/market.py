@@ -31,13 +31,11 @@ from agent.agent_order import OrderManagementSystem as OMS
 
 
 class Market(Reconstruction):
-    # store several instances in dict with market_id as key
-    instances = dict()
-
     """
     # TODO: Write new Market class docstring.
     """
-
+    # store several instances in dict with market_id as key
+    instances = dict()
     def __init__(self,
                  market_id: str = "ID",
                  l3_levels: int = 5,
@@ -48,9 +46,6 @@ class Market(Reconstruction):
                  track_index: bool = False,
                  store_arrival_price = True,
                  verbose: bool = True):
-
-        super().__init__(track_timestamp=True,
-                         track_index=track_index)
         """
         Instantiate Market.
         
@@ -70,6 +65,8 @@ class Market(Reconstruction):
             bool, if True, the internal state index will be tracked
         ...
         """
+        super().__init__(track_timestamp=True,
+                         track_index=track_index)
         # static attributes from arguments
         self.market_id = market_id
         self.l3_levels = l3_levels
@@ -1335,7 +1332,8 @@ class Market(Reconstruction):
                         order_sell = sorted(state_to_match[2][min_sell],
                                             key=lambda d: d['timestamp'])[0]
 
-                        # TODO: in edge cases the more aggressive price is deciding (e.g. right after opening)
+                        # TODO: in edge cases the more aggressive price is
+                        #  deciding (e.g. right after opening)
                         #  not the timestamp
                         # aggressor order has later timestamp
                         order_standing, order_aggressor = sorted(
@@ -1343,7 +1341,8 @@ class Market(Reconstruction):
                             key=lambda x: x["timestamp"])
 
                         # ----------------------------------------------------
-                        # execution price is always the price of the standing order
+                        # execution price is always the price of the standing
+                        # order
                         execution_price = order_standing["price"]
                         aggressor_side = order_aggressor["side"]
                         aggressor_timestamp = order_aggressor["timestamp"]
@@ -1356,7 +1355,8 @@ class Market(Reconstruction):
                             # remove the fully executed buy order from state
                             state_to_match[1][max_buy].remove(order_buy)
 
-                            # mark order as executed (relevant for impact orders)
+                            # mark order as executed (relevant for impact
+                            # orders)
                             if "message_id" in order_buy.keys():
                                 order_buy["template_id"] = 11111
 
@@ -1368,7 +1368,8 @@ class Market(Reconstruction):
                             # remove executed sell order from simulation state
                             state_to_match[2][min_sell].remove(order_sell)
 
-                            # mark order as executed (relevant for impact orders)
+                            # mark order as executed (relevant for impact
+                            # orders)
                             if "message_id" in order_sell.keys():
                                 order_sell["template_id"] = 11111
 
@@ -1379,7 +1380,8 @@ class Market(Reconstruction):
                             state_to_match[1][max_buy].remove(order_buy)
                             state_to_match[2][min_sell].remove(order_sell)
 
-                            # mark order as executed (only affects impact orders)
+                            # mark order as executed (only affects impact
+                            # orders)
                             if "message_id" in order_buy.keys():
                                 order_buy["template_id"] = 11111
                             if "message_id" in order_sell.keys():

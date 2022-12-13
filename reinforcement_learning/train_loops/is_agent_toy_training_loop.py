@@ -13,7 +13,7 @@ __version__ = "0.1"
 
 import numpy as np
 
-from reinforcement_learning.environment.environment import Environment
+from reinforcement_learning.environment.tradingenvironment import TradingEnvironment
 from reinforcement_learning.agent_prototypes.sample_agent import RlAgent
 from replay_episode.replay import Replay
 from market.market import Market
@@ -36,7 +36,7 @@ if __name__ == '__main__':
             "replay_episode": replay},
     }
     # instantiate and reset environment
-    env = Environment(env_config=config)
+    env = TradingEnvironment(env_config=config)
     env.reset()
 
     # run loop

@@ -19,7 +19,7 @@ from reinforcement_learning.transition.env_transition \
     import EnvironmentTransition
 
 
-class Environment(gym.Env):
+class TradingEnvironment(gym.Env):
     """
     Environment class for Reinforcement Learning with the Level-3 Backtest
     Engine. Follows OpenAI gym convention.
@@ -37,10 +37,8 @@ class Environment(gym.Env):
         action_size = env_config['action_size']
 
         # Define observation space.
-        # TODO: I could use tighter boundaries to spot errors but this could
-        #  also brek the code sometimes.
-        self.observation_space_min = np.array([-10000] * observation_size)
-        self.observation_space_max = np.array([10000] * observation_size)
+        self.observation_space_min = np.array([-10] * observation_size)
+        self.observation_space_max = np.array([10] * observation_size)
         self.observation_space = spaces.Box(self.observation_space_min,
                                             self.observation_space_max)
 
@@ -65,7 +63,7 @@ class Environment(gym.Env):
         observation, reward, completion status (done), and additional info.
 
         :param action:
-            ...
+            ..., action obtained from Model.
         :return: observation
             np.array, ...
         :return: reward

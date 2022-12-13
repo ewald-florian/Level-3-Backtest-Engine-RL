@@ -28,8 +28,8 @@ from context.agent_context import AgentContext
 # local new sample with Bayer january and february 2021
 local="/Users/florianewald/PycharmProjects/A7_NEW_SAMPLE/"
 # dataset on server
-# TODO: This only works for BAY so far, put all data in one folder!
-server_new = "/home/jovyan/_shared_storage/temp/A7_eobi_data_flo/DE000BAY0017/"
+# TODO: This only works for BAY so far, adjust load new episode!
+server_new = "/home/jovyan/_shared_storage/temp/A7_data/messages/DE000BAY0017/"
 # TODO: nvme and server path
 # new dataset on nvme
 # nvme = "/Volumes/WD_BLUE_NVME/A7_DATA/"
@@ -45,7 +45,7 @@ else:
 class Episode:
 
     """
-    Episode is the datastorage for one episode in the backtest. It consists of
+    Episode is the data storage for one episode in the backtest. It consists of
     a snapshot_start (used to initialize the market state in the beginning of
     the episode) and a message_packet_list (used to iteratively update the
     market state from messages and hence replay_episode the historical continuous
@@ -121,10 +121,15 @@ class Episode:
 
     # TODO: profiling
     def load_episode_data(self):
-
-        #FOR TESTING / DEBUGGING
-        #self.episode_start = pd.Timestamp('2022-02-16 08:10:00+0000', tz='UTC')
-        #self.episode_end = pd.Timestamp('2022-02-16 08:20:00+0000', tz='UTC')
+        """
+        Use the given parameters to find the path to the respective dataset
+        and load the data. Generate a start-snapshot for the beginning
+        of the episode by reconstructing the trading period until that
+        exact moment and store in self.snapshot_start. Slice out the message
+        packages which occur during the episode and store them to
+        self.message_packet_list. It both snapshot start and message list
+        could be obtained, the new episode was successfully build.
+        """
 
         start_date_str = self.episode_start.strftime("%Y%m%d")
         start_hour = self.episode_start.strftime("%H")
@@ -133,34 +138,45 @@ class Episode:
         market = ".XETR_"
 
         # NOTE: THIS IS FOR DATA FILES WHICH ARE SPLIT AT MID-AUCTION
-        # (...T08... -> morning, ...T12... -> afternoon)
+        # (...T08/T07... -> morning, ...T12/T11... -> afternoon)
 
-        # trading_time
-        # TODO: adjust for summer time (07, 11)
-        # Note: 12:00 UTC (CET would be 13)
-        if int(start_hour) < 12:
-            trading_time = "T08"
-        elif int(start_hour) >= 12:
-            trading_time = "T12"
+        # trading_time (Note: 12:00 UTC, CET would be 13))
+
+        # Winter time until 2021-03-28.
+        if int(start_date_str) < 20210329:
+            if int(start_hour) < 12:
+                trading_time = "T08"
+            elif int(start_hour) >= 12:
+                trading_time = "T12"
+        # Summer time from 2021-03-29.
+        elif int(start_date_str) >= 20210329:
+            if int(start_hour) < 11:
+                trading_time = "T07"
+            elif int(start_hour) >= 11:
+                trading_time = "T11"
+
+        # TODO: load data of days with volatility interruption
 
         # create pattern
         pattern = isin + market + start_date_str + trading_time
 
         # find base_path name
         base_path = None
-        for directory in os.listdir(PATH):
+        # The base_path contains directories for each isin which contain data.
+        isin_path = PATH + isin + "/"
+
+        for directory in os.listdir(isin_path):
 
             if pattern in directory:
-
                 base_path = directory
 
         if not base_path:
             print("...Base_Path not found")
 
         # load files from base_path
-        snapshot_start_path = open(f"{PATH + base_path}/snapshot_start.json")
-        #snapshot_end_path = open(f"{PATH + base_path}/snapshot_end.json")
-        message_list_path = open(f"{PATH + base_path}/message_list.json")
+        snapshot_start_path = open(f"{isin_path + base_path}/snapshot_start.json")
+        #snapshot_end_path = open(f"{isin_path + base_path}/snapshot_end.json")
+        message_list_path = open(f"{isin_path + base_path}/message_list.json")
 
         # (start snapshots are sometimes in a list)
         snapshot_start = json.load(snapshot_start_path)[0]

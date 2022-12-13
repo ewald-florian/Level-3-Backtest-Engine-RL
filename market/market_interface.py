@@ -30,7 +30,7 @@ class MarketInterface:
 
     1.) Simulated Messages:
     -----------------------
-    - Are stored and managed in OrderManagementSytem and  seperated
+    - Are stored and managed in OrderManagementSytem and seperated
     from the actual market state.
     - Are matched against historical limit and/or marekt orders in
     a simulated matching process.

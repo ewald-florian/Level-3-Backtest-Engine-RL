@@ -472,7 +472,6 @@ class Reconstruction:
         except:
             pass
 
-
     def _order_delete_mass(self):  # 13103
         """
         Execute order mass delete message (13103) by emptying the state.

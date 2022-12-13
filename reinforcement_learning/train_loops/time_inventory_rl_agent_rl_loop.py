@@ -34,7 +34,7 @@ from ray import tune
 # from ray.rllib.agents.ppo import DEFAULT_CONFIG as PPO_DEFAULT_CONFIG
 
 # library imports
-from reinforcement_learning.environment.environment import Environment
+from reinforcement_learning.environment.tradingenvironment import TradingEnvironment
 #from reinforcement_learning.agent_prototypes.sample_agent import RlAgent
 from reinforcement_learning.agent_prototypes.more_actions_rl_agent \
     import MoreActionsAgent
@@ -57,7 +57,7 @@ replay = Replay(rl_agent=agent, episode_length="1m", )
 
 # prepare config dict for the trainer set-up
 config = {}
-config["env"] = Environment
+config["env"] = TradingEnvironment
 config["env_config"] = {
     "config": {
         "replay_episode": replay},
