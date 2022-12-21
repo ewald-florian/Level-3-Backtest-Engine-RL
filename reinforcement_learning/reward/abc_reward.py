@@ -43,6 +43,7 @@ class BaseReward(ABC):
         self.last_pnl = 0
         # Agent Trade counter for trade specific rewards
         self.number_of_trades = 0
+        self.number_or_orders = 0
 
     @abstractmethod
     def receive_reward(self):
@@ -82,8 +83,6 @@ class BaseReward(ABC):
         if last_episode_step:
             episode_end_is = self.agent_metrics.all_trade_is()
         return episode_end_is
-
-
 
     @property
     def pnl_unrealized(self):

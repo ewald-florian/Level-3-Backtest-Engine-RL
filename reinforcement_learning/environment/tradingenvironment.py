@@ -86,7 +86,7 @@ class TradingEnvironment(gym.Env):
         # get AgentTransition
         observation, reward = AgentTransition.transition
         # print("(ENV) AgentTransition.transition: ", AgentTransition.transition)
-        print("STEP OBS: ", observation)
+        #print("STEP OBS: ", observation)
 
         # get EnvironmentTransition
         done, info = EnvironmentTransition.transition
@@ -107,7 +107,7 @@ class TradingEnvironment(gym.Env):
         """
         # -- reset replay_episode
         first_obs = self.replay.rl_reset()
-        print("FIRST OBS: ", first_obs)
+        #print("FIRST OBS: ", first_obs)
 
         print('(ENV)  episode len: ', self.replay.episode.__len__())
 

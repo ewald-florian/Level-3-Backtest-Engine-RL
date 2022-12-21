@@ -1,6 +1,8 @@
 """ In order to have a baseline strategy for the agent, he should get small
 incentives to learn the TWAP strategy and apply it if nothing else happens.
 This is a agent prototype to develop and test this reward.
+
+AGENTID = 211222
 """
 __author__ = "florian"
 __date__ = "2022-12-12"
@@ -24,8 +26,11 @@ from reinforcement_learning.transition.agent_transition import AgentTransition
 from reinforcement_learning.action_space.action_storage import ActionStorage
 from context.agent_context import AgentContext
 from agent.agent_trade import AgentTrade
+from agent.agent_order import OrderManagementSystem as OMS
 
 
+# TODO: Observation space must be increased with some infos which help
+#  the agent when he placed his last order and whether it was filled
 class ObservationSpace(BaseObservationSpace):
     """
     Subclass of BaseObservationSpace to implement the observation for a
@@ -71,30 +76,94 @@ class Reward(BaseReward):
     Subclass of BaseReward to implement the reward for a specific agent.
     The abc method receive_reward needs to be implemented.
     """
-    def __init__(self):
+    def __init__(self, twap_n=10):
         super().__init__()
         # dynamic attributes
         self.number_of_trades = 0
+        self.number_of_orders = 0
+
+        initial_inventory = AgentContext.initial_inventory
+        episode_length = AgentContext.episode_length
+        self.twap_child_quantity = initial_inventory / twap_n
+        self.twap_interval = episode_length/twap_n
+
+    def twap_incentive_reward(self):
+        """"""
+        # Set to zero if no new orders were submitted.
+        twap_penalty = 0
+        # TODO: in ns, the absolute penalty is quite large (trillions),
+        #   does this matter? Maybe I can convert it so seconds and round it.
+        # TODO: extend agent observation
+        # TODO: Quantity am ende per market order platzieren und die
+        #  entspechende penalty kassieren
+        # Special case first order: penalty for waiting.
+        if len(OMS.order_list) == 1:
+            # -- Time aspect.
+            current_order_timestamp = OMS.order_list[-1]['timestamp']
+            episode_start_time = AgentContext.start_time
+            agent_order_time_difference = abs(current_order_timestamp -
+                                         episode_start_time)
+            twap_time_deviation = abs(self.twap_interval -
+                                 agent_order_time_difference)
+            # Convert to seconds.
+            twap_time_deviation = int(twap_time_deviation / 1e9)
+            # -- Quantity aspect.
+            current_order_qt = OMS.order_list[-1]['quantity']
+            twap_qt_deviation = abs(current_order_qt-self.twap_child_quantity)
+            # Convert to pieces
+            twap_qt_deviation = twap_qt_deviation / 1_0000
+            # -- Combination.
+            # TODO: must be scaled since ns are too dominant.
+            twap_penalty = - twap_time_deviation - twap_qt_deviation
+            # Count the new order.
+            self.number_of_orders += 1
+
+        # After the first order: compare time between orders.
+        num_new_orders = len(OMS.order_list) - self.number_of_orders
+        if num_new_orders and len(OMS.order_list) > 2:
+            # -- Time aspect.
+            current_order_timestamp = OMS.order_list[-1]['timestamp']
+            last_order_timestamp = OMS.order_list[-2]['timestamp']
+            agent_order_difference = abs(last_order_timestamp-
+                                         current_order_timestamp)
+
+            twap_time_deviation = abs(self.twap_interval -
+                                      agent_order_difference)
+            # Convert to seconds.
+            twap_time_deviation = int(twap_time_deviation / 1e9)
+            # -- Quantity aspect.
+            current_order_qt = OMS.order_list[-1]['quantity']
+            twap_qt_deviation = abs(current_order_qt -
+                                    self.twap_child_quantity)
+            # Convert to pieces
+            twap_qt_deviation = twap_qt_deviation / 1_0000
+
+            # -- Combination.
+            twap_penalty = - twap_qt_deviation - twap_time_deviation
+
+            #print("TWAP Penalty", twap_penalty)
+
+            # Count the new order.
+            self.number_of_orders += 1
+
+        return twap_penalty
 
     def receive_reward(self):
-        # TODO: Try out a sparse reward.
+        # TODO: TWAP incentive reward.
         # Last trade IS.
 
-        # DEBUGGING
-        print("LAST EPISODE REWARD", self.episode_end_is(last_episode_step=True))
-
-        reward = self.last_trade_is
+        reward = self.twap_incentive_reward()
         return reward
 
 
-class MoreActionsAgent(RlBaseAgent):
+class TwapIncentiveAgent(RlBaseAgent):
     """
     Agent with a larger action space, e.g. selection between different
     limits and quantities.
     """
     def __init__(self,
-                 initial_inventory: int = 10000_0000,
-                 verbose=True,
+                 initial_inventory: int = 1000_0000,
+                 verbose=False,
                  episode_length="1m",
                  ):
         """
@@ -104,8 +173,14 @@ class MoreActionsAgent(RlBaseAgent):
         requirements of this special agent, a specific observation and a
         specific reward function.
         """
+
         # static
         self.initial_inventory = initial_inventory
+        # Store initial inventory to agent context.
+        AgentContext.update_initial_inventory(self.initial_inventory)
+        # Store Episode Length:
+        AgentContext.update_episode_length_ns(episode_length)
+
         self.verbose = verbose
         self.quantity = 10_0000
         # Convert episode_length to nanoseconds
@@ -225,7 +300,8 @@ class MoreActionsAgent(RlBaseAgent):
                                                limit=order_limit,
                                                quantity=order_quantity)
             if self.verbose:
-                print(f'(RL AGENT) Submission: limit: {order_limit}  qt: {order_quantity}')
+                pass
+                #print(f'(RL AGENT) Submission: limit: {order_limit}  qt: {order_quantity}')
 
     def reset(self):
         super().__init__()

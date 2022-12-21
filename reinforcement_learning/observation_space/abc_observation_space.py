@@ -22,15 +22,15 @@ from reinforcement_learning.observation_space.minmaxvalues \
 
 class BaseObservationSpace(ABC):
     """
-    BaseObservationSpace is an abstract method to be subclassed by a specific
-    observation space. The abstract classes agent_observation and
-    market_observation must be implemented in the subclass.
+    BaseObservationSpace is an abstract class to be subclassed by a specific
+    observation space. The abstract methods agent_observation and
+    market_observation must be implemented in the specific class.
     """
 
     # start_date to compute latest min max prices
     def __init__(self):
         """
-        Usually, BaseObserbationSpace is initialiued via super in
+        Usually, BaseObservationSpace is initialized via super in
         the respective ObservationSpace. Initialization builds compositions
         of MarketFeatures and AgentFeatures.
         """

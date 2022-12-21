@@ -121,6 +121,8 @@ class MoreActionsAgent(RlBaseAgent):
         """
         # static
         self.initial_inventory = initial_inventory
+        # Store initial inventory to agent context.
+        AgentContext.update_initial_inventory(self.initial_inventory)
         self.verbose = verbose
         self.quantity = 10_0000
         # Convert episode_length to nanoseconds
@@ -240,7 +242,8 @@ class MoreActionsAgent(RlBaseAgent):
                                                limit=order_limit,
                                                quantity=order_quantity)
             if self.verbose:
-                print(f'(RL AGENT) Submission: limit: {order_limit}  qt: {order_quantity}')
+                print(f'(RL AGENT) Submission: limit: {order_limit}  '
+                      f'qt: {order_quantity}')
 
     def reset(self):
         super().__init__()

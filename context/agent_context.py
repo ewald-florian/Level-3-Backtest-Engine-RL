@@ -6,6 +6,8 @@ __author__ = "florian"
 __date__ = "2022-11-13"
 __version__ = "0.1"
 
+import pandas as pd
+
 
 class AgentContext:
     """Class to store relevant Agent-Parameters in class attributes.
@@ -44,6 +46,14 @@ class AgentContext:
     def update_episode_length(cls, episode_length):
         """Update class attribute episode_length"""
         cls.episode_length = episode_length
+
+    @classmethod
+    def update_episode_length_ns(cls, episode_length_str):
+        # Convert to pandas timestamp.
+        episode_delta = pd.Timedelta(episode_length_str)
+        # Convert to nanoseconds int.
+        cls.episode_length = episode_delta.delta
+
 
     @classmethod
     def update_initial_inventory(cls, initial_inventory):
