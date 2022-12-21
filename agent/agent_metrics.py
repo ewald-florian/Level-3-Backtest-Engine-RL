@@ -91,6 +91,19 @@ class AgentMetrics:
             return list(filtered_trades)
 
     @property
+    def time_since_last_submission(self):
+        """Time since last trade in nanoseconds."""
+        # TODO: Das ist nur eine provisorische lösung eigentlich müsste es 0 sein.
+        time_since_last_trade = 0.0000001
+        if len(OMS.order_list) > 0:
+            last_order_timestamp = OMS.order_list[-1]['timestamp']
+            current_time = Market.instances["ID"].timestamp
+            time_since_last_trade = current_time - last_order_timestamp
+
+        return time_since_last_trade
+
+
+    @property
     def unrealized_quantity(self):
         """
         Quantity of assets in open trades. A negative realized quantity means

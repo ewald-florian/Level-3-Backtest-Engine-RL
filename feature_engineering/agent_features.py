@@ -16,6 +16,7 @@ from market.market import Market
 from agent.agent_order import OrderManagementSystem
 from agent.agent_trade import AgentTrade
 from context.agent_context import AgentContext
+from agent.agent_metrics import AgentMetrics
 
 
 class AgentFeatures:
@@ -29,10 +30,12 @@ class AgentFeatures:
 
         self.number_of_trades = 0
         self.executed_quantity = 0
+        self.agent_metrics = AgentMetrics()
 
     @property
     def remaining_inventory(self, normalize=True):
         """Remaining inventory."""
+        # TODO: Fehlerhaft zeigt immer 1 an!
         if AgentContext.initial_inventory:
             initial_inventory = AgentContext.initial_inventory
             # Only update executed_quantity when new trades happened
@@ -99,8 +102,13 @@ class AgentFeatures:
         else:
             return 1
 
-    def time_since_last_submission(self):
-        pass
+    @property
+    def time_since_last_submission_norm(self):
+        """Time since last submission normed."""
+        time_since_last_submission = self.agent_metrics.time_since_last_submission
+        # Scale with 30 seconds as max time.
+        time_normed = (time_since_last_submission / (30*1e9))
+        return time_normed
 
     def number_of_submissions(self):
         pass

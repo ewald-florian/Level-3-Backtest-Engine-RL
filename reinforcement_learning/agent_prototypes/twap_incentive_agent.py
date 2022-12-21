@@ -68,6 +68,15 @@ class ObservationSpace(BaseObservationSpace):
         """
         # Use standard agent obs with elapsed time and remaining inventory.
         agent_obs = self.standard_agent_observation
+        # Get time since last submission and append to agent observation.
+        time_since_last_sub = \
+            self.agent_features.time_since_last_submission_norm
+
+        agent_obs = np.append(agent_obs, np.array([time_since_last_sub]))
+        agent_obs.astype('float32')
+        # TODO: agent_obs remaining inventory ist fehlerhaft
+        #print("AO", agent_obs)
+
         return agent_obs
 
 
