@@ -14,6 +14,8 @@ from abc import ABC, abstractmethod
 
 from agent.agent_metrics import AgentMetrics
 from agent.agent_trade import AgentTrade
+from agent.agent_order import OrderManagementSystem as OMS
+from context.agent_context import AgentContext
 #TODO: just implement each possible reward function as a new method such that
 # they can be freely selected by different agents and compared
 
@@ -110,6 +112,67 @@ class BaseReward(ABC):
         # update last pnl
         self.last_pnl = self.pnl_realized
         return pnl_difference
+
+    @property
+    def twap_incentive_reward(self):
+        """
+        This reward component incentivizes the agent to asjust his strategy
+        to to TWAP strategy. The intuition behind that is that an execution
+        agent can learn twap as a baseline and then later spezialize on a
+        more sophisticated strategy. The main goal is to limit the number
+        of orders and the submission frequency of the agent.
+        """
+        # Set to zero if no new orders were submitted.
+        twap_penalty = 0
+        # Special case first order: penalty for waiting.
+        if len(OMS.order_list) == 1:
+            # -- Time aspect.
+            current_order_timestamp = OMS.order_list[-1]['timestamp']
+            episode_start_time = AgentContext.start_time
+            agent_order_time_difference = abs(current_order_timestamp -
+                                         episode_start_time)
+            twap_time_deviation = abs(self.twap_interval -
+                                 agent_order_time_difference)
+            # Convert to seconds.
+            twap_time_deviation = int(twap_time_deviation / 1e9)
+            # -- Quantity aspect.
+            current_order_qt = OMS.order_list[-1]['quantity']
+            twap_qt_deviation = abs(current_order_qt-self.twap_child_quantity)
+            # Convert to pieces
+            twap_qt_deviation = twap_qt_deviation / 1_0000
+            # -- Combination.
+            # TODO: must be scaled since ns are too dominant.
+            twap_penalty = - twap_time_deviation - twap_qt_deviation
+            # Count the new order.
+            self.number_of_orders += 1
+
+        # After the first order: compare time between orders.
+        num_new_orders = len(OMS.order_list) - self.number_of_orders
+        if num_new_orders and len(OMS.order_list) > 2:
+            # -- Time aspect.
+            current_order_timestamp = OMS.order_list[-1]['timestamp']
+            last_order_timestamp = OMS.order_list[-2]['timestamp']
+            agent_order_difference = abs(last_order_timestamp-
+                                         current_order_timestamp)
+
+            twap_time_deviation = abs(self.twap_interval -
+                                      agent_order_difference)
+            # Convert to seconds.
+            twap_time_deviation = int(twap_time_deviation / 1e9)
+            # -- Quantity aspect.
+            current_order_qt = OMS.order_list[-1]['quantity']
+            twap_qt_deviation = abs(current_order_qt -
+                                    self.twap_child_quantity)
+            # Convert to pieces
+            twap_qt_deviation = twap_qt_deviation / 1_0000
+
+            # -- Combination.
+            twap_penalty = - twap_qt_deviation - twap_time_deviation
+
+            # Count the new order.
+            self.number_of_orders += 1
+
+        return twap_penalty
 
     def vwap_score(self):
         pass
