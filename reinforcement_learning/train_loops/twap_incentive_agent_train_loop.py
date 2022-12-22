@@ -53,7 +53,7 @@ ray.init()
 
 agent = TwapIncentiveAgent(verbose=True)
 # instantiate replay_episode and pass agent object as input argument
-replay = Replay(rl_agent=agent, episode_length="1m", )
+replay = Replay(rl_agent=agent, episode_length="1m")
 
 # prepare config dict for the trainer set-up
 config = {}   # depreciated: config = PPO_DEFAULT_CONFIG
@@ -88,8 +88,7 @@ episode_json = []
 num_iterations = 10
 for n in range(num_iterations):
 
-    # TODO: set-up trainer in a way that it resets after the done flag is true
-    #  the episode was automatically limited to 2000 steps...
+    # TODO: The env will be reset when it returns the done-flag.
     result = rllib_trainer.train()
 
     results.append(result)

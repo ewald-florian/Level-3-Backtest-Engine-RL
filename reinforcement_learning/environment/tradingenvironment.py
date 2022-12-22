@@ -37,8 +37,8 @@ class TradingEnvironment(gym.Env):
         action_size = env_config['action_size']
 
         # Define observation space.
-        self.observation_space_min = np.array([-10] * observation_size)
-        self.observation_space_max = np.array([10] * observation_size)
+        self.observation_space_min = np.array([-10_000_000] * observation_size)
+        self.observation_space_max = np.array([10_000_000] * observation_size)
         self.observation_space = spaces.Box(self.observation_space_min,
                                             self.observation_space_max)
 

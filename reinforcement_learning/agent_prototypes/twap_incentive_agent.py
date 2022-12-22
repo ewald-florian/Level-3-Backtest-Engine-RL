@@ -27,6 +27,11 @@ from reinforcement_learning.action_space.action_storage import ActionStorage
 from context.agent_context import AgentContext
 from agent.agent_trade import AgentTrade
 from agent.agent_order import OrderManagementSystem as OMS
+from agent.agent_metrics import AgentMetrics
+from reinforcement_learning.transition.env_transition import \
+    EnvironmentTransition
+from reinforcement_learning.action_space.abc_action_space import \
+    BaseActionSpace
 
 
 # TODO: Observation space must be increased with some infos which help
@@ -68,15 +73,7 @@ class ObservationSpace(BaseObservationSpace):
         """
         # Use standard agent obs with elapsed time and remaining inventory.
         agent_obs = self.standard_agent_observation
-        # Get time since last submission and append to agent observation.
-        time_since_last_sub = \
-            self.agent_features.time_since_last_submission_norm
-
-        agent_obs = np.append(agent_obs, np.array([time_since_last_sub]))
-        agent_obs.astype('float32')
-        # TODO: agent_obs remaining inventory ist fehlerhaft
-        #print("AO", agent_obs)
-
+        #print("AGENT OBS: ", agent_obs)
         return agent_obs
 
 
@@ -96,155 +93,74 @@ class Reward(BaseReward):
         self.twap_child_quantity = initial_inventory / twap_n
         self.twap_interval = episode_length/twap_n
 
-    def twap_incentive_reward(self):
-        """"""
-        # Set to zero if no new orders were submitted.
-        twap_penalty = 0
-        # TODO: in ns, the absolute penalty is quite large (trillions),
-        #   does this matter? Maybe I can convert it so seconds and round it.
-        # TODO: extend agent observation
-        # TODO: Quantity am ende per market order platzieren und die
-        #  entspechende penalty kassieren
-        # Special case first order: penalty for waiting.
-        if len(OMS.order_list) == 1:
-            # -- Time aspect.
-            current_order_timestamp = OMS.order_list[-1]['timestamp']
-            episode_start_time = AgentContext.start_time
-            agent_order_time_difference = abs(current_order_timestamp -
-                                         episode_start_time)
-            twap_time_deviation = abs(self.twap_interval -
-                                 agent_order_time_difference)
-            # Convert to seconds.
-            twap_time_deviation = int(twap_time_deviation / 1e9)
-            # -- Quantity aspect.
-            current_order_qt = OMS.order_list[-1]['quantity']
-            twap_qt_deviation = abs(current_order_qt-self.twap_child_quantity)
-            # Convert to pieces
-            twap_qt_deviation = twap_qt_deviation / 1_0000
-            # -- Combination.
-            # TODO: must be scaled since ns are too dominant.
-            twap_penalty = - twap_time_deviation - twap_qt_deviation
-            # Count the new order.
-            self.number_of_orders += 1
-
-        # After the first order: compare time between orders.
-        num_new_orders = len(OMS.order_list) - self.number_of_orders
-        if num_new_orders and len(OMS.order_list) > 2:
-            # -- Time aspect.
-            current_order_timestamp = OMS.order_list[-1]['timestamp']
-            last_order_timestamp = OMS.order_list[-2]['timestamp']
-            agent_order_difference = abs(last_order_timestamp-
-                                         current_order_timestamp)
-
-            twap_time_deviation = abs(self.twap_interval -
-                                      agent_order_difference)
-            # Convert to seconds.
-            twap_time_deviation = int(twap_time_deviation / 1e9)
-            # -- Quantity aspect.
-            current_order_qt = OMS.order_list[-1]['quantity']
-            twap_qt_deviation = abs(current_order_qt -
-                                    self.twap_child_quantity)
-            # Convert to pieces
-            twap_qt_deviation = twap_qt_deviation / 1_0000
-
-            # -- Combination.
-            twap_penalty = - twap_qt_deviation - twap_time_deviation
-
-            #print("TWAP Penalty", twap_penalty)
-
-            # Count the new order.
-            self.number_of_orders += 1
-
-        return twap_penalty
-
     def receive_reward(self):
-        # TODO: TWAP incentive reward.
-        # Last trade IS.
 
-        reward = self.twap_incentive_reward()
+        reward = self.twap_incentive_reward
         return reward
 
 
-class TwapIncentiveAgent(RlBaseAgent):
-    """
-    Agent with a larger action space, e.g. selection between different
-    limits and quantities.
-    """
-    def __init__(self,
-                 initial_inventory: int = 1000_0000,
-                 verbose=False,
-                 episode_length="1m",
-                 ):
-        """
-        When initialized, SpecialAgent builds compositions of MarketInterface,
-        Reward and ObservationSpace. Note that Reward and ObservationSpace
-        are subclasses which should be implemented to meet the specific
-        requirements of this special agent, a specific observation and a
-        specific reward function.
-        """
-
-        # static
-        self.initial_inventory = initial_inventory
-        # Store initial inventory to agent context.
-        AgentContext.update_initial_inventory(self.initial_inventory)
-        # Store Episode Length:
-        AgentContext.update_episode_length_ns(episode_length)
+class ActionSpace(BaseActionSpace):
+    """Specific Implementation of action space."""
+    def __init__(self, verbose=False):
+        super().__init__()
 
         self.verbose = verbose
-        self.quantity = 10_0000
-        # Convert episode_length to nanoseconds
-        self.episode_length = pd.to_timedelta(episode_length).delta
 
-        # dynamic
-        self.first_step = True
-
-        # compositions
-        self.market_interface = MarketInterface()
-        self.reward = Reward()
-        self.observation_space = ObservationSpace()
+        self.agent_metrics = AgentMetrics()
         self.market_features = MarketFeatures()
 
-    def step(self):
-        """
-        Step executes the action, gets a new observation, receives the reward
-        and returns reward and observation.
-        """
-
-        # get action from ActionStorage
-        action = ActionStorage.action
-        self._take_action(action)
-
-        observation = copy(self.observation_space.holistic_observation())
-        reward = copy(self.reward.receive_reward())
-
-        # pass obs, reward to Env via AgentTransition.transition
-        AgentTransition(observation, reward)
-
-    def _take_action(self, action):
+    def take_action(self, action):
         """
         Take action as input and translate into trading decision.
         :param action,
             ..., next action
         """
+        # TODO: make absActionSpacde standard method.
+        if self.agent_metrics.remaining_inventory <= 0:
+            # Set the done flag to True in the environment transition storage.
+            #print("DONE FLAG SET, rem_inv:",
+            #      self.agent_metrics.remaining_inventory)
+            EnvironmentTransition(done=True, info={})
+
         # submit marketable limit orders
         best_ask = self.market_features.best_ask()
         best_bid = self.market_features.best_bid()
         ticksize = Market.instances["ID"].ticksize
 
         # define several price limits
-        buy_market = best_ask + 100*ticksize  # defacto market-order
+        buy_market = best_bid - 100*ticksize  # defacto market-order
         buy_limit_1 = best_ask
         buy_limit_2 = best_ask + ticksize
         buy_limit_3 = best_ask + 2*ticksize
 
+        # -- Zero ending inventory constraint.
+        # TODO: Make standard ActionSpace function.
+        current_time = Market.instances["ID"].timestamp
+        episode_end = AgentContext.end_time
+        time_till_end = episode_end - current_time
+        end_buffer = 1e+9  # 1 second.
+
+        if (time_till_end < end_buffer and
+                self.agent_metrics.remaining_inventory > 0
+                and not self.final_market_order_submitted):
+            order_limit = best_bid*2
+            order_quantity = self.agent_metrics.remaining_inventory
+            self.market_interface.submit_order(side=2,
+                                               limit=order_limit,
+                                                quantity=order_quantity)
+            # Set flag True to avoid placing the order twice.
+            self.final_market_order_submitted = True
+
+            # Note: the done-flag will be set automatically after the inventory
+            # is zero.
+
         # define several quantities (ratios of initial inv)
         # 5% of initial env
-        qt_1 = self.initial_inventory * 0.05
+        qt_1 = AgentContext.initial_inventory * 0.05
         # 10% of initial env
-        qt_2 = self.initial_inventory * 0.10
+        qt_2 = AgentContext.initial_inventory * 0.10
         # 20% of initial env
-        qt_3 = self.initial_inventory * 0.20
-
+        qt_3 = AgentContext.initial_inventory * 0.20
 
         # Note: For now, I have 4 limits and 3 quantities plus "wait" option.
         # -> I need 3*4 + 1 = 13 actions
@@ -311,6 +227,70 @@ class TwapIncentiveAgent(RlBaseAgent):
             if self.verbose:
                 pass
                 #print(f'(RL AGENT) Submission: limit: {order_limit}  qt: {order_quantity}')
+
+
+class TwapIncentiveAgent(RlBaseAgent):
+    """
+    Agent with a larger action space, e.g. selection between different
+    limits and quantities.
+    """
+    def __init__(self,
+                 initial_inventory: int = 1000_0000,
+                 verbose=False,
+                 episode_length="1m",
+                 ):
+        """
+        When initialized, SpecialAgent builds compositions of MarketInterface,
+        Reward and ObservationSpace. Note that Reward and ObservationSpace
+        are subclasses which should be implemented to meet the specific
+        requirements of this special agent, a specific observation and a
+        specific reward function.
+        """
+
+        # static
+        self.initial_inventory = initial_inventory
+        # Store initial inventory to agent context.
+        AgentContext.update_initial_inventory(self.initial_inventory)
+        # Store Episode Length:
+        AgentContext.update_episode_length_ns(episode_length)
+
+        self.verbose = verbose
+        self.quantity = 10_0000
+        # Convert episode_length to nanoseconds
+        self.episode_length = pd.to_timedelta(episode_length).delta
+
+        # dynamic
+        self.first_step = True
+        self.final_market_order_submitted = False
+
+        # compositions
+        self.market_interface = MarketInterface()
+        self.reward = Reward()
+        self.observation_space = ObservationSpace()
+        self.market_features = MarketFeatures()
+        self.agent_metrics = AgentMetrics()
+        self.action_space = ActionSpace()
+
+    def step(self):
+        """
+        Step executes the action, gets a new observation, receives the reward
+        and returns reward and observation.
+        """
+
+        # get action from ActionStorage
+        action = ActionStorage.action
+        self._take_action(action)
+
+        observation = copy(self.observation_space.holistic_observation())
+        reward = copy(self.reward.receive_reward())
+
+        # pass obs, reward to Env via AgentTransition.transition
+        AgentTransition(observation, reward)
+
+    # TODO: Abstract method brauche ich eigenlich nicht mehr (kann ich in
+    #  BaseAgent löschen aber dann werden alte agents failen)
+    def _take_action(self, action):
+        self.action_space.take_action(action)
 
     def reset(self):
         super().__init__()

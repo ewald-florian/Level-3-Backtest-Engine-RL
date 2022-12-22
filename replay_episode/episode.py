@@ -29,7 +29,7 @@ from context.agent_context import AgentContext
 local="/Users/florianewald/PycharmProjects/A7_NEW_SAMPLE/"
 # dataset on server
 # TODO: This only works for BAY so far, adjust load new episode!
-server_new = "/home/jovyan/_shared_storage/temp/A7_data/messages/DE000BAY0017/"
+server_new = "/home/jovyan/_shared_storage/temp/A7_data/messages/"
 # TODO: nvme and server path
 # new dataset on nvme
 # nvme = "/Volumes/WD_BLUE_NVME/A7_DATA/"

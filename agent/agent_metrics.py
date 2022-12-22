@@ -16,6 +16,7 @@ from agent.agent_order import OrderManagementSystem as OMS
 from agent.agent_trade import AgentTrade
 from market.market import Market
 from market.market_trade import MarketTrade
+from context.agent_context import AgentContext
 
 
 # TODO: testing, debugging, str, roundtrip-PnLs
@@ -102,7 +103,6 @@ class AgentMetrics:
 
         return time_since_last_trade
 
-
     @property
     def unrealized_quantity(self):
         """
@@ -125,6 +125,7 @@ class AgentMetrics:
 
     @property
     def realized_quantity(self):
+        """Compute the realized quantity."""
 
         realized_quantity = 0
 
@@ -148,6 +149,31 @@ class AgentMetrics:
             realized_quantity = realized_buy_quantity - realized_sell_quantity
 
         return realized_quantity * 1e-4
+
+    @property
+    def remaining_inventory(self, agent_side=2):
+        """
+        This metric is relevant for Optimal Execution Agents it computes
+        the remaining inventory as the initial inventory minus the realized
+        quantity
+        :param agent_side
+            int, side on which the OE agent trades. 2 for execution agent, 1
+            for acquisition agent.
+        """
+
+        # Compute sum of quantity of respective side.
+        realized_trades = AgentTrade.history
+        if realized_trades:
+            realized_trades = list(filter(lambda d: d['agent_side'] == agent_side,
+                                          realized_trades))
+            realized_quantity = sum(trade['executed_volume'] for trade in
+                                         realized_trades)
+            # Difference between initial inventory and remaining inventory.
+            rem_inv = AgentContext.initial_inventory - realized_quantity
+        else:
+            rem_inv = AgentContext.initial_inventory
+        return rem_inv
+
 
     @property
     def position_value(self):
@@ -271,7 +297,8 @@ class AgentMetrics:
         """
         List of realized trades.
         """
-        # TODO: Refactor...
+        # TODO: This funciton is errornous...
+        """
         realized_trades = copy.copy(AgentTrade.history)
         unrealized_trades = self.get_unrealized_trades
 
@@ -283,6 +310,8 @@ class AgentMetrics:
                     realized_trades.remove(trade)
 
             return realized_trades
+        """
+        pass
 
     @property
     def vwap_buy(self):

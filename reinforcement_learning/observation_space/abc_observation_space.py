@@ -17,6 +17,8 @@ from feature_engineering.market_features import MarketFeatures
 from feature_engineering.agent_features import AgentFeatures
 from reinforcement_learning.observation_space.minmaxvalues \
     import MinMaxValues
+from agent.agent_order import OrderManagementSystem as OMS
+from context.agent_context import AgentContext
 
 
 class BaseObservationSpace(ABC):
@@ -35,6 +37,8 @@ class BaseObservationSpace(ABC):
         """
         self.market_features = MarketFeatures()
         self.agent_features = AgentFeatures()
+
+        self.number_of_orders = 0
 
     @abstractmethod
     def market_observation(self):
@@ -129,9 +133,12 @@ class BaseObservationSpace(ABC):
         2. elapsed inventory.
         """
         # Note: very common agent state, see e.g. Beling/Liu
+        # TODO: Habe ich hier norm vergessen???
         time = self.agent_features.elapsed_time
         inv = self.agent_features.remaining_inventory
-        agent_obs = np.array([time, inv])
+        time_since_last_sub = \
+            self.agent_features.time_since_last_submission_norm
+        agent_obs = np.array([time, inv, time_since_last_sub])
         return agent_obs
 
     def reset(self):
