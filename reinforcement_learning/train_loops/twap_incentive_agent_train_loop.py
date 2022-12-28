@@ -85,10 +85,10 @@ episode_data = []
 episode_json = []
 
 # run training loops
-num_iterations = 10
+num_iterations = 1
+
 for n in range(num_iterations):
 
-    # TODO: The env will be reset when it returns the done-flag.
     result = rllib_trainer.train()
 
     results.append(result)
@@ -118,6 +118,16 @@ for n in range(num_iterations):
 result_df = pd.DataFrame(data=episode_data)
 print(result_df.head())
 result_df.to_csv(result_file, index=False)
+#######
+print("Trainer:", rllib_trainer)
+checkpoint_file = rllib_trainer.save()
+print(f"Trainer (at iteration {rllib_trainer.iteration} was saved in '{checkpoint_file}'!")
+
+# Here is what a checkpoint directory contains:
+print("The checkpoint directory contains the following files:")
+import os
+os.listdir(os.path.dirname(checkpoint_file))
+######
 
 # create checkpoint file to save trained weights
 #checkpoint_file = rllib_trainer.save()

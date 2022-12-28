@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*- Line 2
 #----------------------------------------------------------------------------
 # Created By  : florian
-# Created Date: 05/Sept/2022
 # version ='1.0'
 # ---------------------------------------------------------------------------
 """ Episode Module for the Level-3 backtest engine"""
@@ -28,7 +27,6 @@ from context.agent_context import AgentContext
 # local new sample with Bayer january and february 2021
 local="/Users/florianewald/PycharmProjects/A7_NEW_SAMPLE/"
 # dataset on server
-# TODO: This only works for BAY so far, adjust load new episode!
 server_new = "/home/jovyan/_shared_storage/temp/A7_data/messages/"
 # TODO: nvme and server path
 # new dataset on nvme
@@ -48,8 +46,8 @@ class Episode:
     Episode is the data storage for one episode in the backtest. It consists of
     a snapshot_start (used to initialize the market state in the beginning of
     the episode) and a message_packet_list (used to iteratively update the
-    market state from messages and hence replay_episode the historical continuous
-    trading phases.
+    market state from messages and hence replay_episode the historical
+    continuous trading phases.
 
     Data is given in UTC. XETRA trading hours reach from 08:00 to 16:30 UTC.
     The mid-action takes place from 12:00 to 12:02 UTC.
@@ -67,7 +65,8 @@ class Episode:
         message_packet_list from the database  and storing them under the
         instance attributes self.start_snapshot and self.message_packet_list.
 
-        Can be called from replay_episode to build the next episode for the backtest.
+        Can be called from replay_episode to build the next episode for the
+        backtest.
 
         :param identifier
             str, identifier of symbol
@@ -199,7 +198,7 @@ class Episode:
 
             self.reconstruction.update_with_exchange_message(message_packet)
 
-            if int(message_packet[0]['TransactTime']) > self.episode_start_unix:
+            if int(message_packet[0]['TransactTime'])>self.episode_start_unix:
                 break
 
         # assert deviation

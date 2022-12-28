@@ -35,7 +35,6 @@ class AgentFeatures:
     @property
     def remaining_inventory(self, normalize=True):
         """Remaining inventory."""
-        # TODO: Fehlerhaft zeigt immer 1 an!
         if AgentContext.initial_inventory:
             initial_inventory = AgentContext.initial_inventory
             # Only update executed_quantity when new trades happened
@@ -108,7 +107,8 @@ class AgentFeatures:
         Time since last submission normed. For now, it is normed by dividing
         by 30 seconds.
         """
-        time_since_last_submission = self.agent_metrics.time_since_last_submission
+        time_since_last_submission = \
+            self.agent_metrics.time_since_last_submission
         # Scale with 30 seconds as max time.
         time_normed = (time_since_last_submission / (30*1e9))
         # Clip to 1 max. Lower clip is 0 by design.

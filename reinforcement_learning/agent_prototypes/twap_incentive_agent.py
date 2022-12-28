@@ -73,7 +73,6 @@ class ObservationSpace(BaseObservationSpace):
         """
         # Use standard agent obs with elapsed time and remaining inventory.
         agent_obs = self.standard_agent_observation
-        #print("AGENT OBS: ", agent_obs)
         return agent_obs
 
 
@@ -115,12 +114,9 @@ class ActionSpace(BaseActionSpace):
         :param action,
             ..., next action
         """
-        # TODO: make absActionSpacde standard method.
-        if self.agent_metrics.remaining_inventory <= 0:
-            # Set the done flag to True in the environment transition storage.
-            #print("DONE FLAG SET, rem_inv:",
-            #      self.agent_metrics.remaining_inventory)
-            EnvironmentTransition(done=True, info={})
+
+        # Set done-flag if inventory is completely sold.
+        self.check_inventory_sold()
 
         # submit marketable limit orders
         best_ask = self.market_features.best_ask()
@@ -134,25 +130,7 @@ class ActionSpace(BaseActionSpace):
         buy_limit_3 = best_ask + 2*ticksize
 
         # -- Zero ending inventory constraint.
-        # TODO: Make standard ActionSpace function.
-        current_time = Market.instances["ID"].timestamp
-        episode_end = AgentContext.end_time
-        time_till_end = episode_end - current_time
-        end_buffer = 1e+9  # 1 second.
-
-        if (time_till_end < end_buffer and
-                self.agent_metrics.remaining_inventory > 0
-                and not self.final_market_order_submitted):
-            order_limit = best_bid*2
-            order_quantity = self.agent_metrics.remaining_inventory
-            self.market_interface.submit_order(side=2,
-                                               limit=order_limit,
-                                                quantity=order_quantity)
-            # Set flag True to avoid placing the order twice.
-            self.final_market_order_submitted = True
-
-            # Note: the done-flag will be set automatically after the inventory
-            # is zero.
+        self.zero_ending_inventory_constraint()
 
         # define several quantities (ratios of initial inv)
         # 5% of initial env
@@ -235,7 +213,7 @@ class TwapIncentiveAgent(RlBaseAgent):
     limits and quantities.
     """
     def __init__(self,
-                 initial_inventory: int = 1000_0000,
+                 initial_inventory: int = 1000_0000_0000,
                  verbose=False,
                  episode_length="1m",
                  ):
@@ -253,6 +231,9 @@ class TwapIncentiveAgent(RlBaseAgent):
         AgentContext.update_initial_inventory(self.initial_inventory)
         # Store Episode Length:
         AgentContext.update_episode_length_ns(episode_length)
+
+        # DEBUGGING:
+        print("INITIAL INV", AgentContext.initial_inventory)
 
         self.verbose = verbose
         self.quantity = 10_0000

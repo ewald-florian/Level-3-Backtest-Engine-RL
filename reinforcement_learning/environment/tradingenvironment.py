@@ -109,7 +109,7 @@ class TradingEnvironment(gym.Env):
         first_obs = self.replay.rl_reset()
         #print("FIRST OBS: ", first_obs)
 
-        print('(ENV)  episode len: ', self.replay.episode.__len__())
+        #print('(ENV)  episode len: ', self.replay.episode.__len__())
 
         return first_obs
 

@@ -102,7 +102,7 @@ class BaseObservationSpace(ABC):
 
         return scaled_quantities
 
-    def _arbitrary_min_max_normalization(self, input_array, a:int = -1,
+    def _arbitrary_min_max_normalization(self, input_array, a: int = -1,
                                          b: int = 1):
         """
         Scales values between arbitrary numbers a and b.
