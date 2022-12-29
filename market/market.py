@@ -1566,13 +1566,13 @@ class Market(Reconstruction):
         """
 
         # DEBUGGING
-        print(100*"-")
-        print("trade_list", AgentTrade.history)
-        print("exhausted liquidity", self.agent_exhausted_liquidity)
-        print("Test For Loop")
-        for order in self.agent_exhausted_liquidity:
-            print("orderx", order)
-        print("state_to_match", state_to_match)
+        #print(100*"-")
+        #print("trade_list", AgentTrade.history)
+        #print("exhausted liquidity", self.agent_exhausted_liquidity)
+        #print("Test For Loop")
+        #for order in self.agent_exhausted_liquidity:
+        #    print("orderx", order)
+        #print("state_to_match", state_to_match)
 
         for order in self.agent_exhausted_liquidity:
             # parameters to identify the respective limit order in the lob
@@ -1589,37 +1589,33 @@ class Market(Reconstruction):
                     state_to_match[side][price]))[0]
 
                 # -- If the order is still present in the simulation state:
-                print("lob order", limit_order)
+
                 # If True, compute exh. liqu. with exp. recovery factor.
                 if exponential_recovery:
                     execution_time = order['execution_time']
                     # Get nanoseconds since execution.
                     time_since_exec = self.timestamp - execution_time
-                    print("times", self.timestamp, execution_time,
-                          time_since_exec)
+
                     # Convert to seconds.
                     x = time_since_exec / 1e9
-                    print(x)
+
                     # Edge case.
                     # TODO: how can x be negative (bug)?
                     if x < 0:
                         continue
                     # exponential recovery function, clipped at 0.9.
-                    recovery_factor = min(1 - (1 / (x + 1)) ** 0.6, 0.9)
-                    print("recovery_factor", recovery_factor)
+                    recovery_factor = min(1 - (1 / (x + 1)) ** 0.7, 0.9)
+
                     # The last 4 digits are round to zero.
                     exhausted_liquidity = round(int(exec_quantity *
                                              (1 - recovery_factor)), -4)
-                    print("exhausted_liquidity", exhausted_liquidity)
 
                 # If False, block entire order liquidity.
                 else:
                     exhausted_liquidity = exec_quantity
 
                 # Remove exhausted liquidity from limit order.
-                print("before", limit_order['quantity'])
                 limit_order['quantity'] -= exhausted_liquidity
-                print("after", limit_order['quantity'])
 
                 # remove the order if no quantity is left.
                 if limit_order['quantity'] <= 0:
