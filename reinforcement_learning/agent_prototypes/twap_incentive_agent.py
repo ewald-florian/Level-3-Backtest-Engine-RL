@@ -213,7 +213,7 @@ class TwapIncentiveAgent(RlBaseAgent):
     limits and quantities.
     """
     def __init__(self,
-                 initial_inventory: int = 1000_0000_0000,
+                 initial_inventory: int = 800_0000,
                  verbose=False,
                  episode_length="1m",
                  ):

@@ -14,6 +14,7 @@ Market Class. Matching engine of backtest library.
 import math
 import sys
 from functools import reduce
+import copy
 
 import pandas as pd
 import numpy as np
@@ -820,16 +821,17 @@ class Market(Reconstruction):
             # -- construct simulation_state from self._state
 
             # store relevant bid levels to bid_side_dict
-            # Note: According to my tests, copy is sufficient to not
-            # affect internal state
+            # Note: Deep Copy is necessary to not affect the internal state.
             for key in bid_keys_relevant:
                 if key in self._state[1]:
-                    bid_side_dict[key] = self._state[1][key].copy()
+                    #bid_side_dict[key] = self._state[1][key].copy()
+                    bid_side_dict[key] = copy.deepcopy(self._state[1][key])
 
             # store relevant ask levels to ask_side_dict
             for key in ask_keys_relevant:
                 if key in self._state[2]:
-                    ask_side_dict[key] = self._state[2][key].copy()
+                    #ask_side_dict[key] = self._state[2][key].copy()
+                    ask_side_dict[key] = copy.deepcopy(self._state[2][key])
 
             # store relevant levels to simulation_state
             simulation_state[1] = bid_side_dict
@@ -1391,7 +1393,9 @@ class Market(Reconstruction):
                         match_execution_summary = {
                             "aggressor_side": aggressor_side,
                             "price": execution_price,
-                            "timestamp": aggressor_timestamp,
+                            # Note: Changed to self.timestamp (29-12-22)
+                            #"timestamp": aggressor_timestamp,
+                            "timestamp": self.timestamp,
                             "quantity": execution_quantity,
                         }
 
@@ -1464,26 +1468,75 @@ class Market(Reconstruction):
             else:
                 pass
 
-    def _block_agent_exhausted_liquidity(self, state_to_match: dict):
+    # TODO: this method can be deleted. there is a new version below.
+    def _block_agent_exhausted_liquidity_old(self,
+                                         state_to_match: dict,
+                                         exponential_recovery=True):
         """
         Removes exhausted and hence blocked liquidity from the state to match.
+        When exponential recovery is True, the recovery of the executed
+        liquidity follows an exponential function which is clipped at 0.9
+        meaning that 10% of the liquidity will be permanently exhausted while
+        90% will recover over time. If the same lob order is executed several
+        times against the agent, the permanent market impact will add up.
         """
-        # TODO: filter for timestamps...etc (un-block orders eventually)
+
+        # DEBUGGING
+        #print(100*"-")
+        #print("trade_list", AgentTrade.history)
+        #print("exhausted liquidity", self.agent_exhausted_liquidity)
+        #print("Test For Loop")
+        #for order in self.agent_exhausted_liquidity:
+        #    print("orderx", order)
+        #print("state_to_match", state_to_match)
+
+        # TODO: zuerst checken ob order noch im state ist und danach erst das
+        #  ganze zeug berechnen
         for order in self.agent_exhausted_liquidity:
             # parameters to identify the respective limit order in the lob
             side = order['lob_order']['side']
             price = order['lob_order']['price']
             timestamp = order['lob_order']['timestamp']
-            exhausted_liquidity = order['execution_quantity']
-            execution_time = order['execution_time']
+            exec_quantity = order['execution_quantity']
+
+            # If True, compute exh. liqu. with exp. recovery factor.
+            if exponential_recovery:
+                execution_time = order['execution_time']
+                # Get nanoseconds since execution.
+                time_since_exec = self.timestamp - execution_time
+                print("times", self.timestamp, execution_time, time_since_exec)
+                # Convert to seconds.
+                x = time_since_exec / 1e9
+                print("x", x)
+                # Edge case.
+                # TODO: how can x be negative?
+                if x < 0:
+                    continue
+                # exponential recovery function, clipped at 0.9.
+                recovery_factor = min(1 - (1/(x+1)) ** 0.6, 0.9)
+                print("recovery_factor", recovery_factor)
+                # The last 4 digits are round to zero.
+                exhausted_liquidity = round(int(exec_quantity*
+                                                (1-recovery_factor)), -4)
+                print("exhausted_liquidity", exhausted_liquidity)
+
+            # If False, block entire order liquidity.
+            else:
+                exhausted_liquidity = exec_quantity
 
             # note: try since the order could already be gone
             try:
-                # deduct exhausted quantity from the lob order
+                # deduct exhausted quantity from the lob order.
+                # TODO: is this a unique id? actually not...?
+                #  yes because it includes price, side and timestamp.
                 limit_order = list(filter(
                     lambda x: (x['timestamp'] == timestamp),
                     state_to_match[side][price]))[0]
+                print(10*"!")
+                print("limit_order", limit_order)
+                print('qt before', limit_order['quantity'])
                 limit_order['quantity'] -= exhausted_liquidity
+                print('qt after', limit_order['quantity'])
 
                 # remove the order if no quantity is left
                 if limit_order['quantity'] <= 0:
@@ -1492,9 +1545,93 @@ class Market(Reconstruction):
                     if not state_to_match[side][price]:
                         del state_to_match[side][price]
             except:
+                # TODO: can I remove the order? no, not necessarily...
+                #  It could recover later if it was executed against several
+                #  agent orders
                 pass
 
-            return state_to_match
+        # Return state to match with blocked liquidity.
+        return state_to_match
+
+    def _block_agent_exhausted_liquidity(self,
+                                         state_to_match: dict,
+                                         exponential_recovery=True):
+        """
+        Removes exhausted and hence blocked liquidity from the state to match.
+        When exponential recovery is True, the recovery of the executed
+        liquidity follows an exponential function which is clipped at 0.9
+        meaning that 10% of the liquidity will be permanently exhausted while
+        90% will recover over time. If the same lob order is executed several
+        times against the agent, the permanent market impact will add up.
+        """
+
+        # DEBUGGING
+        print(100*"-")
+        print("trade_list", AgentTrade.history)
+        print("exhausted liquidity", self.agent_exhausted_liquidity)
+        print("Test For Loop")
+        for order in self.agent_exhausted_liquidity:
+            print("orderx", order)
+        print("state_to_match", state_to_match)
+
+        for order in self.agent_exhausted_liquidity:
+            # parameters to identify the respective limit order in the lob
+            side = order['lob_order']['side']
+            price = order['lob_order']['price']
+            timestamp = order['lob_order']['timestamp']
+            exec_quantity = order['execution_quantity']
+
+            # note: try since the order could already be gone
+            try:
+                # deduct exhausted quantity from the lob order.
+                limit_order = list(filter(
+                    lambda x: (x['timestamp'] == timestamp),
+                    state_to_match[side][price]))[0]
+
+                # -- If the order is still present in the simulation state:
+                print("lob order", limit_order)
+                # If True, compute exh. liqu. with exp. recovery factor.
+                if exponential_recovery:
+                    execution_time = order['execution_time']
+                    # Get nanoseconds since execution.
+                    time_since_exec = self.timestamp - execution_time
+                    print("times", self.timestamp, execution_time,
+                          time_since_exec)
+                    # Convert to seconds.
+                    x = time_since_exec / 1e9
+                    print(x)
+                    # Edge case.
+                    # TODO: how can x be negative (bug)?
+                    if x < 0:
+                        continue
+                    # exponential recovery function, clipped at 0.9.
+                    recovery_factor = min(1 - (1 / (x + 1)) ** 0.6, 0.9)
+                    print("recovery_factor", recovery_factor)
+                    # The last 4 digits are round to zero.
+                    exhausted_liquidity = round(int(exec_quantity *
+                                             (1 - recovery_factor)), -4)
+                    print("exhausted_liquidity", exhausted_liquidity)
+
+                # If False, block entire order liquidity.
+                else:
+                    exhausted_liquidity = exec_quantity
+
+                # Remove exhausted liquidity from limit order.
+                print("before", limit_order['quantity'])
+                limit_order['quantity'] -= exhausted_liquidity
+                print("after", limit_order['quantity'])
+
+                # remove the order if no quantity is left.
+                if limit_order['quantity'] <= 0:
+                    state_to_match[side][price].remove(limit_order)
+                    # delete price level from state if empty
+                    if not state_to_match[side][price]:
+                        del state_to_match[side][price]
+            except:
+                pass
+
+        # Return state to match with blocked liquidity.
+        return state_to_match
 
     def __str__(self):
         """
