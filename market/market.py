@@ -154,6 +154,96 @@ class Market(Reconstruction):
 
         return state_l3
 
+    # TODO: state sollte immer 10 (oder so) level haben, leere level mit 0
+    #  füllen. Ne, ich glaube das Problem liegt darin, dass bei der berechnung
+    #  der features einfach nichts eingefügt wird wenn es keine order gibt,
+    #  checken!
+    @property
+    def state_l3_blocked_liquidity(self) -> dict:
+        """
+        Level 3 limit order book representation (internal _state). state_l3 has
+        a similar structure than the internal state. In this method, the
+        agent blocked liquidity is removed from the order book representation
+        hence the agent can only observe liquidity which is available to him.
+
+        {Side: {Price_Level: [{'timestamp: X , 'quantity': X} , {...}],
+        Price_Level: [{...}, {...}]...
+
+        The difference is that for each order, state_l3 only contains timestamp
+        and quantity (and price as key) while in the internal state, the orders
+        contain template_id, meg_seq_num, side, price, quantity, timestamp.
+        Hence most infos in the internal state are redundant or not relevant.
+
+        If self.l3_level is defined, the output will contain
+        only a limited number of price levels.
+
+        :return: state_l3_output
+            dict, state_l3 with only quantity and timestamp per order
+        """
+        state_l3 = {}
+        reduced_state = {}
+
+        # -- Create a deep copy of the state with only the relevant levels.
+
+        # bid side (1), highest prices first
+        bid_keys = sorted(
+            list(self._state[1].keys()), reverse=True)[:self.l3_levels]
+        ask_keys = sorted(
+            list(self._state[2].keys()), reverse=False)[:self.l3_levels]
+
+        bid_side_dict = {}
+        ask_side_dict = {}
+
+        for key in bid_keys:
+            if key in self._state[1]:
+                # bid_side_dict[key] = self._state[1][key].copy()
+                bid_side_dict[key] = copy.deepcopy(self._state[1][key])
+
+        # store relevant ask levels to ask_side_dict
+        for key in ask_keys:
+            if key in self._state[2]:
+                # ask_side_dict[key] = self._state[2][key].copy()
+                ask_side_dict[key] = copy.deepcopy(self._state[2][key])
+
+        # store relevant levels to simulation_state
+        reduced_state[1] = bid_side_dict
+        reduced_state[2] = ask_side_dict
+
+        # DEBUGGING
+        print("before: ", len(reduced_state[1].keys()))
+        print("before: ", len(reduced_state[2].keys()))
+        # -- Block Liquidity.
+        reduced_state_block = self._block_agent_exhausted_liquidity(
+            reduced_state, observation_mode=True)
+
+        # -- Keep only quantity and timestamps.
+        bid_side_dict = reduced_state_block[1]
+        ask_side_dict = reduced_state_block[2]
+
+        # DEBUGGING
+        print("after: ", len(bid_side_dict.keys()))
+        print("after: ", len(ask_side_dict.keys()))
+
+        adj_bid_side_dict = {
+            n: [{'quantity': d['quantity'], 'timestamp': d['timestamp']}
+                for d in bid_side_dict[n]] for n in bid_side_dict.keys()}
+
+        adj_ask_side_dict = {
+            n: [{'quantity': d['quantity'], 'timestamp': d['timestamp']}
+                for d in ask_side_dict[n]] for n in ask_side_dict.keys()}
+
+        # add timestamp
+        if self.report_state_timestamps:
+            state_l3[0] = self.timestamp
+
+        # combine to state_l3
+        state_l3[1] = adj_bid_side_dict
+        state_l3[2] = adj_ask_side_dict
+
+        print(state_l3)
+
+        return state_l3
+
     @property
     def state_l2(self) -> dict:
         """
@@ -1555,7 +1645,8 @@ class Market(Reconstruction):
 
     def _block_agent_exhausted_liquidity(self,
                                          state_to_match: dict,
-                                         exponential_recovery=True):
+                                         exponential_recovery=True,
+                                         observation_mode=False):
         """
         Removes exhausted and hence blocked liquidity from the state to match.
         When exponential recovery is True, the recovery of the executed
@@ -1619,10 +1710,15 @@ class Market(Reconstruction):
 
                 # remove the order if no quantity is left.
                 if limit_order['quantity'] <= 0:
-                    state_to_match[side][price].remove(limit_order)
-                    # delete price level from state if empty
-                    if not state_to_match[side][price]:
-                        del state_to_match[side][price]
+                    # In observation mode, set qt to zero
+                    if observation_mode:
+                        limit_order['quantity'] = 0
+                    # In matching mode, remove empty order.
+                    else:
+                        state_to_match[side][price].remove(limit_order)
+                        # delete price level from state if empty
+                        if not state_to_match[side][price]:
+                            del state_to_match[side][price]
             except:
                 pass
 

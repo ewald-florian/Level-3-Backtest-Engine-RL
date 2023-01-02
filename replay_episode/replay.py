@@ -46,7 +46,7 @@ class Replay:
                  identifier_list: list = None,
                  identifier: str = "BAY",#"BMW",
                  start_date: str = "2021-01-01",#"2022-02-01",
-                 end_date: str = "2021-04-31",#"2022-02-02",
+                 end_date: str = "2021-04-30",#"2022-02-02",
                  episode_length: str = "1m",
                  frequency: str = "1m",
                  seed: int = None,
@@ -124,6 +124,9 @@ class Replay:
         self._market_step()
         # -- save context
         state_l3 = Market.instances['ID'].state_l3
+        print(state_l3)
+        state_l3 = Market.instances['ID'].state_l3_blocked_liquidity
+        print(state_l3)
         Context(state_l3)
 
         # -- store done, info to env transition

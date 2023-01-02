@@ -81,7 +81,8 @@ class MarketFeatures:
 
                 for price in state_l3[side].keys():
 
-                    agg_qt = sum([(d['quantity']) for d in state_l3[side][price]])
+                    agg_qt = sum([(d['quantity']
+                                  ) for d in state_l3[side][price]])
 
                     if store_hhi:
                         if agg_qt > 0:
@@ -92,6 +93,7 @@ class MarketFeatures:
                         else:
                             # note: if agg_qt = 0 -> division by zero error
                             data_list.extend((price, agg_qt, 0))
+
                     else:
                         data_list.extend((price, agg_qt))
 
