@@ -35,7 +35,8 @@ from ray import tune
 # from ray.rllib.agents.ppo import DEFAULT_CONFIG as PPO_DEFAULT_CONFIG
 
 # library imports
-from reinforcement_learning.environment.tradingenvironment import TradingEnvironment
+from reinforcement_learning.environment.tradingenvironment import \
+    TradingEnvironment
 from reinforcement_learning.agent_prototypes.twap_incentive_agent \
     import TwapIncentiveAgent
 from replay_episode.replay import Replay

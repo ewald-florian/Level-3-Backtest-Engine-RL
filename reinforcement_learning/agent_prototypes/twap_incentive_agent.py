@@ -32,6 +32,8 @@ from reinforcement_learning.transition.env_transition import \
     EnvironmentTransition
 from reinforcement_learning.action_space.abc_action_space import \
     BaseActionSpace
+from market.market_metrics import MarketMetrics
+from market.market_trade import MarketTrade
 
 
 # TODO: Observation space must be increased with some infos which help
@@ -47,6 +49,8 @@ class ObservationSpace(BaseObservationSpace):
         Initiate parent class via super function.
         """
         super().__init__()
+        # DEVELOPINGF
+        self.market_metrics = MarketMetrics()
 
     def market_observation(self) -> np.array:
         """
@@ -73,6 +77,7 @@ class ObservationSpace(BaseObservationSpace):
         """
         # Use standard agent obs with elapsed time and remaining inventory.
         agent_obs = self.standard_agent_observation
+
         return agent_obs
 
 
@@ -233,7 +238,7 @@ class TwapIncentiveAgent(RlBaseAgent):
         AgentContext.update_episode_length_ns(episode_length)
 
         # DEBUGGING:
-        print("INITIAL INV", AgentContext.initial_inventory)
+        #print("INITIAL INV", AgentContext.initial_inventory)
 
         self.verbose = verbose
         self.quantity = 10_0000

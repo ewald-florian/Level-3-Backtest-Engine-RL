@@ -117,10 +117,7 @@ class TradingEnvironment(gym.Env):
         """
         Render the environment.
         """
-        assert mode in ["human"], "Invalid mode"
-        # TODO
-        if mode == "human":
-            pass
+        pass
 
     def seed(self):
         """

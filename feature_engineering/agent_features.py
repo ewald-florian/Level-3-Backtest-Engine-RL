@@ -116,6 +116,21 @@ class AgentFeatures:
             time_normed = 1
         return time_normed
 
+    @property
+    def time_since_last_trade_norm(self):
+        """
+        Time since last trade normed. For now, it is normed by dividing
+        by 30 seconds.
+        """
+        time_since_last_trade = \
+            self.agent_metrics.time_since_last_trade
+        # Scale with 30 seconds as max time.
+        time_normed = (time_since_last_trade / (30 * 1e9))
+        # Clip to 1 max. Lower clip is 0 by design.
+        if time_normed > 1:
+            time_normed = 1
+        return time_normed
+
     def number_of_submissions(self):
         pass
 

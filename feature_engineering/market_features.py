@@ -163,11 +163,7 @@ class MarketFeatures:
                 data_structure: str = 'df'):
         pass
 
-    # TODO
     def weighted_priority_time(self):
-        # for each level
-        # ptiority_time*qt / sum(qt)
-        # test if good signal for midpoint
         pass
 
     def midpoint(self):
@@ -336,26 +332,6 @@ class MarketFeatures:
 
     def rolling_market_volume(self, window):
         pass
-
-    def market_vwap(self):
-        """
-        Curren market vwap based on market trades since beginning of episode.
-        :return market_vwap
-            ...
-        """
-        if len(MarketTrade.history):
-            market_vwap = (sum(d['price'] * d['quantity']
-                        for d in MarketTrade.history) /
-                    sum(d['quantity'] for
-                        d in MarketTrade.history)) * 1e-8
-            return market_vwap
-
-    #TODO: is there any interestin feature which could be used to capture
-    # market orders which are matched via execution summary? -> Could be
-    # difficult for the RL agent to be affected by these orders while not
-    # being able to observe anything from them (they never reach the
-    # orderbook). It is in general an important discussion that the agent
-    # is confronted with a "partially observable" environment.
 
     def reset(self):
         pass

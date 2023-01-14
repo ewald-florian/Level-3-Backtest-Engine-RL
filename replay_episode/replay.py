@@ -122,20 +122,14 @@ class Replay:
         """
         # -- market step
         self._market_step()
-        # -- save context
-        state_l3 = Market.instances['ID'].state_l3
-        print(state_l3)
+        # -- save context (blocked liquidity)
         state_l3 = Market.instances['ID'].state_l3_blocked_liquidity
-        print(state_l3)
         Context(state_l3)
 
         # -- store done, info to env transition
         done = self.done
         info = {}  # TODO: fill info dict
         EnvironmentTransition(done, info)
-        #print('(ENV): done ', done)
-        #print('(ENV) info ', info)
-        #print("(REPLAY) env_transition: ", EnvironmentTransition.transition)
         # -- rl_agent
         self.rl_agent.step()
         # -- update step_counter

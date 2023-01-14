@@ -67,8 +67,8 @@ class AgentMetrics:
 
             # orders must have requested side
             if template_id:
-                filtered_messages = filter(lambda d: d['template_id'] == template_id,
-                                           filtered_messages)
+                filtered_messages = filter(lambda d: d['template_id'] ==
+                                            template_id, filtered_messages)
 
             return list(filtered_messages)
 
@@ -93,13 +93,25 @@ class AgentMetrics:
 
     @property
     def time_since_last_submission(self):
-        """Time since last trade in nanoseconds."""
+        """Time since last order in nanoseconds."""
         # TODO: Das ist nur eine provisorische lösung eigentlich müsste es 0 sein.
-        time_since_last_trade = 0.0000001
+        time_since_last_order = 0.0000001
         if len(OMS.order_list) > 0:
             last_order_timestamp = OMS.order_list[-1]['timestamp']
             current_time = Market.instances["ID"].timestamp
-            time_since_last_trade = current_time - last_order_timestamp
+            time_since_last_order = current_time - last_order_timestamp
+
+        return time_since_last_order
+
+    @property
+    def time_since_last_trade(self):
+        """Time since last trade in nanoseconds."""
+        time_since_last_trade = 0.0000001
+        if len(AgentTrade.history) > 0:
+            # Execution time of latest trade.
+            last_trade_timestamp = AgentTrade.history[-1]['execution_time']
+            current_time = Market.instances["ID"].timestamp
+            time_since_last_trade = current_time - last_trade_timestamp
 
         return time_since_last_trade
 

@@ -5,7 +5,7 @@
 Abstract Observation Space class for RL-Agent
 """
 #----------------------------------------------------------------------------
-__author__ =  'florian'
+__author__ = 'florian'
 __version__ = '0.1'
 # ---------------------------------------------------------------------------
 
@@ -138,6 +138,8 @@ class BaseObservationSpace(ABC):
         inv = self.agent_features.remaining_inventory
         time_since_last_sub = \
             self.agent_features.time_since_last_submission_norm
+        time_since_last_trade = \
+            self.agent_features.time_since_last_trade_norm
         agent_obs = np.array([time, inv, time_since_last_sub])
         return agent_obs
 

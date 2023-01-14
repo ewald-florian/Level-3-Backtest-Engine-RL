@@ -93,7 +93,7 @@ class BaseReward(ABC):
 
     @property
     def pnl_realized(self):
-
+        """Realized PnL."""
         return self.agent_metrics.pnl_realized
 
     # TODO: testing
@@ -116,8 +116,8 @@ class BaseReward(ABC):
     @property
     def twap_incentive_reward(self):
         """
-        This reward component incentivizes the agent to asjust his strategy
-        to to TWAP strategy. The intuition behind that is that an execution
+        This reward component incentivices the agent to adjust his strategy
+        to TWAP strategy. The intuition behind that is that an execution
         agent can learn twap as a baseline and then later spezialize on a
         more sophisticated strategy. The main goal is to limit the number
         of orders and the submission frequency of the agent.

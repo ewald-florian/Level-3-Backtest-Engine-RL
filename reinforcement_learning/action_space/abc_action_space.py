@@ -58,7 +58,6 @@ class BaseActionSpace(ABC):
         if self.agent_metrics.remaining_inventory <= 0:
             # Set the done flag to True in the environment transition storage.
             EnvironmentTransition(done=True, info={})
-            print("Check inventory sold***")
 
     def zero_ending_inventory_constraint(self,
                                          end_buffer=1e+9,
