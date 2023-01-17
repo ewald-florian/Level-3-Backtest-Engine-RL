@@ -10,8 +10,10 @@ __version__ = "0.1"
 import time
 import platform
 
-local_dir = "/Users/florianewald/PycharmProjects/Level-3-Backtest-Engine-RL/reinforcement_learning/train_results/"
-server_dir = "/home/jovyan/Level-3-Backtest-Engine-RL/reinforcement_learning/train_results/"
+local_dir = "/Users/florianewald/PycharmProjects/Level-3-Backtest-Engine-RL/" \
+            "reinforcement_learning/train_results/"
+server_dir = "/home/jovyan/Level-3-Backtest-Engine-RL/" \
+             "reinforcement_learning/train_results/"
 
 if platform.system() == 'Darwin':  # macos
     default_base_dir = local_dir

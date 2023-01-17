@@ -2,13 +2,16 @@
 # -*- coding: utf-8 -*- Line 2
 # ----------------------------------------------------------------------------
 # Created By  : florian
-# Created Date: 05/Sept/2022
 # version ='1.0'
 # ---------------------------------------------------------------------------
 """
-Implementation of the reinforcement environment.
+Implementation of the reinforcement learning environment.
 """
 # ---------------------------------------------------------------------------
+
+import copy
+import json
+
 import numpy as np
 import gym
 from gym import spaces
@@ -17,6 +20,11 @@ from reinforcement_learning.action_space.action_storage import ActionStorage
 from reinforcement_learning.transition.agent_transition import AgentTransition
 from reinforcement_learning.transition.env_transition \
     import EnvironmentTransition
+
+# For Episode Stats.
+from agent.agent_order import OrderManagementSystem as OMS
+from agent.agent_trade import AgentTrade
+from reinforcement_learning.environment.episode_stats import EpisodeStats
 
 
 class TradingEnvironment(gym.Env):
@@ -63,11 +71,11 @@ class TradingEnvironment(gym.Env):
         observation, reward, completion status (done), and additional info.
 
         :param action:
-            ..., action obtained from Model.
+            int, action obtained from Model.
         :return: observation
-            np.array, ...
+            np.array, observation
         :return: reward
-            float, ...
+            float, reward
         :return: done
             bool, True if episode is complete, False otherwise
         :return: info
@@ -79,23 +87,22 @@ class TradingEnvironment(gym.Env):
 
         # pass action to agent via ActionStorage class attribute
         ActionStorage(action)
-        # print("(ENV) action storage: ", ActionStorage.action)
+
         # replay step (now, without action)
         self.replay.rl_step()
 
         # get AgentTransition
         observation, reward = AgentTransition.transition
-        # print("(ENV) AgentTransition.transition: ", AgentTransition.transition)
-        #print("STEP OBS: ", observation)
 
         # get EnvironmentTransition
         done, info = EnvironmentTransition.transition
-        # print("(ENV) EnvironmentTransition.transition: ", EnvironmentTransition.transition)
-        """ # old version
-        # -- Take step and receive observation, reward, info
-        observation, reward, done, info = self.replay.rl_step(action)
-        # -- Return
-        """
+
+        # If Episode is done, store epsiode stats.
+        if done:
+            oms = copy.deepcopy(OMS.order_list)
+            agent_trade = copy.deepcopy(AgentTrade.history)
+            EpisodeStats.store_episode_results(oms, agent_trade)
+
         # return
         return observation, reward, done, info
 
@@ -105,11 +112,8 @@ class TradingEnvironment(gym.Env):
         the environment. Reset has to be called at the beginning of each
         episode.
         """
-        # -- reset replay_episode
+        # Reset replay_episode.
         first_obs = self.replay.rl_reset()
-        #print("FIRST OBS: ", first_obs)
-
-        #print('(ENV)  episode len: ', self.replay.episode.__len__())
 
         return first_obs
 
