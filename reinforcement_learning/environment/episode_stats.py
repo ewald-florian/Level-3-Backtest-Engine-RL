@@ -26,15 +26,19 @@ class EpisodeStats:
     @classmethod
     def store_episode_results(cls,
                               oms,
-                              agent_trade):
+                              agent_trade,
+                              action_list):
         """Store episode statistics to json file."""
 
         # Combine OMS and AgentTrade to dict.
         episode_stat_dict = {}
         episode_stat_dict["OMS"] = oms
         episode_stat_dict["AT"] = agent_trade
+        # Stored in dict for json.
+        episode_stat_dict["actions"] = {"a": action_list}
 
-        # Read the list from json file.
+
+        # Read the existing list from json file.
         with open(cls.path_name) as fp:
             stats_list = json.load(fp)
 

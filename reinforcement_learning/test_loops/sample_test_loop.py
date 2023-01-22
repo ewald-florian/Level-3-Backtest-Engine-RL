@@ -35,11 +35,19 @@ from reinforcement_learning.environment.tradingenvironment import \
 from reinforcement_learning.agent_prototypes.twap_incentive_agent import \
     TwapIncentiveAgent
 from replay_episode.replay import Replay
+from utils.episode_stats_path_generator import generate_episode_stats_path
+from reinforcement_learning.environment.episode_stats import EpisodeStats
 
+# TODO: check if this works as planed since it was originally designed for
+#  training process not testing. PROBLEM: LISTE IST LEER...
+# generate json file to store episode statistics.
+stats_path = generate_episode_stats_path(name='test_loop')
+EpisodeStats(stats_path)
+print("EP_STATS_FILE:", EpisodeStats.path_name)
 
 # Load from checkpoint of trained agent.
 checkpoint_file = '/Users/florianewald/ray_results/PPOTrainer_TradingEnvironment_2022-12-28_13-04-25c1c62q8_/checkpoint_000001/checkpoint-1'
-checkpoint_file = '/Users/florianewald/ray_results/PPOTrainer_TradingEnvironment_2022-12-28_13-40-18guae7qaf/checkpoint_000001/checkpoint-1'
+
 # Agent.
 agent = TwapIncentiveAgent(verbose=True)
 # Replay.
@@ -110,6 +118,8 @@ while num_episodes < num_test_episodes:
         obs = env.reset()
         num_episodes += 1
         episode_reward = 0.0
+        # TODO: store episode stats if done!
+        #  ... use the infra structure EpisodeStats.
 
 
 # Output reward_dict:

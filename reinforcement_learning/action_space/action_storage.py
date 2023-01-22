@@ -14,8 +14,12 @@ class ActionStorage:
     """
     Storage to temporarily store an action in order
     to deliver it from the policy to an rl agent.
+
+    action_history stores all actions of an episode for
+    analysis reasons.
     """
     action = None
+    action_history = []
 
     @classmethod
     def __init__(cls, action=None):
@@ -24,7 +28,11 @@ class ActionStorage:
         :param action
             any, current action to be executed by the agent
         """
+
+        # Temporal storage of action to deliver to environment.
         cls.action = action
+        # Append action to history.
+        cls.action_history.append(int(action))
 
     @classmethod
     def reset(cls):
@@ -33,3 +41,4 @@ class ActionStorage:
         """
         # delete all elements in Trade.history (list)
         cls.action = None
+        cls.action_history = []

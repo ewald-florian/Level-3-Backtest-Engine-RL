@@ -862,9 +862,9 @@ class Market(Reconstruction):
                 # Note: account for LATENCY via timestamp
                 if message['template_id'] == 99999 and message[
                                     'timestamp'] <= self.timestamp:
-                    if message['side'] == 1:
+                    if message['side'] == 1 and message['price'] is not None:
                         buy_prices.append(message['price'])
-                    if message['side'] == 2:
+                    if message['side'] == 2 and message['price'] is not None:
                         sell_prices.append(message['price'])
 
             # compute min/max buy/sell prices
@@ -880,8 +880,10 @@ class Market(Reconstruction):
                 bid_threshold_values.append(min_sell_order_price)
 
             # compute thresholds for simulation state levels:
-            ask_threshold = max(ask_threshold_values)
-            bid_threshold = min(bid_threshold_values)
+            if len(ask_threshold_values) > 0:
+                ask_threshold = max(ask_threshold_values)
+            if len(bid_threshold_values) > 0:
+                bid_threshold = min(bid_threshold_values)
 
             # Bid-side-keys
             bid_keys = list(self._state[1].keys())

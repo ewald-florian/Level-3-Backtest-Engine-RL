@@ -25,6 +25,7 @@ from reinforcement_learning.transition.env_transition \
 from agent.agent_order import OrderManagementSystem as OMS
 from agent.agent_trade import AgentTrade
 from reinforcement_learning.environment.episode_stats import EpisodeStats
+from reinforcement_learning.action_space.action_storage import ActionStorage
 
 
 class TradingEnvironment(gym.Env):
@@ -101,7 +102,13 @@ class TradingEnvironment(gym.Env):
         if done:
             oms = copy.deepcopy(OMS.order_list)
             agent_trade = copy.deepcopy(AgentTrade.history)
-            EpisodeStats.store_episode_results(oms, agent_trade)
+            action_list = ActionStorage.action_history
+            EpisodeStats.store_episode_results(oms, agent_trade, action_list)
+
+            # DEBUGGING
+            #waitlist = [x for x in action_list if x == 0]
+            #print("(ENV) Number of times waited:", len(waitlist), "Out of:",
+            #      len(action_list))
 
         # return
         return observation, reward, done, info

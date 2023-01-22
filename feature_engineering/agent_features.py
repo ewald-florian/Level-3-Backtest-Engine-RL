@@ -102,15 +102,16 @@ class AgentFeatures:
             return 1
 
     @property
-    def time_since_last_submission_norm(self):
+    def time_since_last_submission_norm(self, norm_factor=30*1e9):
         """
         Time since last submission normed. For now, it is normed by dividing
-        by 30 seconds.
+        by 30 seconds by default, should be adjusted for varying episode
+        lengths.
         """
         time_since_last_submission = \
             self.agent_metrics.time_since_last_submission
         # Scale with 30 seconds as max time.
-        time_normed = (time_since_last_submission / (30*1e9))
+        time_normed = (time_since_last_submission / norm_factor)
         # Clip to 1 max. Lower clip is 0 by design.
         if time_normed > 1:
             time_normed = 1

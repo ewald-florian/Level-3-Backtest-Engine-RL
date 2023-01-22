@@ -36,8 +36,6 @@ from market.market_metrics import MarketMetrics
 from market.market_trade import MarketTrade
 
 
-# TODO: Observation space must be increased with some infos which help
-#  the agent when he placed his last order and whether it was filled
 class ObservationSpace(BaseObservationSpace):
     """
     Subclass of BaseObservationSpace to implement the observation for a
@@ -98,8 +96,22 @@ class Reward(BaseReward):
         self.twap_interval = episode_length/twap_n
 
     def receive_reward(self):
+        # TODO Step 1: Use waiting reward for pretraining:
+        if ActionStorage.action == 0:
+            action_equals_waiting = True
+        else:
+            action_equals_waiting = False
 
-        reward = self.twap_incentive_reward
+        reward = self.reward_for_waiting(
+            action_equals_waiting=action_equals_waiting)
+
+        print(ActionStorage.action)
+        print("r", reward)
+
+        # TODO Step 2: Use TWAP Reward for pretraining
+        #reward = self.twap_incentive_reward
+
+        # TODO Step 3: Use IS-based Reward for pretraining
         return reward
 
 

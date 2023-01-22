@@ -40,8 +40,6 @@ from market.market_metrics import MarketMetrics
 from market.market_trade import MarketTrade
 
 
-# TODO: Observation space must be increased with some infos which help
-#  the agent when he placed his last order and whether it was filled
 class ObservationSpace(BaseObservationSpace):
     """
     Subclass of BaseObservationSpace to implement the observation for a
@@ -53,7 +51,7 @@ class ObservationSpace(BaseObservationSpace):
         Initiate parent class via super function.
         """
         super().__init__()
-        # DEVELOPINGF
+        # DEVELOPING
         self.market_metrics = MarketMetrics()
 
     def market_observation(self) -> np.array:
@@ -118,7 +116,17 @@ class Reward(BaseReward):
 
     def receive_reward(self):
 
-        reward = self.twap_incentive_reward
+        # Check if action equals waiting (action = 0)
+        if ActionStorage.action == 0:
+            action_equals_waiting = True
+        else:
+            action_equals_waiting = False
+
+        reward = self.reward_for_waiting(
+            action_equals_waiting=action_equals_waiting)
+        #print("reward", reward)
+        #print("action", ActionStorage.action)
+
         return reward
 
 
@@ -127,11 +135,13 @@ class ActionSpace(BaseActionSpace):
     def __init__(self,
                  initial_inventory,
                  verbose=False,
+                 num_twap_intervals=6
                  ):
         super().__init__()
 
         self.verbose = verbose
         self.initial_inv = initial_inventory
+        self.num_twap_intervals = num_twap_intervals
 
         self.agent_metrics = AgentMetrics()
         self.market_features = MarketFeatures()
@@ -160,6 +170,8 @@ class ActionSpace(BaseActionSpace):
         # -- Zero ending inventory constraint.
         self.zero_ending_inventory_constraint()
 
+        # TODO: inventory must be rounded to 4 digits.
+
         # define several quantities (ratios of initial inv)
         # 5% of initial env
         qt_1 = AgentContext.initial_inventory * 0.05
@@ -169,7 +181,7 @@ class ActionSpace(BaseActionSpace):
         qt_3 = AgentContext.initial_inventory * 0.20
         # TODO: TWAP volume (initial inventory/6 for 1 minute...)
         #  Remove hardcode later.
-        qt_4 = self.initial_inv / 6
+        qt_4 = self.initial_inv / self.num_twap_intervals
 
         # Note: For now, I have 4 limits and 3 quantities plus "wait" option.
         # -> I need 3*4 + 1 = 13 actions
@@ -177,6 +189,7 @@ class ActionSpace(BaseActionSpace):
         order_limit = None
         order_quantity = None
 
+        # I generally use 0 as the code for waiting.
         if action == 0:
             pass
 
@@ -262,9 +275,9 @@ class TwapIncentiveAgentReduced(RlBaseAgent):
     """
 
     def __init__(self,
+                 episode_length,
                  initial_inventory: int = 800_0000,
                  verbose=False,
-                 episode_length="1m",
                  ):
         """
         When initialized, SpecialAgent builds compositions of MarketInterface,

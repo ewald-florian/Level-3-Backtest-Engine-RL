@@ -140,7 +140,8 @@ class BaseObservationSpace(ABC):
             self.agent_features.time_since_last_submission_norm
         time_since_last_trade = \
             self.agent_features.time_since_last_trade_norm
-        agent_obs = np.array([time, inv, time_since_last_sub])
+        agent_obs = np.array([time, inv, time_since_last_sub,
+                              time_since_last_trade])
         return agent_obs
 
     def reset(self):

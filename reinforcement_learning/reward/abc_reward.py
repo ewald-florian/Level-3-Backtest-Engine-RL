@@ -174,6 +174,21 @@ class BaseReward(ABC):
 
         return twap_penalty
 
+    def reward_for_waiting(self, action_equals_waiting):
+        """
+        Give a positive reward if the agent chooses the action to wait
+        and do nothing in the current episode.
+        :param action_equals_waiting
+            bool, True if wait, False otherwise
+        :return wait_reward
+            int, reward for waiting
+        """
+        wait_reward = 0
+        if action_equals_waiting:
+            wait_reward = 1
+
+        return wait_reward
+
     def vwap_score(self):
         pass
 

@@ -54,7 +54,6 @@ class AgentContext:
         # Convert to nanoseconds int.
         cls.episode_length = episode_delta.delta
 
-
     @classmethod
     def update_initial_inventory(cls, initial_inventory):
         """Update class attribute initial_inventory"""
