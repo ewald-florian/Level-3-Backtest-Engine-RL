@@ -14,7 +14,7 @@ __version__ = "0.1"
 # manage GPUs if executed on server
 import platform
 if platform.system() == 'Linux':
-    gpuid = 'MIG-c8c5eee1-c148-5f66-9889-9759c8656d2b'
+    gpuid = 'MIG-9985302b-0b2c-5903-929d-eb0313c73e0c'
     import os
     os.environ["CUDA_VISIBLE_DEVICES"] = gpuid
     from torch.cuda import device_count
