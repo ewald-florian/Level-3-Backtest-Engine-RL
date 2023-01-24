@@ -124,8 +124,8 @@ config["num_workers"] = num_workers
 config["horizon"] = 100_000
 # Make sure to use GPU.
 # TODO: test on server!
-config["num_gpus"] = 1
-config["num_cpus_per_worker"] = 1
+#config["num_gpus"] = 1
+#config["num_cpus_per_worker"] = 1
 config["disable_env_checking"] = disable_env_checking
 config["log_level"] = rllib_log_level
 # set framework

@@ -115,7 +115,7 @@ config["env_config"]["action_size"] = action_size
 # Notes: 0:  use the learner GPU for inference.
 # TODO: For efficient use of GPU time, use a small number of GPU workers and a
 #  large number of envs per worker.
-config["num_workers"] = num_workers
+#config["num_workers"] = num_workers
 #config["ignore_worker_failures"] = True
 # TODO: verstehen was genau das heißt, wird das env immer wieder resettet?
 # config["num_envs_per_worker"] = 1
@@ -124,8 +124,8 @@ config["num_workers"] = num_workers
 config["horizon"] = 100_000
 # Make sure to use GPU.
 # TODO: test on server!
-config["num_gpus"] = 1
-config["num_cpus_per_worker"] = 1
+#config["num_gpus"] = 1
+#config["num_cpus_per_worker"] = 1
 config["disable_env_checking"] = disable_env_checking
 config["log_level"] = rllib_log_level
 # set framework
