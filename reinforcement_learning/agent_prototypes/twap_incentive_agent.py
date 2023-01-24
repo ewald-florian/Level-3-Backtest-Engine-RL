@@ -105,9 +105,6 @@ class Reward(BaseReward):
         reward = self.reward_for_waiting(
             action_equals_waiting=action_equals_waiting)
 
-        print(ActionStorage.action)
-        print("r", reward)
-
         # TODO Step 2: Use TWAP Reward for pretraining
         #reward = self.twap_incentive_reward
 
@@ -117,10 +114,13 @@ class Reward(BaseReward):
 
 class ActionSpace(BaseActionSpace):
     """Specific Implementation of action space."""
-    def __init__(self, verbose=False):
+    def __init__(self,
+                 verbose=False,
+                 num_twap_intervals=6):
         super().__init__()
 
         self.verbose = verbose
+        self.num_twap_intervals = num_twap_intervals
 
         self.agent_metrics = AgentMetrics()
         self.market_features = MarketFeatures()
@@ -141,10 +141,10 @@ class ActionSpace(BaseActionSpace):
         ticksize = Market.instances["ID"].ticksize
 
         # define several price limits
-        buy_market = best_bid - 100*ticksize  # defacto market-order
+        buy_market = best_bid - 100 * ticksize  # defacto market-order
         buy_limit_1 = best_ask
         buy_limit_2 = best_ask + ticksize
-        buy_limit_3 = best_ask + 2*ticksize
+        buy_limit_3 = best_ask + 2 * ticksize
 
         # -- Zero ending inventory constraint.
         self.zero_ending_inventory_constraint()
@@ -156,6 +156,9 @@ class ActionSpace(BaseActionSpace):
         qt_2 = AgentContext.initial_inventory * 0.10
         # 20% of initial env
         qt_3 = AgentContext.initial_inventory * 0.20
+        # TODO: TWAP volume (initial inventory/6 for 1 minute...)
+        #  Remove hardcode later.
+        qt_4 = AgentContext.initial_inventory / self.num_twap_intervals
 
         # Note: For now, I have 4 limits and 3 quantities plus "wait" option.
         # -> I need 3*4 + 1 = 13 actions
@@ -214,6 +217,23 @@ class ActionSpace(BaseActionSpace):
             order_limit = buy_limit_3
             order_quantity = qt_3
 
+        # TODO: New actions based on initial inv: (TWAP volume)
+        elif action == 13:
+            order_limit = buy_market
+            order_quantity = qt_4
+
+        elif action == 14:
+            order_limit = buy_limit_1
+            order_quantity = qt_4
+
+        elif action == 15:
+            order_limit = buy_limit_2
+            order_quantity = qt_4
+
+        elif action == 16:
+            order_limit = buy_limit_3
+            order_quantity = qt_4
+
         # Place order via market interface.
         if action > 0:
             self.market_interface.submit_order(side=2,
@@ -221,7 +241,8 @@ class ActionSpace(BaseActionSpace):
                                                quantity=order_quantity)
             if self.verbose:
                 pass
-                #print(f'(RL AGENT) Submission: limit: {order_limit}  qt: {order_quantity}')
+                #print(f'(RL AGENT) Submission: limit: {order_limit}  '
+                #      f'qt: {order_quantity}')
 
 
 class TwapIncentiveAgent(RlBaseAgent):

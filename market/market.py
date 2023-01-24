@@ -1,13 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-# ----------------------------------------------------------------------------
-# Created By  : florian
-# Credits: Phillipp
-# ---------------------------------------------------------------------------
 """
 Market Class. Matching engine of backtest library.
 """
-# ---------------------------------------------------------------------------
 
 import math
 import sys
@@ -21,12 +16,6 @@ from reconstruction.reconstruction import Reconstruction
 from agent.agent_trade import AgentTrade
 from market.market_trade import MarketTrade
 from agent.agent_order import OrderManagementSystem as OMS
-
-
-# TODO: test match_n() method (for impact)
-# TODO: If I remove liquidity from simulation state, I also have to do this
-#  in the observation space (consistency)
-# TODO: re-structure market class (make plausible sections etc.)
 
 
 class Market(Reconstruction):
@@ -78,10 +67,10 @@ class Market(Reconstruction):
         self.verbose = verbose
 
         # store python version for backward-compatibility
-        if sys.version_info[0] + sys.version_info[1] >= 13:
-            self.new_python = True
-        else:
-            self.new_python = False
+        #if sys.version_info[0] + sys.version_info[1] >= 13:
+        #    self.new_python = True
+        #else:
+        #    self.new_python = False
 
         # dynamic attributes
         # list to store limit orders which were executed against agent orders
@@ -859,13 +848,17 @@ class Market(Reconstruction):
             for message in OMS.order_list:
 
                 # filter for order submissions (exclude cancellations):
-                # Note: account for LATENCY via timestamp
+                # Note: accounts for LATENCY via timestamp
                 if message['template_id'] == 99999 and message[
                                     'timestamp'] <= self.timestamp:
                     if message['side'] == 1 and message['price'] is not None:
                         buy_prices.append(message['price'])
                     if message['side'] == 2 and message['price'] is not None:
                         sell_prices.append(message['price'])
+                    # DEBUGGING:
+                    if message['price'] is None:
+                        print("!!!message None:")
+                        print(message)
 
             # compute min/max buy/sell prices
             if len(buy_prices) > 0:
@@ -1295,8 +1288,6 @@ class Market(Reconstruction):
             pass
             # print('(WARNING) LOB not crossed - no matching possible')
 
-    # TODO: docstring überarbeiten
-    #  evtl auf mehrere methoden aufteilen (z.B. _sort_agent_orders)
     def match_simulation(self, state_to_match) -> list:
         """
         Match agent orders against simulation_state. Active agent_orders
@@ -1412,9 +1403,6 @@ class Market(Reconstruction):
                         order_sell = sorted(state_to_match[2][min_sell],
                                             key=lambda d: d['timestamp'])[0]
 
-                        # TODO: in edge cases the more aggressive price is
-                        #  deciding (e.g. right after opening)
-                        #  not the timestamp
                         # aggressor order has later timestamp
                         order_standing, order_aggressor = sorted(
                             [order_buy, order_sell],
@@ -1491,8 +1479,8 @@ class Market(Reconstruction):
                             match_execution_summary["arrival_price"] = \
                                 order_sell["arrival_price"]
 
-                        # TODO: this can technically not happen (remove)
                         # Edge-Case, both sides are agent orders:
+                        #  Can technically not happen but kept for security.
                         elif ("message_id" in order_buy.keys()
                               and "message_id" in order_sell.keys()):
                             print('(WARNING) Self-Matching ')

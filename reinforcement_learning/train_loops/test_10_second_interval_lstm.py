@@ -46,13 +46,22 @@ from utils.result_path_generator import generate_result_path
 from utils.episode_stats_path_generator import generate_episode_stats_path
 from reinforcement_learning.environment.episode_stats import EpisodeStats
 
+# -- SET UP TRAIN LOOP
+# episode length for agent and replay
+# TODO: replay can simply access the episode length of agent?
+episode_length = "10s"
+training_name = 'fcn128_10_sec_wait'
+num_iterations = 200
+obs_size = 34
+action_size = 17
+
 # -- Create paths and files to store information.
 
 # generate pathname to store results
-result_file = generate_result_path(name='lstm_10_sec_wait')
+result_file = generate_result_path(name=training_name)
 print("RESULT_FILE:", result_file)
 # generate json file to store episode statistics.
-stats_path = generate_episode_stats_path(name='lstm_10_sec_wait')
+stats_path = generate_episode_stats_path(name=training_name)
 EpisodeStats(stats_path)
 print("EP_STATS_FILE:", EpisodeStats.path_name)
 
@@ -62,8 +71,10 @@ print("EP_STATS_FILE:", EpisodeStats.path_name)
 ray.init()
 
 # **SET THE EPISODE LENGTH FOR AGENT AND REPLAY**
-episode_length = "10s"
-agent = TwapIncentiveAgentReduced(verbose=True, episode_length=episode_length)
+agent = TwapIncentiveAgent(verbose=True,
+                           episode_length=episode_length,
+                           initial_inventory=800_0000
+                           )
 # instantiate replay_episode and pass agent object as input argument
 replay = Replay(rl_agent=agent, episode_length=episode_length)
 
@@ -75,8 +86,8 @@ config["env_config"] = {
         "replay_episode": replay},
 }
 # Size of the observation space
-config["env_config"]["observation_size"] = 4  # Only agent observation.
-config["env_config"]["action_size"] = 17  # Includes TWAP qt.
+config["env_config"]["observation_size"] = obs_size
+config["env_config"]["action_size"] = action_size
 
 config["num_workers"] = 0
 config["disable_env_checking"] = False
@@ -102,7 +113,6 @@ episode_data = []
 episode_json = []
 
 # -- Run training loops.
-num_iterations = 100
 
 for n in range(num_iterations):
 

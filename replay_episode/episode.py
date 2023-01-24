@@ -59,7 +59,8 @@ class Episode:
     def __init__(self,
                  identifier:str = None,
                  episode_start = None,
-                 episode_end = None):
+                 episode_end = None,
+                 verbose = True):
         """
         Generates episode by loading the respective start_snapshot and
         message_packet_list from the database  and storing them under the
@@ -74,12 +75,15 @@ class Episode:
             pd.Timestamp, start timestamp of the episode
         :param episode_end,
             pd.Timestamp, end timestamp of the episode
+        :param verbose,
+            if True print infos,
         """
 
         # static attributes from arguments
         self.identifier = identifier
         self.episode_start = episode_start
         self.episode_end = episode_end
+        self.verbose = verbose
 
         # dynamic attributes
         self._step = 0
@@ -169,7 +173,7 @@ class Episode:
             if pattern in directory:
                 base_path = directory
 
-        if not base_path:
+        if not base_path and self.verbose:
             print("...Base_Path not found")
 
         # load files from base_path

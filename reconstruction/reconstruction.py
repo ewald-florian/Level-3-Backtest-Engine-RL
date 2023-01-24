@@ -1,19 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-#----------------------------------------------------------------------------
-__author__ = "phillipp"
-__date__ = "?"
-# version ='1.0'
-# ---------------------------------------------------------------------------
 """
 Reconstruction Class. Reconstructs Market State from proprietary A7 EOBI Data.
 """
-# ---------------------------------------------------------------------------
 
-
-# TODO: Theoretisch müsste man auch mit der reconstruction message (erste
-#  message im message_packet (bzw. am morgen) den snapshot_start herstellen
-#  können. -> ausprobieren
 import json
 import copy
 import pandas as pd
@@ -38,7 +28,8 @@ class Reconstruction:
 
     def __init__(self,
                  track_timestamp: bool = True,
-                 track_index: bool = True):
+                 track_index: bool = True,
+                 verbose: bool = False):
         """
         State is implemented as a stateful object that reflects the current
         limit order book snapshot in full depth and full detail.
@@ -77,12 +68,15 @@ class Reconstruction:
             bool, if True the internal timestamp will be tracked
         :param track_index
             bool, if True the internal index will be tracked
+        :param verbose
+            bool, True to print infos
         ...
         """
 
         # -- static attributes from input arguments
         self.track_timestamp = track_timestamp
         self.track_index = track_index
+        self.verbose = verbose
 
         # -- dynamic attributes
         # internal state
@@ -118,8 +112,9 @@ class Reconstruction:
         self._initialize_internal_timestamp()
 
         # logging
-        print("(INFO) State Build from Snapshot: Start Timestamp: {}".format(
-            pd.to_datetime(self._state_timestamp, unit='ns')))
+        if self.verbose:
+            print("(INFO) State Build from Snapshot: Start Timestamp: {}".format(
+                pd.to_datetime(self._state_timestamp, unit='ns')))
 
     def initialize_state_from_parsed_snapshot(self, snapshot):
         """
@@ -148,8 +143,9 @@ class Reconstruction:
         self._initialize_internal_timestamp()
 
         # logging
-        print("(INFO) State Build from Snapshot: Start Timestamp: {}".format(
-            pd.to_datetime(self._state_timestamp, unit='ns')))
+        if self.verbose:
+            print("(INFO) State Build from Snapshot: Start Timestamp: {}".format(
+                pd.to_datetime(self._state_timestamp, unit='ns')))
 
     @SnapshotParser.parse
     def validate_state(self, snapshot) -> bool:

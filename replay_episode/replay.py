@@ -34,12 +34,13 @@ from reinforcement_learning.action_space.action_storage import ActionStorage
 from feature_engineering.agent_features import AgentFeatures
 from context.agent_context import AgentContext
 
-# TODO: add modes to run episode as list of dates or for a cont. time period
-
 
 class Replay:
 
-    # TODO: write class Docstring
+    """
+    Replay class generates a list of episode then loads these
+    episodes subsequently and provides them for the backtest.
+    """
 
     def __init__(self,
                  rl_agent: "instance of an rl agent" = None,
@@ -54,11 +55,41 @@ class Replay:
                  random_identifier: bool = False,
                  exclude_high_activity_time: bool = False,
                  mode: str = "random_episodes",
+                 verbose: bool = True,
                  *args,
                  **kwargs
                  ):
 
-        # TODO: write init docstring
+        """
+        Initialization of Replay is a crucial step when setting up
+        a backtest since it is the central class of the backtest.
+        :param rl_agent
+            class, rl agent to use for RL backtest
+        :param identifier_list
+            list, list of several identifiers of assets used for backtest
+        :param identifier
+            str, single identifier if backtest uses only one asset
+        :param start_date
+            str, start date of time period considered by backtest
+        :param end_date
+            str, end date of time period considered by backtest
+        :param episode_length
+            str, length of a single episode
+        :param frequency
+            str, frequency to split time period into episodes
+        :param seed
+            int, random seed
+        :param shuffle
+            bool, shuffle episodes if set True
+        :param random_identifier
+            bool, if True, asset is selected randomly
+        :param exclude_high_activity_time
+            bool, if True, high activity times are excluded from backtest
+        :param mode
+            str, random episode mode
+        :param verbose
+            bool, if True, infos are printed
+        """
 
         # -- static attributes
         self.identifier_list = identifier_list
@@ -72,6 +103,7 @@ class Replay:
         self.shuffle = shuffle
         self.exclude_high_activity_time = exclude_high_activity_time
         self.mode = mode
+        self.verbose = verbose
 
         # -- dynamic attributes
         self.episode = None
@@ -83,9 +115,6 @@ class Replay:
 
         # -- generate new episode_start_list
         self._generate_episode_start_list()
-
-        # -- observation space (for RL: first_observation)
-        #self.observation_space = ObservationSpace()
 
         # -- rl agent
 
@@ -346,20 +375,22 @@ class Replay:
             try:
                 self.episode = Episode(episode_start=episode_start,
                                        episode_end=episode_end,
-                                       identifier=identifier)
+                                       identifier=identifier,
+                                       verbose=self.verbose)
 
                 # update episode_counter/index
                 self.episode_counter += 1
                 self.episode_index += 1
 
-                print("(INFO) new episode was build in attempt: {}".format(
-                    attempt + 1))
+                if self.verbose:
+                    print("(INFO) new episode was build in attempt: {}".format(
+                        attempt + 1))
 
             # return if episode could not be generated
             except:
-
-                print("(ERROR) could not build episode from start_point")
-                # update episode_counter
+                if self.verbose:
+                    print("(INFO) could not build episode from start_point")
+                    # update episode_counter
 
                 self.episode_index += 1
 
