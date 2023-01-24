@@ -112,9 +112,9 @@ class Reconstruction:
         self._initialize_internal_timestamp()
 
         # logging
-        if self.verbose:
-            print("(INFO) State Build from Snapshot: Start Timestamp: {}".format(
-                pd.to_datetime(self._state_timestamp, unit='ns')))
+        #if self.verbose:
+        #    print("(INFO) State Build from Snapshot: Start Timestamp: {}".format(
+        #        pd.to_datetime(self._state_timestamp, unit='ns')))
 
     def initialize_state_from_parsed_snapshot(self, snapshot):
         """
@@ -143,9 +143,9 @@ class Reconstruction:
         self._initialize_internal_timestamp()
 
         # logging
-        if self.verbose:
-            print("(INFO) State Build from Snapshot: Start Timestamp: {}".format(
-                pd.to_datetime(self._state_timestamp, unit='ns')))
+        #if self.verbose:
+        #    print("(INFO) State Build from Snapshot: Start Timestamp: {}".format(
+        #        pd.to_datetime(self._state_timestamp, unit='ns')))
 
     @SnapshotParser.parse
     def validate_state(self, snapshot) -> bool:

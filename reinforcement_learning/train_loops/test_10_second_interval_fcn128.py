@@ -1,15 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-# ---------------------------------------------------------------------------
-"""Trainer Loop to test new abstract class structure of RL Agent
-
-AGENTID = 200123
 """
-# ----------------------------------------------------------------------------
-__author__ = "florian"
-__date__ = "2022-12-05"
-__version__ = "0.1"
-# ----------------------------------------------------------------------------
+Template for train loops (new version: "2023-01-24")
+"""
+
 
 # build ins
 import json
@@ -48,12 +42,12 @@ if platform.system() == 'Linux':
 # SET UP TRAIN LOOP
 # episode length for agent and replay
 
-training_name = 'fcn128_10_sec_wait'
-num_iterations = 2
+training_name = 'wait_fcn128_10s'
+num_iterations = 250
 save_checkpoints_freq = 10
 print_results_freq = 10
 # environment.
-episode_length = "10s"  # "60s"
+episode_length = "10s"  # "60s", "30s"
 obs_size = 34
 action_size = 17
 
@@ -62,22 +56,28 @@ fcnet_hiddens = [128, 128]
 fcnet_activation = 'relu'
 # lstm.
 use_lstm = False
-max_seq_len = None
-lstm_cell_size = None
+max_seq_len = None  # default 20
+lstm_cell_size = None  # default 256
 # training
 # TODO: Teste default lr, erstelle lr schedule
 learning_rate = 5e-05  # default 5e-05
 lr_schedule = None
 gamma = 1  # 0.99
 # TODO: Teste größere batches! default ist 4000
-train_batch = 256  # default 4000
-mini_batch = 32  # default: 128
+train_batch = 1000  # default 4000
+mini_batch = 100  # default: 128
 num_workers = 0
 #  If batch_mode is “complete_episodes”, rollout_fragment_length is ignored.
 batch_mode = 'complete_episodes'  # 'truncate_episodes'
 # other settings.
 disable_env_checking = False
-print_progress_after_each_iteration = True
+print_entire_result = True
+rllib_log_level = 'DEBUG'  # WARN, 'DEBUG'
+# agent
+agent = TwapIncentiveAgent(verbose=True,
+                           episode_length=episode_length,
+                           initial_inventory=800_0000
+                           )
 
 
 # -- Create paths and files to store information.
@@ -94,12 +94,6 @@ print("EP_STATS_FILE:", EpisodeStats.path_name)
 
 # Start a new instance of Ray
 ray.init()
-
-# -- Instantiate Raplay and Agent
-agent = TwapIncentiveAgent(verbose=True,
-                           episode_length=episode_length,
-                           initial_inventory=800_0000
-                           )
 
 # instantiate replay_episode and pass agent object as input argument
 replay = Replay(rl_agent=agent,
@@ -133,6 +127,7 @@ config["horizon"] = 100_000
 config["num_gpus"] = 1
 config["num_cpus_per_worker"] = 1
 config["disable_env_checking"] = disable_env_checking
+config["log_level"] = rllib_log_level
 # set framework
 config["framework"] = "tf2"
 config["eager_tracing"] = True
@@ -178,12 +173,6 @@ for iteration in range(num_iterations):
     # train and get results.
     result = rllib_trainer.train()
 
-    # print results.
-    if print_progress_after_each_iteration:
-        print('(TRAINER) Result Iteration:', rllib_trainer.iteration)
-        pp = pprint.PrettyPrinter(indent=4)
-        pp.pprint(results)
-
     # Store complete result to results list.
     results.append(result)
     # store relevant metrics from the result dict to the episode dict
@@ -209,7 +198,13 @@ for iteration in range(num_iterations):
 
     if iteration % print_results_freq == 0:
         checkpoint_file = rllib_trainer.save()
-        print(f'{n:3d}: Min/Mean/Max reward: {result["episode_reward_min"]:8.4f}/{result["episode_reward_mean"]:8.4f}/{result["episode_reward_mean"]}')
+        print(f'{iteration:3d}: Min/Mean/Max reward: {result["episode_reward_min"]:8.4f}/{result["episode_reward_mean"]:8.4f}/{result["episode_reward_mean"]}')
+
+        # print results.
+        if print_entire_result:
+            print('(TRAINER) Result Iteration:', rllib_trainer.iteration)
+            pp = pprint.PrettyPrinter(indent=4)
+            pp.pprint(results)
 
 # -- Store to df and Print Results.
 result_df = pd.DataFrame(data=episode_data)

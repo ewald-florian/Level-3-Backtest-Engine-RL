@@ -33,7 +33,7 @@ from reinforcement_learning.environment.episode_stats import EpisodeStats
 
 # manage GPUs if executed on server
 if platform.system() == 'Linux':
-    gpuid = 'MIG-c8ecdc12-433b-5477-9094-19a7aff0f2c7'
+    gpuid = 'MIG-9985302b-0b2c-5903-929d-eb0313c73e0c'
     import os
     os.environ["CUDA_VISIBLE_DEVICES"] = gpuid
     from torch.cuda import device_count
@@ -42,7 +42,7 @@ if platform.system() == 'Linux':
 # SET UP TRAIN LOOP
 # episode length for agent and replay
 
-training_name = 'wait_lstm_10_128_10s_relu_trainb1000_sampleb_100_lr5'
+training_name = 'twap_incentive_wait_fcn256_10s_relu_trainb1000_sampleb_100_lr5'
 num_iterations = 250
 save_checkpoints_freq = 10
 print_results_freq = 10
@@ -52,12 +52,12 @@ obs_size = 34
 action_size = 17
 
 # fcnet.
-fcnet_hiddens = [128, 128]
+fcnet_hiddens = [256, 256]
 fcnet_activation = 'relu'
 # lstm.
-use_lstm = True
-max_seq_len = 10  # default 20
-lstm_cell_size = 128  # default 256
+use_lstm = False
+max_seq_len = None  # default 20
+lstm_cell_size = None  # default 256
 # training
 # TODO: Teste default lr, erstelle lr schedule
 learning_rate = 5e-05  # default 5e-05
