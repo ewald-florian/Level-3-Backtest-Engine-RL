@@ -42,7 +42,7 @@ if platform.system() == 'Linux':
 # SET UP TRAIN LOOP
 # episode length for agent and replay
 
-training_name = 'wait_fcn128_10s_tanh_1000_100_tfenv'
+training_name = 'wait_fcn128_10s_tanh_2500_256_tfenv_'
 num_iterations = 10
 save_checkpoints_freq = 10
 print_results_freq = 10
@@ -66,8 +66,8 @@ lr_schedule =[
         [1, 1.0e-7]]
 gamma = 1  # 0.99
 # TODO: Teste größere batches! default ist 4000
-train_batch = 500  # default 4000
-mini_batch = 100  # default: 128
+train_batch = 2500  # default 4000
+mini_batch = 256  # default: 128
 num_workers = 0
 #  If batch_mode is “complete_episodes”, rollout_fragment_length is ignored.
 batch_mode = 'complete_episodes'  # 'truncate_episodes'

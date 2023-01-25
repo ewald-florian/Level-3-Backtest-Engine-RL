@@ -42,7 +42,7 @@ if platform.system() == 'Linux':
 # SET UP TRAIN LOOP
 # episode length for agent and replay
 
-training_name = 'wait_lstm_10_32_10s_tanh_trainb1000_sampleb_100_lr5'
+training_name = 'wait_lstm_10_32_10s_relu_trainb1000_sampleb_100_lr5'
 num_iterations = 250
 save_checkpoints_freq = 10
 print_results_freq = 10
@@ -53,7 +53,7 @@ action_size = 17
 
 # fcnet.
 fcnet_hiddens = [128, 128]
-fcnet_activation = 'tanh'
+fcnet_activation = 'relu'
 # lstm.
 use_lstm = True
 max_seq_len = 10  # default 20
