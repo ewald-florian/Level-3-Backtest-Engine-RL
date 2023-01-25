@@ -29,6 +29,7 @@ from reinforcement_learning.agent_prototypes.twap_incentive_agent \
 from replay_episode.replay import Replay
 from utils.result_path_generator import generate_result_path
 from utils.episode_stats_path_generator import generate_episode_stats_path
+from utils.string_generator import generate_string
 from reinforcement_learning.environment.episode_stats import EpisodeStats
 
 # manage GPUs if executed on server
@@ -36,13 +37,14 @@ if platform.system() == 'Linux':
     gpuid = 'MIG-c8c5eee1-c148-5f66-9889-9759c8656d2b'
     import os
     os.environ["CUDA_VISIBLE_DEVICES"] = gpuid
-    from torch.cuda import device_count
-    print('Number of Devices: ', device_count())
+
+import tensorflow as tf
+print("Num GPUs Available TF: ", len(tf.config.list_physical_devices('GPU')))
 
 # SET UP TRAIN LOOP
 # episode length for agent and replay
 
-training_name = 'testing'
+name = 'testing'
 num_iterations = 2
 save_checkpoints_freq = 10
 print_results_freq = 10
@@ -73,6 +75,24 @@ batch_mode = 'complete_episodes'  # 'truncate_episodes'
 disable_env_checking = False
 print_entire_result = False
 rllib_log_level = 'WARN'  # WARN, 'DEBUG'
+
+# Generate A string which contains all relevant infos.
+training_name = generate_string(
+                    name,
+                    episode_length,
+                    fcnet_hiddens,
+                    fcnet_activation,
+                    use_lstm,
+                    max_seq_len,
+                    lstm_cell_size,
+                    learning_rate,
+                    gamma,
+                    train_batch,
+                    mini_batch,
+                    batch_mode,
+)
+
+print(training_name)
 # agent
 agent = TwapIncentiveAgent(verbose=True,
                            episode_length=episode_length,
@@ -115,10 +135,9 @@ config["env_config"]["action_size"] = action_size
 # Notes: 0:  use the learner GPU for inference.
 # TODO: For efficient use of GPU time, use a small number of GPU workers and a
 #  large number of envs per worker.
-#config["num_workers"] = num_workers
+config["num_workers"] = num_workers
 #config["ignore_worker_failures"] = True
-# TODO: verstehen was genau das heißt, wird das env immer wieder resettet?
-# config["num_envs_per_worker"] = 1
+
 # Horizon: max time steps after which an episode will be terminated.
 #  Note this limit should never be hit when everything works.
 config["horizon"] = 100_000

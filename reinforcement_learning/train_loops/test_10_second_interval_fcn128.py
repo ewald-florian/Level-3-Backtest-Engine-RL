@@ -148,9 +148,10 @@ config["gamma"] = gamma
 config["lr"] = learning_rate
 #config["lr_schedule"] = lr_schedule
 # Training batch size.
-config["train_batch_size"] = train_batch  # default = 4000
+# TODO: wieder einkommentieren
+#config["train_batch_size"] = train_batch  # default = 4000
 # Mini batch size.
-config["sgd_minibatch_size"] = mini_batch
+#config["sgd_minibatch_size"] = mini_batch
 # Batch mode
 config['batch_mode'] = batch_mode
 
