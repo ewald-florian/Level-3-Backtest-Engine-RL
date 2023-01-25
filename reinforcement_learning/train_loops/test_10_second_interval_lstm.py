@@ -33,7 +33,7 @@ from reinforcement_learning.environment.episode_stats import EpisodeStats
 
 # manage GPUs if executed on server
 if platform.system() == 'Linux':
-    gpuid = 'MIG-c8ecdc12-433b-5477-9094-19a7aff0f2c7'
+    gpuid = 'MIG-ac3c47b3-456e-56ff-aa3e-5731e429d659'
     import os
     os.environ["CUDA_VISIBLE_DEVICES"] = gpuid
     from torch.cuda import device_count
