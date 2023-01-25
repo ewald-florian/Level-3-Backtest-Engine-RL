@@ -10,8 +10,9 @@ import platform
 
 local_dir = "/Users/florianewald/PycharmProjects/Level-3-Backtest-Engine-RL/" \
             "reinforcement_learning/episode_stats/"
-server_dir = "/home/jovyan/Level-3-Backtest-Engine-RL/" \
+server_dir_old = "/home/jovyan/Level-3-Backtest-Engine-RL/" \
              "reinforcement_learning/episode_stats/"
+server_dir = "/home/jovyan/episode_stats/"
 
 if platform.system() == 'Darwin':  # macos
     default_base_dir = local_dir

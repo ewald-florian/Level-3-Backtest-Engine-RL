@@ -1,19 +1,15 @@
 #!/usr/bin/env python3  Line 1
 # -*- coding: utf-8 -*- Line 2
-# ---------------------------------------------------------------------------
-"""Generate Unique Paths to store Results of Experiments in"""
-# ----------------------------------------------------------------------------
-__author__ = "florian"
-__date__ = "2022-09-25"
-__version__ = "0.1"
-# ----------------------------------------------------------------------------
+"""Generate Unique Paths to store Results of Experiments"""
+
 import time
 import platform
 
 local_dir = "/Users/florianewald/PycharmProjects/Level-3-Backtest-Engine-RL/" \
             "reinforcement_learning/train_results/"
-server_dir = "/home/jovyan/Level-3-Backtest-Engine-RL/" \
+server_dir_old = "/home/jovyan/Level-3-Backtest-Engine-RL/" \
              "reinforcement_learning/train_results/"
+server_dir = "/home/jovyan/train_results/"
 
 if platform.system() == 'Darwin':  # macos
     default_base_dir = local_dir
