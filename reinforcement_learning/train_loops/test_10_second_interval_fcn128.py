@@ -39,6 +39,9 @@ if platform.system() == 'Linux':
     from torch.cuda import device_count
     print('Number of Devices: ', device_count())
 
+import tensorflow as tf
+print("Num GPUs Available TF: ", len(tf.config.list_physical_devices('GPU')))
+
 # SET UP TRAIN LOOP
 # episode length for agent and replay
 
@@ -96,7 +99,7 @@ print("EP_STATS_FILE:", EpisodeStats.path_name)
 # -- Set up the training configuration.
 
 # Start a new instance of Ray
-ray.init()
+ray.init(num_gpus=1)
 
 # instantiate replay_episode and pass agent object as input argument
 replay = Replay(rl_agent=agent,
