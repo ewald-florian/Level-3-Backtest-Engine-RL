@@ -41,6 +41,9 @@ from reinforcement_learning.agent_prototypes.more_actions_rl_agent \
 from replay_episode.replay import Replay
 from utils.result_path_generator import generate_result_path
 
+import tensorflow as tf
+print("Num GPUs Available TF: ", len(tf.config.list_physical_devices('GPU')))
+
 
 # generate pathname to store results
 # NOTE: contains sys-if condition for base_dir...
