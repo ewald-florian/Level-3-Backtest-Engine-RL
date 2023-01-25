@@ -80,8 +80,10 @@ config["disable_env_checking"] = False
 
 config['batch_mode'] = 'complete_episodes'
 
-# TODO: Test frameworks:
+# TEST TF2 Framework GPU support.
 config["framework"] = "tf2"
+# TODO: test eager tracing
+config["eager_tracing"] = True
 # NOTE: torch hat auch keine GPU genutzt
 #config["framework"] = "torch"
 
