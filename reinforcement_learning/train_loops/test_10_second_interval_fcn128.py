@@ -61,12 +61,13 @@ lstm_cell_size = None  # default 256
 # training
 # TODO: Teste default lr, erstelle lr schedule
 learning_rate = 5e-05  # default 5e-05
+# TODO
 lr_schedule =[
         [0, 1.0e-6],
         [1, 1.0e-7]]
 gamma = 1  # 0.99
 # TODO: Teste größere batches! default ist 4000
-train_batch = 2500  # default 4000
+train_batch = 2560  # default 4000
 mini_batch = 256  # default: 128
 num_workers = 0
 #  If batch_mode is “complete_episodes”, rollout_fragment_length is ignored.
