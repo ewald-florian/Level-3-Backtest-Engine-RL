@@ -56,7 +56,9 @@ ray.init()
 
 agent = MoreActionsAgent(verbose=False)
 # instantiate replay_episode and pass agent object as input argument
-replay = Replay(rl_agent=agent, episode_length="1m", )
+replay = Replay(rl_agent=agent,
+                episode_length="1m",
+                verbose=True)
 
 # prepare config dict for the trainer set-up
 config = {}
@@ -88,18 +90,17 @@ episode_data = []
 episode_json = []
 
 # run training loops
-num_iterations = 10
+num_iterations = 20
 for n in range(num_iterations):
 
-    # TODO: set-up trainer in a way that it resets after the done flag is true
-    #  the episode was automatically limited to 2000 steps...
+    print("iteration: ", n)
     result = rllib_trainer.train()
 
     results.append(result)
     # store relevant metrics from the result dict to the episode dict
-    print('(TRAINER) Result')
-    pp = pprint.PrettyPrinter(indent=4)
-    pp.pprint(results)
+    #print('(TRAINER) Result')
+    #pp = pprint.PrettyPrinter(indent=4)
+    #pp.pprint(results)
 
     episode = {
         "n": n,
@@ -112,23 +113,9 @@ for n in range(num_iterations):
     episode_data.append(episode)
     episode_json.append(json.dumps(episode))
 
-    # store results every iteration in case the training loop breaks
-    result_df = pd.DataFrame(data=episode_data)
-    result_df.to_csv(result_file, index=False)
-    #file_name = rllib_trainer.save(checkpoint_root)
-
     print(f'{n:3d}: Min/Mean/Max reward: {result["episode_reward_min"]:8.4f}/{result["episode_reward_mean"]:8.4f}/{result["episode_reward_mean"]}')
 
-result_df = pd.DataFrame(data=episode_data)
-print(result_df.head())
-result_df.to_csv(result_file, index=False)
 
-# create checkpoint file to save trained weights
-#checkpoint_file = rllib_trainer.save()
-#print(100 * '-')
-#print(f"Trainer (at iteration {rllib_trainer.iteration} was saved in '{checkpoint_file}'")
-
-# shut down ray (important step since ray can occupy resources)
 ray.shutdown()
 
 """

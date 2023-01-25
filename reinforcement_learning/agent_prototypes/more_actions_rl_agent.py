@@ -96,7 +96,7 @@ class Reward(BaseReward):
         # Last trade IS.
 
         # DEBUGGING
-        print("LAST EPISODE REWARD", self.episode_end_is(last_episode_step=True))
+        # print("LAST EPISODE REWARD", self.episode_end_is(last_episode_step=True))
 
         reward = self.last_trade_is
         return reward
