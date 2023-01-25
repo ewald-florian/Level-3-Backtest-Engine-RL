@@ -52,7 +52,8 @@ print("EP_STATS_FILE:", EpisodeStats.path_name)
 print("RESULT_FILE", result_file)
 
 # Start a new instance of Ray
-ray.init()
+# TODO: Try to set num_gpus in ray.init!
+ray.init(num_gpus=1)
 
 agent = MoreActionsAgent(verbose=False)
 # instantiate replay_episode and pass agent object as input argument
@@ -77,8 +78,8 @@ config["disable_env_checking"] = False
 config['batch_mode'] = 'complete_episodes'
 
 # TODO: Test frameworks:
-#config["framework"] = "tf2"
-config["framework"] = "torch"
+config["framework"] = "tf2"
+#config["framework"] = "torch"
 
 rllib_trainer = PPOTrainer(config=config)
 
