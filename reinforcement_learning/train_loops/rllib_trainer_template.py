@@ -71,7 +71,7 @@ num_workers = 0
 batch_mode = 'complete_episodes'  # 'truncate_episodes'
 # other settings.
 disable_env_checking = False
-print_entire_result = True
+print_entire_result = False
 rllib_log_level = 'WARN'  # WARN, 'DEBUG'
 # agent
 agent = TwapIncentiveAgent(verbose=True,
@@ -122,8 +122,9 @@ config["env_config"]["action_size"] = action_size
 # Horizon: max time steps after which an episode will be terminated.
 #  Note this limit should never be hit when everything works.
 config["horizon"] = 100_000
-# Make sure to use GPU.
-# TODO: test on server!
+
+# NOTE: GPU settings resulted in errors on the server!
+#  hence, leave default settings.
 #config["num_gpus"] = 1
 #config["num_cpus_per_worker"] = 1
 config["disable_env_checking"] = disable_env_checking

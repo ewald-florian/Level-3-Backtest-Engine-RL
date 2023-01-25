@@ -42,7 +42,7 @@ if platform.system() == 'Linux':
 # SET UP TRAIN LOOP
 # episode length for agent and replay
 
-training_name = 'wait_fcn128_10s'
+training_name = 'wait_fcn128_10s_tanh_large_lr_0.0001'
 num_iterations = 250
 save_checkpoints_freq = 10
 print_results_freq = 10
@@ -53,14 +53,14 @@ action_size = 17
 
 # fcnet.
 fcnet_hiddens = [128, 128]
-fcnet_activation = 'relu'
+fcnet_activation = 'tanh'
 # lstm.
 use_lstm = False
 max_seq_len = None  # default 20
 lstm_cell_size = None  # default 256
 # training
 # TODO: Teste default lr, erstelle lr schedule
-learning_rate = 0.001  # default 5e-05
+learning_rate = 0.0001  # default 5e-05
 lr_schedule = None
 gamma = 1  # 0.99
 # TODO: Teste größere batches! default ist 4000

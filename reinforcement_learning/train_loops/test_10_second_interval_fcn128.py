@@ -42,8 +42,8 @@ if platform.system() == 'Linux':
 # SET UP TRAIN LOOP
 # episode length for agent and replay
 
-training_name = 'wait_fcn128_10s'
-num_iterations = 250
+training_name = 'wait_fcn128_10s_tanh_1000_100'
+num_iterations = 3
 save_checkpoints_freq = 10
 print_results_freq = 10
 # environment.
@@ -53,7 +53,7 @@ action_size = 17
 
 # fcnet.
 fcnet_hiddens = [128, 128]
-fcnet_activation = 'relu'
+fcnet_activation = 'tanh'
 # lstm.
 use_lstm = False
 max_seq_len = None  # default 20
@@ -61,7 +61,9 @@ lstm_cell_size = None  # default 256
 # training
 # TODO: Teste default lr, erstelle lr schedule
 learning_rate = 5e-05  # default 5e-05
-lr_schedule = None
+lr_schedule =[
+        [0, 1.0e-6],
+        [1, 1.0e-7]]
 gamma = 1  # 0.99
 # TODO: Teste größere batches! default ist 4000
 train_batch = 1000  # default 4000
@@ -72,7 +74,7 @@ batch_mode = 'complete_episodes'  # 'truncate_episodes'
 # other settings.
 disable_env_checking = False
 print_entire_result = True
-rllib_log_level = 'DEBUG'  # WARN, 'DEBUG'
+rllib_log_level = 'WARN'  # WARN, 'DEBUG'
 # agent
 agent = TwapIncentiveAgent(verbose=True,
                            episode_length=episode_length,
