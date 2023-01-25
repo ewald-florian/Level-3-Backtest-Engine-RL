@@ -87,7 +87,7 @@ episode_data = []
 episode_json = []
 
 # run training loops
-num_iterations = 0
+num_iterations = 10
 for n in range(num_iterations):
 
     print("iteration: ", n)
