@@ -82,6 +82,7 @@ config['batch_mode'] = 'complete_episodes'
 
 # TODO: Test frameworks:
 config["framework"] = "tf2"
+# NOTE: torch hat auch keine GPU genutzt
 #config["framework"] = "torch"
 
 rllib_trainer = PPOTrainer(config=config)
@@ -92,7 +93,7 @@ episode_data = []
 episode_json = []
 
 # run training loops
-num_iterations = 10
+num_iterations = 2
 for n in range(num_iterations):
 
     print("iteration: ", n)
