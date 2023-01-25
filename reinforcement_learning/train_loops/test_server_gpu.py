@@ -73,16 +73,13 @@ config["env_config"]["action_size"] = 13
 
 config["num_workers"] = 0
 config["disable_env_checking"] = False
-# TODO: 'horizon', 'soft_horizon' what is the difference?
-#  'soft' horizon ist sehr weird, startet die ganze zeit neue episoden und
-#  macht aber nichts...
-#config['horizon'] = True
+
 config['batch_mode'] = 'complete_episodes'
 
-# Instantiate the Trainer object using above config.
+# TODO: Test frameworks:
+config["framework"] = "tf2"
+
 rllib_trainer = PPOTrainer(config=config)
-# print policy model
-#print(rllib_trainer.get_policy().model.base_model.summary())
 
 # result storage
 results = []
@@ -90,17 +87,13 @@ episode_data = []
 episode_json = []
 
 # run training loops
-num_iterations = 20
+num_iterations = 0
 for n in range(num_iterations):
 
     print("iteration: ", n)
     result = rllib_trainer.train()
 
     results.append(result)
-    # store relevant metrics from the result dict to the episode dict
-    #print('(TRAINER) Result')
-    #pp = pprint.PrettyPrinter(indent=4)
-    #pp.pprint(results)
 
     episode = {
         "n": n,
