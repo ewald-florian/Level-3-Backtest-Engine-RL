@@ -77,7 +77,8 @@ config["disable_env_checking"] = False
 config['batch_mode'] = 'complete_episodes'
 
 # TODO: Test frameworks:
-config["framework"] = "tf2"
+#config["framework"] = "tf2"
+config["framework"] = "torch"
 
 rllib_trainer = PPOTrainer(config=config)
 
