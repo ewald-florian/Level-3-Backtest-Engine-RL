@@ -42,8 +42,8 @@ if platform.system() == 'Linux':
 # SET UP TRAIN LOOP
 # episode length for agent and replay
 
-training_name = 'wait_fcn128_10s_tanh_1000_100'
-num_iterations = 3
+training_name = 'wait_fcn128_10s_tanh_1000_100_tfenv'
+num_iterations = 200
 save_checkpoints_freq = 10
 print_results_freq = 10
 # environment.
