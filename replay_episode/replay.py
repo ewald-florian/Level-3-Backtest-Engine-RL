@@ -112,6 +112,7 @@ class Replay:
         self.episode_index = 0
         self.step_counter = 0
         self.done = False
+        self.second_last_step_flag = False
 
         # -- generate new episode_start_list
         self._generate_episode_start_list()
@@ -152,13 +153,16 @@ class Replay:
         # -- market step
         self._market_step()
         # -- save context (blocked liquidity)
-        state_l3 = Market.instances['ID'].state_l3_blocked_liquidity
-        Context(state_l3)
+        # TODO: Select correct method.
+        state_l3_blocked = Market.instances['ID'].state_l3_blocked_liquidity
+        Context(state_l3_blocked)
+        print(state_l3_blocked)
 
         # -- store done, info to env transition
         done = self.done
         info = {}  # TODO: fill info dict
         EnvironmentTransition(done, info)
+
         # -- rl_agent
         self.rl_agent.step()
         # -- update step_counter
@@ -427,6 +431,8 @@ class Replay:
 
         # set done flag to false
         self.done = False
+        # Set second last step to False
+        self.second_last_step_flag = False
         # -- base resets resets all relevant backtest-engine classes
         self.base_reset()
         # -- reset ActionStorage

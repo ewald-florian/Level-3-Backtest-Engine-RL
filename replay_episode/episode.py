@@ -122,7 +122,6 @@ class Episode:
         # -- load episode
         self.load_episode_data()
 
-    # TODO: profiling
     def load_episode_data(self):
         """
         Use the given parameters to find the path to the respective dataset

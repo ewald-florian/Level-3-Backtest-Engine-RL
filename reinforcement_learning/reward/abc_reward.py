@@ -16,18 +16,9 @@ from agent.agent_metrics import AgentMetrics
 from agent.agent_trade import AgentTrade
 from agent.agent_order import OrderManagementSystem as OMS
 from context.agent_context import AgentContext
-#TODO: just implement each possible reward function as a new method such that
-# they can be freely selected by different agents and compared
-
-# TODO: TWAP-Comparisions are difficult for me since I, to some part assume
-#  a market impact, I cannot just run TWAP and RL in parallel sicne they would
-#  "stel" liquidity of each other... One effortful solution would be to take
-#  the exact same episode, run both TWAP and RL separately one after another
-#  and then compare performance... could only be used for a sparse reward in
-#  the end, would be rather inefficient. Same goes for VWAP
-
-# TODO: for a short trading horizon like 1 min, VWAP is not really interesting
-#  as benchmark.
+from reinforcement_learning.transition.env_transition import \
+    EnvironmentTransition
+from reinforcement_learning.action_space.action_storage import ActionStorage
 
 
 class BaseReward(ABC):
@@ -57,9 +48,9 @@ class BaseReward(ABC):
         raise NotImplementedError("Implement receive_reward in subclass.")
 
     @property
-    def last_trade_is(self):
+    def immediate_absolute_is_reward(self):
         """Returns 0 if no trade happened and IS of last trade if a new
-        trade happened. """
+        trades happened. """
         # set is to 0
         latest_trade_is = 0
         # Check if new trades occurred.
@@ -73,22 +64,28 @@ class BaseReward(ABC):
         # return is as reward
         return latest_trade_is
 
-    def episode_end_is(self, last_episode_step):
+    @property
+    def terminal_absolute_is_reward(self):
         """IS over all trades at the end of the episode. This method returns
-        the overall is over all trades, in order to be used as terminal reward
+        the overall IS over all trades, in order to be used as terminal reward
         it needs the input argument last_episode_step which is a boolean
         that should only be True if the environment is in the last episode.
+
+        The done-flag can be used as last_episode_flag if it is determined
+        before the reward is called.
         :param last_episode_step
             bool, True if last_episode_step False otherwise.
         """
         episode_end_is = 0
-        if last_episode_step:
-            episode_end_is = self.agent_metrics.all_trade_is()
+        # If done, compute cumulative volume weighted IS
+        # if done:
+        if EnvironmentTransition.transition[0]:
+            episode_end_is = self.agent_metrics.overall_is
         return episode_end_is
 
     @property
     def pnl_unrealized(self):
-
+        """Unrealized PnL"""
         return self.agent_metrics.pnl_unrealized
 
     @property
@@ -174,7 +171,7 @@ class BaseReward(ABC):
 
         return twap_penalty
 
-    def reward_for_waiting(self, action_equals_waiting):
+    def reward_for_waiting(self):
         """
         Give a positive reward if the agent chooses the action to wait
         and do nothing in the current episode.
@@ -184,7 +181,7 @@ class BaseReward(ABC):
             int, reward for waiting
         """
         wait_reward = 0
-        if action_equals_waiting:
+        if ActionStorage.action == 0:
             wait_reward = 1
 
         return wait_reward

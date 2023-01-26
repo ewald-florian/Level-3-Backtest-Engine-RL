@@ -94,7 +94,6 @@ class AgentMetrics:
     @property
     def time_since_last_submission(self):
         """Time since last order in nanoseconds."""
-        # TODO: Das ist nur eine provisorische lösung eigentlich müsste es 0 sein.
         time_since_last_order = 0.0000001
         if len(OMS.order_list) > 0:
             last_order_timestamp = OMS.order_list[-1]['timestamp']
@@ -186,7 +185,6 @@ class AgentMetrics:
             rem_inv = AgentContext.initial_inventory
         return rem_inv
 
-
     @property
     def position_value(self):
         """
@@ -218,7 +216,6 @@ class AgentMetrics:
         :return expsoure
             float, current exposure in EUR
         """
-        #TODO: change: exposure based on buy-in price or current marekt price -> market price
         exposure = 0
 
         for trade in AgentTrade.history:
@@ -271,7 +268,8 @@ class AgentMetrics:
             buy_trades = list(filter(lambda d: d['agent_side'] == 1,
                                      AgentTrade.history))
 
-            # sort by timestamp descending -> latest trade in the beginning of the list
+            # sort by timestamp descending -> latest trade in the beginning
+            # of the list
             sorted_trades = sorted(buy_trades, key=lambda d: d[
                 'execution_time'])
 
@@ -304,26 +302,11 @@ class AgentMetrics:
 
         return unrealized_trades
 
-    @property
     def get_realized_trades(self):
         """
         List of realized trades.
         """
-        # TODO: This funciton is errornous...
-        """
-        realized_trades = copy.copy(AgentTrade.history)
-        unrealized_trades = self.get_unrealized_trades
-
-        if realized_trades and unrealized_trades:
-
-            for trade in unrealized_trades:
-
-                if trade in realized_trades:
-                    realized_trades.remove(trade)
-
-            return realized_trades
-        """
-        pass
+        return AgentTrade.history
 
     @property
     def vwap_buy(self):
@@ -334,10 +317,8 @@ class AgentMetrics:
 
         if AgentTrade.history:
 
-
             buy_trades = list(filter(lambda d: d['agent_side'] == 1,
                                               AgentTrade.history))
-
             if buy_trades:
 
                 vwap_buy = sum(trade['execution_price'] *
@@ -377,11 +358,11 @@ class AgentMetrics:
     @property
     def vwap_score(self):
         """
-        Current vwap score of agent.
+        Current vwap score of agent. Notably, vwap scores can only be
+        computed if there is trade volume in the respective episode hence
+        it is less suitable for very short episodes.
         :return
         """
-        # realized quantity
-
         vwap_score = None
 
         market_trades = MarketTrade.history
@@ -419,7 +400,6 @@ class AgentMetrics:
                 vwap_score = (qt_bought * (vwap_symbol - vwap_buy) +
                               qt_sold * (vwap_sell - vwap_symbol))
 
-        # TODO: scale?
         return vwap_score
 
     @property
@@ -435,13 +415,6 @@ class AgentMetrics:
         realized_quantity = self.realized_quantity
         vwap_buy = self.vwap_buy
         vwap_sell = self.vwap_sell
-
-        # DEBUGGING
-        #print('(AgentMetrics) Trade.history: ', AgentTrade.history)
-        #print('(AgentMetrics) vwap buy: ', vwap_buy)
-        #print('(AgentMetrics) vwap sell: ', vwap_sell)
-        #print('(AgentMetrics) realized_quantity: ', realized_quantity)
-        ###
 
         if realized_quantity:
 
@@ -495,41 +468,9 @@ class AgentMetrics:
 
         return round(pnl_unreal, 2)
 
-    # TODO: TEST
-    def all_trade_is(self):
-        """
-        Compute Implementation Shortfall.
-        """
-
-        overall_is = 0
-        sum_quantity = 0
-        sum_weighted_is = 0
-        # Get all realized trades.
-        realized_trades = self.get_realized_trades
-        if realized_trades:
-            # Iterate over all trades.
-            for trade in realized_trades:
-                # Relevant numbers.
-                is_side = 1 if trade['agent_side'] == 1 else -1
-                execution_price = trade['execution_price']
-                arrival_price = trade['arrival_price']
-                quantity = trade['executed_volume']
-                # Count the sum of quantities of all trades.
-                sum_quantity += quantity
-                # see Velu p. 337
-                trade_is = is_side * (
-                        execution_price - arrival_price) / arrival_price
-                # Weight IS with quantity.
-                weighted_is = trade_is * quantity
-                # Count the sum of weighted IS over all trades.
-                sum_weighted_is += weighted_is
-            # If positive, divide by sum (avoid zero division)
-            if sum_weighted_is and sum_quantity:
-                overall_is = sum_weighted_is / sum_quantity
-        return overall_is
-
-    # TODO: Testing
-    def latest_trade_is(self, number_of_latest_trades):
+    def latest_trade_is(self,
+                        number_of_latest_trades,
+                        scaling_factor=-1000):
         """
         Implementation shortfall of the latest trade. This function can e.g. be
         called in Reward. Note: this way, the is does not account for the
@@ -539,16 +480,22 @@ class AgentMetrics:
             computed.
         """
         last_is = 0
-        realized_trades = self.get_realized_trades
+        realized_trades = AgentTrade.history
+
         if realized_trades:
+            # Select the respective trades.
             latest_trades = realized_trades[-number_of_latest_trades:]
             sum_quantity = 0
             sum_weighted_is = 0
             for trade in latest_trades:
                 is_side = 1 if trade['agent_side'] == 1 else -1
+                print("side", is_side)
                 execution_price = trade['execution_price']
+                print("ex_price", execution_price)
                 arrival_price = trade['arrival_price']
+                print("arrival price", arrival_price)
                 quantity = trade['executed_volume']
+                print("qt", quantity)
                 sum_quantity += quantity
                 # see Velu p. 337
                 trade_is = is_side*(
@@ -558,18 +505,18 @@ class AgentMetrics:
             # If positive, divide by sum
             if sum_weighted_is and sum_quantity:
                 last_is = sum_weighted_is / sum_quantity
-        return last_is
+
+        # Reward is scaled with -100.
+        return round(last_is*scaling_factor, 4)
 
     @property
-    def overall_is(self):
+    def overall_is(self, scaling_factor=-1000):
         """
         Volume weighted implementation shortfall of all filled trades.
         Note: If there are both buy and sell orders, overall implementation
         may not be very meaningful.
         """
-        # TODO: muss ich das getrennt für buy und sell machen?
-        #  sons hebt sich das ja gegenseitig auf...
-        realized_trades = self.get_realized_trades
+        realized_trades = AgentTrade.history
         volume_sum = 0
         weighted_trade_is_sum = 0
         for trade in realized_trades:
@@ -578,12 +525,13 @@ class AgentMetrics:
             arrival_price = trade['arrival_price']
             volume = trade['executed_volume']
             volume_sum += volume
-            weighted_trade_is = is_side * (execution_price -
+            trade_is = is_side * (execution_price -
                                            arrival_price) / arrival_price
-            weighted_trade_is_sum += weighted_trade_is
+            weighted_trade_is_sum += trade_is*volume
 
         overall_is = weighted_trade_is_sum / volume_sum
-        return overall_is
+
+        return round(overall_is*scaling_factor, 4)
 
     @property
     def exposure_budget_left(self):
@@ -603,7 +551,6 @@ class AgentMetrics:
 
         return trading_volume * self.tc_factor
 
-    # TODO: adjust str
     def __str__(self, time_presentation=None):
         """
         String representation.

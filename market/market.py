@@ -66,12 +66,6 @@ class Market(Reconstruction):
         self.store_arrival_price = store_arrival_price
         self.verbose = verbose
 
-        # store python version for backward-compatibility
-        #if sys.version_info[0] + sys.version_info[1] >= 13:
-        #    self.new_python = True
-        #else:
-        #    self.new_python = False
-
         # dynamic attributes
         # list to store limit orders which were executed against agent orders
         self.agent_exhausted_liquidity = []
@@ -144,6 +138,103 @@ class Market(Reconstruction):
 
     @property
     def state_l3_blocked_liquidity(self) -> dict:
+        """
+        This new version of state_l3_blocked_liquidity provides the top
+        levels of the order book considering only price levels with remaining
+        liquidity. This means, if an agent used the entire liquidity of
+        a price level and it did not recover yet, the price levels will
+        be shifted forwards.
+
+        Level 3 limit order book representation (internal _state). state_l3 has
+        a similar structure than the internal state. In this method, the
+        agent blocked liquidity is removed from the order book representation
+        hence the agent can only observe liquidity which is available to him.
+
+        {Side: {Price_Level: [{'timestamp: X , 'quantity': X} , {...}],
+        Price_Level: [{...}, {...}]...
+
+        The difference is that for each order, state_l3 only contains timestamp
+        and quantity (and price as key) while in the internal state, the orders
+        contain template_id, meg_seq_num, side, price, quantity, timestamp.
+        Hence most infos in the internal state are redundant or not relevant.
+
+        If self.l3_level is defined, the output will contain
+        only a limited number of price levels.
+
+        :return: state_l3_output
+            dict, state_l3 with only quantity and timestamp per order
+        """
+        state_l3 = {}
+        reduced_state = {}
+
+        # -- Create a deep copy of the state with only the relevant levels.
+        original_levels = 50
+        # bid side (1), highest prices first
+        bid_keys = sorted(
+            list(self._state[1].keys()), reverse=True)[:original_levels]
+        ask_keys = sorted(
+            list(self._state[2].keys()), reverse=False)[:original_levels]
+
+        bid_side_dict = {}
+        ask_side_dict = {}
+
+        for key in bid_keys:
+            if key in self._state[1]:
+                # bid_side_dict[key] = self._state[1][key].copy()
+                bid_side_dict[key] = copy.deepcopy(self._state[1][key])
+
+        # store relevant ask levels to ask_side_dict
+        for key in ask_keys:
+            if key in self._state[2]:
+                # ask_side_dict[key] = self._state[2][key].copy()
+                ask_side_dict[key] = copy.deepcopy(self._state[2][key])
+
+        # store relevant levels to simulation_state
+        reduced_state[1] = bid_side_dict
+        reduced_state[2] = ask_side_dict
+
+        # -- Block Liquidity.
+        l3 = self._block_agent_exhausted_liquidity(
+            reduced_state, observation_mode=True)
+
+        # -- Remove orders with a remaining quantity of zero.
+        for side in [1, 2]:
+            for key in list(l3[side].keys()):
+                l3[side][key] = [d for d in l3[side][key] if
+                                 d['quantity'] != 0]
+                # -- Delete Key from dict if no remaining orders.
+                if len(l3[side][key]) == 0:
+                    del l3[side][key]
+
+        # -- Get new lists of remaining keys.
+        new_bid_keys = list(l3[1].keys())[:self.l3_levels]
+        new_ask_keys = list(l3[2].keys())[:self.l3_levels]
+
+        # -- Use the keys to generate the blocked market state.
+        bid_side_dict = {key: l3[1][key] for key in new_bid_keys}
+        ask_side_dict = {key: l3[2][key] for key in new_ask_keys}
+
+        # -- Keep only quantity and timestamps.
+        adj_bid_side_dict = {
+            n: [{'quantity': d['quantity'], 'timestamp': d['timestamp']}
+                for d in bid_side_dict[n]] for n in bid_side_dict.keys()}
+
+        adj_ask_side_dict = {
+            n: [{'quantity': d['quantity'], 'timestamp': d['timestamp']}
+                for d in ask_side_dict[n]] for n in ask_side_dict.keys()}
+
+        # add timestamp
+        if self.report_state_timestamps:
+            state_l3[0] = self.timestamp
+
+        # combine to state_l3
+        state_l3[1] = adj_bid_side_dict
+        state_l3[2] = adj_ask_side_dict
+
+        return state_l3
+
+    @property
+    def state_l3_blocked_liquidity_old(self) -> dict:
         """
         Level 3 limit order book representation (internal _state). state_l3 has
         a similar structure than the internal state. In this method, the
