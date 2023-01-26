@@ -107,7 +107,7 @@ class Reward(BaseReward):
 class ActionSpace(BaseActionSpace):
     """Specific Implementation of action space."""
     def __init__(self,
-                 verbose=True,
+                 verbose=False,
                  num_twap_intervals=6):
         super().__init__()
 
