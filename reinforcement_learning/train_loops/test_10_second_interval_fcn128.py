@@ -151,7 +151,7 @@ config["horizon"] = 100_000
 config["disable_env_checking"] = disable_env_checking
 config["log_level"] = rllib_log_level
 # set framework
-config["framework"] = "tf2"
+config["framework"] = "tf"
 config["eager_tracing"] = False
 # FCN size.
 config["model"] = {}
