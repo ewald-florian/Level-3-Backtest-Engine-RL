@@ -31,7 +31,8 @@ class BaseActionSpace(ABC):
     """
 
     # start_date to compute latest min max prices
-    def __init__(self):
+    def __init__(self,
+                 verbose=False):
         """
         Usually, BaseActionSpace is initialized via super in
         the respective ActionSpace. Initialization builds a composition
@@ -41,7 +42,7 @@ class BaseActionSpace(ABC):
         self.agent_metrics = AgentMetrics()
         self.market_features = MarketFeatures()
 
-        self.final_market_order_submitted = False
+        self.verbose = verbose
 
     @abstractmethod
     def take_action(self, action):
@@ -86,53 +87,6 @@ class BaseActionSpace(ABC):
         else:
             pass
 
-    def zero_ending_inventory_constraint_old(self,
-                                         end_buffer=1e+9,
-                                         agent_side=2):
-        """
-        Checks how much time is left and executes the remaining inventory
-        when a given buffer before episode end is reached, e.g. 1 second.
-        Note: In order to set the done-flag after the entire inventory is
-        sold, use check_inventory_sold()
-        :param end_buffer
-            int, time buffer before end in nanoseconds.
-        """
-        current_time = Market.instances["ID"].timestamp
-        episode_end = AgentContext.end_time
-        time_till_end = episode_end - current_time
-
-        #DEBUGGING
-        print("zero-ending")
-        print(current_time)
-        print(episode_end)
-        print(time_till_end - end_buffer)
-        print("reminv", self.agent_metrics.remaining_inventory)
-        print("flag", self.final_market_order_submitted)
-
-
-        if (time_till_end < end_buffer and
-                self.agent_metrics.remaining_inventory > 0
-        # TODO: die flag ist immer True ab der 2. Episode, reset richten???
-                and not self.final_market_order_submitted):
-
-            # DEBUGGING
-            print("zero-ending-inv is triggered!")
-
-            # For market buy order: double the best ask.
-            if agent_side == 1:
-                order_limit = self.market_features.best_ask() * 2
-            # For market sell order: half of the best bid.
-            else:
-                order_limit = self.market_features.best_bid() - \
-                              200*Market.instances["ID"].ticksize
-
-            order_quantity = self.agent_metrics.remaining_inventory
-            self.market_interface.submit_order(side=2,
-                                               limit=order_limit,
-                                               quantity=order_quantity)
-            # Set flag True to avoid placing the order twice.
-            self.final_market_order_submitted = True
-
     def limit_and_qt_action(self, action):
         """
         Execution of a discrete action for OE which determines both
@@ -159,15 +113,13 @@ class BaseActionSpace(ABC):
         ticksize = Market.instances["ID"].ticksize
 
         # DEBUGGING
-        print("Context")
-        print(Context.context_list[-1][1].keys())
-        print(Context.context_list[-1][2].keys())
-        print(best_bid)
-        print(best_bid_qt_list)
-        print(best_bid_qt)
-        print(best_ask)
-        print(second_best_ask)
-        print(third_best_ask)
+        #print("Context")
+        #print(best_bid)
+        #print(best_bid_qt_list)
+        #print(best_bid_qt)
+        #print(best_ask)
+        #print(second_best_ask)
+        #print(third_best_ask)
 
         # -- Define several price limits.
         market_order = best_bid - 100 * ticksize  # defacto market-order
@@ -186,6 +138,7 @@ class BaseActionSpace(ABC):
         # TWAP Quantity (based on provided number of twap intervals)
         # TODO: num twap kann ich in AgentContext speichern.
         twap_qt = AgentContext.initial_inventory / self.num_twap_intervals
+        twap_qt = round(twap_qt, -4)
 
         # Note: For now, I have 4 limits and 3 quantities plus "wait" option.
         # -> I need 3*4 + 1 = 13 actions
@@ -251,14 +204,13 @@ class BaseActionSpace(ABC):
         # Place order via market interface.
         if action > 0:
             self.market_interface.submit_order(side=2,
-                                               limit=order_limit,
-                                               quantity=order_quantity)
+                                            limit=order_limit,
+                                            quantity=round(order_quantity, -4))
+            if self.verbose:
+                print(f'(RL AGENT) Submission: limit: {order_limit}  '
+                      f'qt: {order_quantity}'
+                      f'action: {action}')
 
-            print(f'(RL AGENT) Submission: limit: {order_limit}  '
-                  f'qt: {order_quantity}'
-                  f'action: {action}')
-
-    # TODO: Just use the qts of  limit_and_qt_action() when finalised.
     def qt_action(self, action):
         """
         Execution of a discrete action for OE which determines only the
@@ -268,6 +220,57 @@ class BaseActionSpace(ABC):
         self.check_inventory_sold()
         # -- Zero ending inventory constraint.
         self.zero_ending_inventory_constraint()
+
+        # Best Bid Qt.
+        best_bid_qt = sum([d['quantity'] for d in best_bid_qt_list])
+        # 5% of initial env
+        qt_1 = int(AgentContext.initial_inventory * 0.05)
+        # 10% of initial env
+        qt_2 = int(AgentContext.initial_inventory * 0.10)
+        # 20% of initial env
+        qt_3 = int(AgentContext.initial_inventory * 0.20)
+        # TWAP Quantity (based on provided number of twap intervals)
+        twap_qt = AgentContext.initial_inventory / self.num_twap_intervals
+
+        best_bid = list(Context.context_list[-1][1].keys())[0]
+        ticksize = Market.instances["ID"].ticksize
+        market_order = best_bid - 100 * ticksize  # defacto market-order
+
+        order_quantity = None
+
+        # Wait.
+        if action == 0:
+            pass
+
+        if action == 1:
+            order_quantity = best_bid_qt
+
+        if action == 2:
+            order_quantity = qt_1
+
+        if action == 3:
+            order_quantity = qt_2
+
+        if action == 4:
+            order_quantity = qt_3
+
+        if action == 4:
+            order_quantity = twap_qt
+
+        # Place order via market interface.
+        if action > 0:
+            self.market_interface.submit_order(side=2,
+                                        limit=market_order,
+                                        quantity=round(order_quantity, -4))
+            if self.verbose:
+                print(f'(RL AGENT) Submission: limit: {market_order}  '
+                      f'qt: {order_quantity}'
+                      f'action: {action}')
+
+
+
+
+
 
     def limit_price_action(self, action):
         """

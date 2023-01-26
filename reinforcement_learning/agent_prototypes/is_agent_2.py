@@ -98,8 +98,8 @@ class Reward(BaseReward):
     def receive_reward(self):
         """Define the Specific reward signal."""
 
-        #reward = self.immediate_absolute_is_reward
-        reward = self.terminal_absolute_is_reward
+        reward = self.immediate_absolute_is_reward
+        #reward = self.terminal_absolute_is_reward
 
         return reward
 
@@ -107,7 +107,7 @@ class Reward(BaseReward):
 class ActionSpace(BaseActionSpace):
     """Specific Implementation of action space."""
     def __init__(self,
-                 verbose=False,
+                 verbose=True,
                  num_twap_intervals=6):
         super().__init__()
 
@@ -188,12 +188,16 @@ class ISAgent2(RlBaseAgent):
         # pass obs, reward to Env via AgentTransition.transition
         AgentTransition(observation, reward)
 
-    # TODO: Abstract method brauche ich eigenlich nicht mehr (kann ich in
-    #  BaseAgent löschen aber dann werden alte agents failen)
     def _take_action(self, action):
+        """
+        Execute the given action.
+        :param action,
+            int, action
+        """
         self.action_space.take_action(action)
 
     def reset(self):
+        """Reset"""
         super().__init__()
         self.quantity = self.quantity
         self.verbose = self.verbose

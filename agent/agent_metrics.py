@@ -489,13 +489,9 @@ class AgentMetrics:
             sum_weighted_is = 0
             for trade in latest_trades:
                 is_side = 1 if trade['agent_side'] == 1 else -1
-                print("side", is_side)
                 execution_price = trade['execution_price']
-                print("ex_price", execution_price)
                 arrival_price = trade['arrival_price']
-                print("arrival price", arrival_price)
                 quantity = trade['executed_volume']
-                print("qt", quantity)
                 sum_quantity += quantity
                 # see Velu p. 337
                 trade_is = is_side*(

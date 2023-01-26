@@ -4,7 +4,6 @@
 Template for train loops (new version: "2023-01-24")
 """
 
-
 # build ins
 import json
 import pprint
@@ -33,19 +32,19 @@ from reinforcement_learning.environment.episode_stats import EpisodeStats
 
 # manage GPUs if executed on server
 if platform.system() == 'Linux':
-    gpuid = 'MIG-c8c5eee1-c148-5f66-9889-9759c8656d2b'
+    gpuid = 'MIG-9985302b-0b2c-5903-929d-eb0313c73e0c'
     import os
+
     os.environ["CUDA_VISIBLE_DEVICES"] = gpuid
-    from torch.cuda import device_count
-    print('Number of Devices: ', device_count())
 
 import tensorflow as tf
+
 print("Num GPUs Available TF: ", len(tf.config.list_physical_devices('GPU')))
 
 # SET UP TRAIN LOOP
 # episode length for agent and replay
 
-name = 'is_agent2'
+name = 'is_agent2_immediate_reward'
 num_iterations = 200
 save_checkpoints_freq = 10
 print_results_freq = 10
@@ -65,13 +64,13 @@ lstm_cell_size = None  # default 256
 # TODO: Teste default lr, erstelle lr schedule
 learning_rate = 5e-05  # default 5e-05
 # TODO
-lr_schedule =[
-        [0, 1.0e-6],
-        [1, 1.0e-7]]
+lr_schedule = [
+    [0, 1.0e-6],
+    [1, 1.0e-7]]
 gamma = 1  # 0.99
 # TODO: Teste größere batches! default ist 4000
-train_batch = 2560  # default 4000
-mini_batch = 256  # default: 128
+train_batch = 4000  # default 4000
+mini_batch = 128  # default: 128
 num_workers = 0
 #  If batch_mode is “complete_episodes”, rollout_fragment_length is ignored.
 batch_mode = 'complete_episodes'  # 'truncate_episodes'
@@ -80,25 +79,25 @@ disable_env_checking = False
 print_entire_result = True
 rllib_log_level = 'WARN'  # WARN, 'DEBUG'
 # agent
-agent = ISAgent2(verbose=True,
-                           episode_length=episode_length,
-                           initial_inventory=800_0000
-                           )
+agent = ISAgent2(verbose=False,
+                 episode_length=episode_length,
+                 initial_inventory=800_0000,
+                 )
 
 # Generate A string which contains all relevant infos.
 training_name = generate_string(
-                    name,
-                    episode_length,
-                    fcnet_hiddens,
-                    fcnet_activation,
-                    use_lstm,
-                    max_seq_len,
-                    lstm_cell_size,
-                    learning_rate,
-                    gamma,
-                    train_batch,
-                    mini_batch,
-                    batch_mode,
+    name,
+    episode_length,
+    fcnet_hiddens,
+    fcnet_activation,
+    use_lstm,
+    max_seq_len,
+    lstm_cell_size,
+    learning_rate,
+    gamma,
+    train_batch,
+    mini_batch,
+    batch_mode,
 )
 
 # -- Create paths and files to store information.
@@ -137,7 +136,7 @@ config["env_config"]["action_size"] = action_size
 # TODO: For efficient use of GPU time, use a small number of GPU workers and a
 #  large number of envs per worker.
 config["num_workers"] = num_workers
-#config["ignore_worker_failures"] = True
+# config["ignore_worker_failures"] = True
 # TODO: verstehen was genau das heißt, wird das env immer wieder resettet?
 # config["num_envs_per_worker"] = 1
 # Horizon: max time steps after which an episode will be terminated.
@@ -145,13 +144,13 @@ config["num_workers"] = num_workers
 config["horizon"] = 100_000
 # Make sure to use GPU.
 # TODO: test on server!
-#config["num_gpus"] = 1
-#config["num_cpus_per_worker"] = 1
+# config["num_gpus"] = 1
+# config["num_cpus_per_worker"] = 1
 config["disable_env_checking"] = disable_env_checking
 config["log_level"] = rllib_log_level
 # set framework
 config["framework"] = "tf"
-config["eager_tracing"] = False
+#config["eager_tracing"] = False
 # FCN size.
 config["model"] = {}
 config["model"]["fcnet_hiddens"] = fcnet_hiddens
@@ -161,7 +160,7 @@ config["gamma"] = gamma
 # learning rate.
 # TODO: Include lr scheduler (decreasing lr over time)
 config["lr"] = learning_rate
-#config["lr_schedule"] = lr_schedule
+# config["lr_schedule"] = lr_schedule
 # Training batch size.
 # TODO: wieder einkommentieren
 config["train_batch_size"] = train_batch  # default = 4000
@@ -220,7 +219,8 @@ for iteration in range(num_iterations):
 
     if iteration % print_results_freq == 0:
         checkpoint_file = rllib_trainer.save()
-        print(f'{iteration:3d}: Min/Mean/Max reward: {result["episode_reward_min"]:8.4f}/{result["episode_reward_mean"]:8.4f}/{result["episode_reward_mean"]}')
+        print(
+            f'{iteration:3d}: Min/Mean/Max reward: {result["episode_reward_min"]:8.4f}/{result["episode_reward_mean"]:8.4f}/{result["episode_reward_mean"]}')
 
         # print results.
         if print_entire_result:
@@ -236,7 +236,8 @@ result_df.to_csv(result_file, index=False)
 # Save trainer to checkpoint file.
 # TODO: name checkpoint file (or folder)
 checkpoint_file = rllib_trainer.save()
-print(f"Trainer (at iteration {rllib_trainer.iteration} was saved in '{checkpoint_file}'!")
+print(
+    f"Trainer (at iteration {rllib_trainer.iteration} was saved in '{checkpoint_file}'!")
 
 # Here is what a checkpoint directory contains:
 print("The checkpoint directory contains the following files:")

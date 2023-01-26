@@ -153,10 +153,8 @@ class Replay:
         # -- market step
         self._market_step()
         # -- save context (blocked liquidity)
-        # TODO: Select correct method.
         state_l3_blocked = Market.instances['ID'].state_l3_blocked_liquidity
         Context(state_l3_blocked)
-        print(state_l3_blocked)
 
         # -- store done, info to env transition
         done = self.done
