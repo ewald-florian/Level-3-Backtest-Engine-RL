@@ -136,7 +136,7 @@ config["disable_env_checking"] = disable_env_checking
 config["log_level"] = rllib_log_level
 # set framework
 config["framework"] = "tf2"
-config["eager_tracing"] = True
+config["eager_tracing"] = False
 # FCN size.
 config["model"] = {}
 config["model"]["fcnet_hiddens"] = fcnet_hiddens
@@ -149,9 +149,9 @@ config["lr"] = learning_rate
 #config["lr_schedule"] = lr_schedule
 # Training batch size.
 # TODO: wieder einkommentieren
-#config["train_batch_size"] = train_batch  # default = 4000
+config["train_batch_size"] = train_batch  # default = 4000
 # Mini batch size.
-#config["sgd_minibatch_size"] = mini_batch
+config["sgd_minibatch_size"] = mini_batch
 # Batch mode
 config['batch_mode'] = batch_mode
 
