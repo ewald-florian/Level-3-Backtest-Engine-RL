@@ -84,9 +84,9 @@ config["disable_env_checking"] = False
 config['batch_mode'] = 'complete_episodes'
 
 # TEST TF2 Framework GPU support.
-config["framework"] = "tf2"
+config["framework"] = "tf"
 # TODO: test eager tracing
-config["eager_tracing"] = True
+#config["eager_tracing"] = True
 # NOTE: torch hat auch keine GPU genutzt
 #config["framework"] = "torch"
 rllib_log_level = 'DEBUG'  # WARN, 'DEBUG'
