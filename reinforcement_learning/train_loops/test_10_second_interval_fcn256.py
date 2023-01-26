@@ -29,6 +29,7 @@ from reinforcement_learning.agent_prototypes.twap_incentive_agent \
 from replay_episode.replay import Replay
 from utils.result_path_generator import generate_result_path
 from utils.episode_stats_path_generator import generate_episode_stats_path
+from utils.string_generator import generate_string
 from reinforcement_learning.environment.episode_stats import EpisodeStats
 
 # manage GPUs if executed on server
@@ -45,7 +46,7 @@ print("Num GPUs Available TF: ", len(tf.config.list_physical_devices('GPU')))
 # SET UP TRAIN LOOP
 # episode length for agent and replay
 
-training_name = 'twap_incentive_wait_fcn256_10s_relu_trainb1000_sampleb_100_lr5'
+name = 'wait_'
 num_iterations = 200
 save_checkpoints_freq = 10
 print_results_freq = 10
@@ -82,7 +83,21 @@ agent = TwapIncentiveAgent(verbose=True,
                            initial_inventory=800_0000
                            )
 
-
+# Generate A string which contains all relevant infos.
+training_name = generate_string(
+                    name,
+                    episode_length,
+                    fcnet_hiddens,
+                    fcnet_activation,
+                    use_lstm,
+                    max_seq_len,
+                    lstm_cell_size,
+                    learning_rate,
+                    gamma,
+                    train_batch,
+                    mini_batch,
+                    batch_mode,
+)
 # -- Create paths and files to store information.
 
 # generate pathname to store results
