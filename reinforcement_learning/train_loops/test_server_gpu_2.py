@@ -89,6 +89,7 @@ config["framework"] = "tf2"
 config["eager_tracing"] = True
 # NOTE: torch hat auch keine GPU genutzt
 #config["framework"] = "torch"
+rllib_log_level = 'DEBUG'  # WARN, 'DEBUG'
 
 rllib_trainer = PPOTrainer(config=config)
 
