@@ -95,7 +95,7 @@ class Reward(BaseReward):
 
         # reward = self.immediate_absolute_is_reward
         # reward = self.terminal_absolute_is_reward
-        reward = self.incentivize_waiting(reward_factor=0.5)
+        reward = self.incentivize_waiting(reward_factor=20)
 
         return reward
 
