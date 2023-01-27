@@ -17,6 +17,7 @@ import pandas as pd
 
 from market.market import Market
 from market.market_interface import MarketInterface
+from context.context import Context
 from feature_engineering.market_features import MarketFeatures
 from reinforcement_learning.reward.abc_reward import BaseReward
 from reinforcement_learning.observation_space.abc_observation_space \
@@ -47,8 +48,6 @@ class ObservationSpace(BaseObservationSpace):
         Initiate parent class via super function.
         """
         super().__init__()
-        # DEVELOPINGF
-        self.market_metrics = MarketMetrics()
 
     def market_observation(self) -> np.array:
         """
@@ -75,6 +74,20 @@ class ObservationSpace(BaseObservationSpace):
         """
         # Use standard agent obs with elapsed time and remaining inventory.
         agent_obs = self.standard_agent_observation
+
+        # DEBUGGING
+        #print("flag new", AgentContext.high_activity_flag)
+        #print("time", Market.instances["ID"].timestamp_datetime)
+
+        print("rel spread", self.relative_spread_obs())
+        print(Context.context_list[-1][1])
+        print(Context.context_list[-1][2])
+        print("normed mp", self.normed_midpoint_obs)
+        print("imb", self.market_features.lob_imbalance())
+        print("imb norm", self.normed_lob_imbalance_obs)
+
+        print("mov avg", self.market_features.midpoint_moving_avg())
+        print("mov std", self.market_features.midpoint_moving_std())
 
         return agent_obs
 

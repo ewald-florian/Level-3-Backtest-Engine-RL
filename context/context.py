@@ -21,6 +21,7 @@ class Context:
 
     # class attribute
     context_list = list()
+    midpoints = list()
 
     def __init__(self,
                  market_state: dict,
@@ -60,11 +61,23 @@ class Context:
         self.__class__.context_list = self.__class__.context_list[
                                       -self.context_length:]
 
+        # Collect midpoint
+        self.__class__.midpoints.append(int(self.compute_midpoint))
+        self.__class__.midpoints = self.__class__.midpoints[
+                                      -self.context_length:]
+
     def __str__(self):
         """
         String representation.
         """
         pass
+
+    @property
+    def compute_midpoint(self):
+        best_bid = max(self.market_state[1].keys())
+        best_ask = min(self.market_state[2].keys())
+        midpoint = (best_bid + best_ask) / 2
+        return midpoint
 
     @classmethod
     def reset_context_list(cls):

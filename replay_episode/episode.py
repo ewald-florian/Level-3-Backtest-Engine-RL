@@ -231,6 +231,7 @@ class Episode:
             AgentContext.update_end_time(self.episode_end_unix)
             episode_duration = self.episode_end_unix - self.episode_start_unix
             AgentContext.update_episode_length(episode_duration)
+            AgentContext.update_high_activity_flag(self.episode_start_unix)
 
         # filter message list for episode messages
         self.message_packet_list = list(filter(lambda p:

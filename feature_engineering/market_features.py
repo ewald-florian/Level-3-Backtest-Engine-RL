@@ -13,16 +13,17 @@ from market.market_trade import MarketTrade
 import numpy as np
 import pandas as pd
 
+
 # Compute features based on Context (e.g. midpoint timeseries...)
 # Compute features based on MarketTrade (e.g. trading volume)
 
-#TODO: should I define a feature-method and a feature-timeseries method for
+# TODO: should I define a feature-method and a feature-timeseries method for
 # each feature or is there a better way to include timeseries?
 
-#TODO: Wie würde ich es am besten umsetzen wenn ich eine liste mit den letzten
+# TODO: Wie würde ich es am besten umsetzen wenn ich eine liste mit den letzten
 # 1000 midpoints brauche? bzw. mit den letzen 1000 level2_plus arrays?
 
-#TODO: Note: Erstmal nur die features berechnen die ich wirklich brauche
+# TODO: Note: Erstmal nur die features berechnen die ich wirklich brauche
 # da ich alles neu machen muss wenn sich zB die Datenstruktur von context
 # änder oÄ.!
 
@@ -106,9 +107,9 @@ class MarketFeatures:
             elif data_structure == 'df':
 
                 state_df = self._convert_to_df(state_array=state_array,
-                                    num_levels=len(state_l3[1]),
-                                    store_timestamp=store_timestamp,
-                                    store_hhi=store_hhi)
+                                               num_levels=len(state_l3[1]),
+                                               store_timestamp=store_timestamp,
+                                               store_hhi=store_hhi)
 
                 return state_df
 
@@ -135,9 +136,9 @@ class MarketFeatures:
 
     @staticmethod
     def _convert_to_df(state_array,
-                       num_levels:int,
-                        store_timestamp: bool = True,
-                        store_hhi: bool = True):
+                       num_levels: int,
+                       store_timestamp: bool = True,
+                       store_hhi: bool = True):
 
         # generate column names
         column_names = []
@@ -172,24 +173,39 @@ class MarketFeatures:
         """
 
         # check if context is not empty
-        if len(Context.context_list) > 0:
+        if len(Context.midpoints) > 0:
+            return Context.midpoints[-1]
+        else:
+            return 0
 
-            best_bid = max(Context.context_list[-1][1].keys())
-            best_ask = min(Context.context_list[-1][2].keys())
-
-            return int((best_bid + best_ask)/2)
 
     def midpoint_series(self):
         pass
 
-    def midpoint_moving_avg(self):
-        pass
+    def midpoint_moving_avg(self, length=10):
+        """Compute moving average over the last few steps defined by length
+        :param length
+            int, number of market states to consider
+        """
+        if len(Context.midpoints) > 0:
+            l = Context.midpoints[-length:]
+            return sum(l) / len(l)
+        else:
+            return 0
 
     def midpoint_moving_avg_series(self):
         pass
 
-    def midpoint_moving_std(self):
-        pass
+    def midpoint_moving_std(self, length=10):
+        """Compute moving STD over the last few steps defined by length
+        :param length
+            int, number of market states to consider
+        """
+        if len(Context.midpoints) > 0:
+            l = Context.midpoints[-length:]
+            return sum(l) / len(l)
+        else:
+            return 0
 
     def midpoint_moving_std_series(self):
         pass
@@ -242,21 +258,18 @@ class MarketFeatures:
 
     def rel_spread(self):
         """
-        Current relative spread.
+        Current relative spread based on latest state in Context.
         """
         # check if context is not empty
+        rel_spread = 0
         if len(Context.context_list) > 0:
-            best_bid = self.best_bid()
-            best_ask = self.best_ask()
-            midpoint = self.midpoint()
-            rel_spread = (best_ask - best_bid) / midpoint
-
-            return rel_spread
+            rel_spread = (self.best_ask() - self.best_bid()) / self.midpoint()
+        return rel_spread
 
     def rel_spread_series(self):
         pass
 
-    def lob_imbalance(self, num_levels:int=1):
+    def lob_imbalance(self, num_levels: int = 1):
         """
         Current LOB imbalance for a selected number of price levels.
         :param num_levels:
@@ -266,17 +279,18 @@ class MarketFeatures:
         """
         # check if context is not empty
         if len(Context.context_list) > 0:
-
             state_l3 = Context.context_list[-1]
 
             # aggregate the quantities for the respective number of levels
             bid_keys = list(state_l3[1].keys())[:num_levels]
             bid_qt = sum(
-                [sum([d['quantity'] for d in state_l3[1][n]]) for n in bid_keys])
+                [sum([d['quantity'] for d in state_l3[1][n]]) for n in
+                 bid_keys])
 
             ask_keys = list(state_l3[2].keys())[:num_levels]
             ask_qt = sum(
-                [sum([d['quantity'] for d in state_l3[2][n]]) for n in ask_keys])
+                [sum([d['quantity'] for d in state_l3[2][n]]) for n in
+                 ask_keys])
 
             imbalance = (bid_qt - ask_qt) / (ask_qt + bid_qt)
 
@@ -298,12 +312,6 @@ class MarketFeatures:
         pass
 
     def bollinger_bands(self):
-        pass
-
-    def intraday_season(self):
-        # based on clocktime
-        # divide trading days in several seasons based on trading volume
-        # ie.e is = 1 -> high volume times, ie = 0 -> low volume types
         pass
 
     # based on market trades . . . . . . . . . . . . . . . . . . . . . . . . .
@@ -335,5 +343,3 @@ class MarketFeatures:
 
     def reset(self):
         pass
-
-

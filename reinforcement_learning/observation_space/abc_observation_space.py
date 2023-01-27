@@ -12,6 +12,7 @@ __version__ = '0.1'
 from abc import ABC, abstractmethod
 
 import numpy as np
+import pandas as pd
 
 from feature_engineering.market_features import MarketFeatures
 from feature_engineering.agent_features import AgentFeatures
@@ -39,6 +40,8 @@ class BaseObservationSpace(ABC):
         self.agent_features = AgentFeatures()
 
         self.number_of_orders = 0
+
+        #self.high_activity_flag = self.update_high_activity_flag()
 
     @abstractmethod
     def market_observation(self):
@@ -143,6 +146,31 @@ class BaseObservationSpace(ABC):
         agent_obs = np.array([time, inv, time_since_last_sub,
                               time_since_last_trade])
         return agent_obs
+
+    @property
+    def high_activity_flag(self):
+        """Return high activity flag."""
+        return AgentContext.high_activity_flag
+
+    def relative_spread_obs(self, scaling_factor=100):
+        """Return relative spread observation"""
+        rel_spread = self.market_features.rel_spread()
+        return min(rel_spread*scaling_factor, 1)
+
+    @property
+    def normed_midpoint_obs(self):
+        """Returns the normalized midpoint as price indicator."""
+        midpoint = self.market_features.midpoint()
+        normed_midpoint = (midpoint - MinMaxValues.min_price) / (
+                MinMaxValues.max_price - MinMaxValues.min_price)
+        return normed_midpoint
+
+    @property
+    def normed_lob_imbalance_obs(self):
+        """QB is naturally in the interval [-1, 1], I scale it to [0, 1]"""
+        imb = self.market_features.lob_imbalance()
+        imb_norm = (imb+1)/2
+        return round(imb_norm, 3)
 
     def reset(self):
         """

@@ -34,14 +34,8 @@ episode length
 of the time horizon, nanosecond time of first timestamp of the episode)
 - I could create a pre-schedule with timestamps at which orders must be
  submitted instead of doing it on the fly with "last_submission_time"
-
-
 """
-# ----------------------------------------------------------------------------
-__author__ = "florian"
-__date__ = "2022-11-09"
-__version__ = "0.1"
-# ----------------------------------------------------------------------------
+
 import pandas as pd
 
 

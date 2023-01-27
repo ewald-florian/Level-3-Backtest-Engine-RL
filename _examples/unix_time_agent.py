@@ -10,10 +10,6 @@ Note:
 
 """
 
-__author__ = "florian"
-__date__ = "2022-11-10"
-__version__ = "0.1"
-
 import pandas as pd
 import numpy as np
 

@@ -25,6 +25,7 @@ class AgentContext:
     end_time = None
     episode_length = None
     initial_inventory = None
+    high_activity_flag = None
 
     def __init__(self):
         """
@@ -58,6 +59,28 @@ class AgentContext:
     def update_initial_inventory(cls, initial_inventory):
         """Update class attribute initial_inventory"""
         cls.initial_inventory = initial_inventory
+
+    @classmethod
+    def update_high_activity_flag(cls, start_time):
+        """
+        Update high activity flag which can be used as observation
+        feature.
+        """
+        cls.high_activity_flag = 1
+
+        start_time = pd.to_datetime(
+            int(AgentContext.start_time), unit='ns')
+        date = str(start_time.date()).replace("-", "")
+        time = str(start_time.time()).replace("-", "").replace(":", "")
+        # Check if it is summer or winter time.
+        # Check if it is within the 25 minute intervals or not.
+        if int(date) < 20210329:  # -> 08 to 16.70
+            if 82500 < int(time) < 160500:
+                cls.high_activity_flag = 0
+
+        elif int(date) >= 20210329:  # -> 07 to 17.30
+            if 72500 < int(time) < 160500:
+                cls.high_activity_flag = 0
 
     @classmethod
     def reset(cls):

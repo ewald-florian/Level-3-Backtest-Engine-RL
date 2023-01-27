@@ -79,7 +79,7 @@ disable_env_checking = False
 print_entire_result = True
 rllib_log_level = 'WARN'  # WARN, 'DEBUG'
 # agent
-agent = ISAgent2(verbose=False,
+agent = ISAgent2(verbose=True,
                  episode_length=episode_length,
                  initial_inventory=800_0000,
                  )
