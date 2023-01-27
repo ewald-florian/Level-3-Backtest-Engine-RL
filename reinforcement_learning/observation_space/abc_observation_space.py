@@ -60,6 +60,42 @@ class BaseObservationSpace(ABC):
         """
         raise NotImplementedError("Implement agent_observation in subclass.")
 
+    @property
+    def raw_market_features(self):
+        """
+        Returns the standard representation of raw market features
+        including prices, quantities and hhi in form of 1D np array.
+        """
+        raw_obs = self.market_features.level_2_plus(store_timestamp=False,
+                                                    data_structure='array',
+                                                    store_hhi=True)
+        if raw_obs is not None:
+            prices = raw_obs[::3]
+            quantities = raw_obs[1::3]
+            # Note: HHI is naturally normed between 0 and 1.
+            # hhis = raw_obs[2::3]
+            # -- normalize
+            prices = self._min_max_norma_prices_clipped(prices)
+            quantities = self._min_max_norma_quantities_clipped(quantities)
+            raw_obs[::3] = prices
+            raw_obs[1::3] = quantities
+
+        return raw_obs
+
+    @property
+    def handcrafted_market_features(self):
+        """
+        Returns all handcrafted features 1D np array.
+        """
+        crafted_obs = np.array([self.high_activity_flag,
+                                self.relative_spread_obs(),
+                                self.normed_midpoint_obs,
+                                self.normed_lob_imbalance_obs,
+                                self.normed_midpoint_moving_avg_obs,
+                                self.normed_midpoint_moving_std_obs,
+                                ])
+        return crafted_obs
+
     def _min_max_norma_prices_clipped(self, input_array):
         """
         Scales values between 0 and 1 with clipping of outliers to max.
@@ -135,8 +171,7 @@ class BaseObservationSpace(ABC):
         1. elapsed time
         2. elapsed inventory.
         """
-        # Note: very common agent state, see e.g. Beling/Liu
-        # TODO: Habe ich hier norm vergessen???
+        # Note: time and inv are already normalized in agent_features.
         time = self.agent_features.elapsed_time
         inv = self.agent_features.remaining_inventory
         time_since_last_sub = \
@@ -164,6 +199,21 @@ class BaseObservationSpace(ABC):
         normed_midpoint = (midpoint - MinMaxValues.min_price) / (
                 MinMaxValues.max_price - MinMaxValues.min_price)
         return normed_midpoint
+
+    @property
+    def normed_midpoint_moving_avg_obs(self):
+        """Returns the normalized midpoint moving avg as price indicator."""
+        midpoint = self.market_features.midpoint_moving_avg()
+        normed_midpoint = (midpoint - MinMaxValues.min_price) / (
+                MinMaxValues.max_price - MinMaxValues.min_price)
+        return normed_midpoint
+
+    @property
+    def normed_midpoint_moving_std_obs(self):
+        """Moving standard deviation of midpoint"""
+        mov_std = self.market_features.midpoint_moving_std()
+        # I scale the STD by dividing by the midpoint and clip it to 1.
+        return min(mov_std/self.market_features.midpoint(), 1)
 
     @property
     def normed_lob_imbalance_obs(self):

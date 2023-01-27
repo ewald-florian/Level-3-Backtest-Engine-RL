@@ -43,6 +43,7 @@ class ObservationSpace(BaseObservationSpace):
     specific agent. The abstract methods market_observation and
     agent_observation need to be implemented.
     """
+
     def __init__(self):
         """
         Initiate parent class via super function.
@@ -53,18 +54,12 @@ class ObservationSpace(BaseObservationSpace):
         """
         Implement the market observation.
         """
-        # -- market features
-        market_obs = self.market_features.level_2_plus(store_timestamp=False,
-                                                  data_structure='array')
-
-        if market_obs is not None:
-            prices = market_obs[::3]
-            quantities = market_obs[1::3]
-            # -- normalize
-            prices = self._min_max_norma_prices_clipped(prices)
-            quantities = self._min_max_norma_quantities_clipped(quantities)
-            market_obs[::3] = prices
-            market_obs[1::3] = quantities
+        # Raw market data.
+        raw_obs = self.raw_market_features
+        # Hand-crafted market data.
+        crafted_obs = self.handcrafted_market_features
+        # Append raw and handcrafted market features.
+        market_obs = np.append(raw_obs, crafted_obs)
 
         return market_obs
 
@@ -75,20 +70,6 @@ class ObservationSpace(BaseObservationSpace):
         # Use standard agent obs with elapsed time and remaining inventory.
         agent_obs = self.standard_agent_observation
 
-        # DEBUGGING
-        #print("flag new", AgentContext.high_activity_flag)
-        #print("time", Market.instances["ID"].timestamp_datetime)
-
-        print("rel spread", self.relative_spread_obs())
-        print(Context.context_list[-1][1])
-        print(Context.context_list[-1][2])
-        print("normed mp", self.normed_midpoint_obs)
-        print("imb", self.market_features.lob_imbalance())
-        print("imb norm", self.normed_lob_imbalance_obs)
-
-        print("mov avg", self.market_features.midpoint_moving_avg())
-        print("mov std", self.market_features.midpoint_moving_std())
-
         return agent_obs
 
 
@@ -97,6 +78,7 @@ class Reward(BaseReward):
     Subclass of BaseReward to implement the reward for a specific agent.
     The abc method receive_reward needs to be implemented.
     """
+
     def __init__(self, twap_n=10):
         super().__init__()
         # dynamic attributes
@@ -106,19 +88,21 @@ class Reward(BaseReward):
         initial_inventory = AgentContext.initial_inventory
         episode_length = AgentContext.episode_length
         self.twap_child_quantity = initial_inventory / twap_n
-        self.twap_interval = episode_length/twap_n
+        self.twap_interval = episode_length / twap_n
 
     def receive_reward(self):
         """Define the Specific reward signal."""
 
-        #reward = self.immediate_absolute_is_reward
-        reward = self.terminal_absolute_is_reward
+        # reward = self.immediate_absolute_is_reward
+        # reward = self.terminal_absolute_is_reward
+        reward = self.incentivize_waiting(reward_factor=0.5)
 
         return reward
 
 
 class ActionSpace(BaseActionSpace):
     """Specific Implementation of action space."""
+
     def __init__(self,
                  verbose=False,
                  num_twap_intervals=6):
@@ -145,6 +129,7 @@ class ISAgent2(RlBaseAgent):
     Agent with a larger action space, e.g. selection between different
     limits and quantities.
     """
+
     def __init__(self,
                  initial_inventory: int = 800_0000,
                  verbose=False,
@@ -166,7 +151,7 @@ class ISAgent2(RlBaseAgent):
         AgentContext.update_episode_length_ns(episode_length)
 
         # DEBUGGING:
-        #print("INITIAL INV", AgentContext.initial_inventory)
+        # print("INITIAL INV", AgentContext.initial_inventory)
 
         self.verbose = verbose
         self.quantity = 10_0000
@@ -220,5 +205,3 @@ class ISAgent2(RlBaseAgent):
         self.reward.reset()
         self.observation_space.reset()
         self.market_features.reset()
-
-

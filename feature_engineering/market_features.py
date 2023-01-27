@@ -81,13 +81,12 @@ class MarketFeatures:
             for side in [1, 2]:
 
                 for price in state_l3[side].keys():
-
+                    # Store Aggregated Quantities.
                     agg_qt = sum([(d['quantity']
                                   ) for d in state_l3[side][price]])
-
+                    # Store HHI.
                     if store_hhi:
                         if agg_qt > 0:
-                            # herfindahl index
                             hhi = sum([(d['quantity'] / agg_qt) ** 2 for d in
                                        state_l3[side][price]])
                             data_list.extend((price, agg_qt, hhi))
@@ -98,7 +97,7 @@ class MarketFeatures:
                     else:
                         data_list.extend((price, agg_qt))
 
-            # numpy array
+            # Create numpy array.
             state_array = np.array(data_list)
             if data_structure == "array":
                 return state_array
@@ -128,6 +127,7 @@ class MarketFeatures:
             str, 'array' or 'df', structure of l2
         """
         # get level 2 from level 2 plus method
+
         level_2 = self.level_2_plus(store_timestamp=store_timestamp,
                                     store_hhi=False,
                                     data_structure=data_structure)
@@ -178,10 +178,6 @@ class MarketFeatures:
         else:
             return 0
 
-
-    def midpoint_series(self):
-        pass
-
     def midpoint_moving_avg(self, length=10):
         """Compute moving average over the last few steps defined by length
         :param length
@@ -203,7 +199,7 @@ class MarketFeatures:
         """
         if len(Context.midpoints) > 0:
             l = Context.midpoints[-length:]
-            return sum(l) / len(l)
+            return np.std(l)
         else:
             return 0
 

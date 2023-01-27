@@ -44,13 +44,13 @@ print("Num GPUs Available TF: ", len(tf.config.list_physical_devices('GPU')))
 # SET UP TRAIN LOOP
 # episode length for agent and replay
 
-name = 'is_agent2_terminal_reward'
-num_iterations = 200
+name = 'is_agent2_waitreward_0_5_'
+num_iterations = 20
 save_checkpoints_freq = 10
 print_results_freq = 10
 # environment.
 episode_length = "10s"  # "60s", "30s"
-obs_size = 34
+obs_size = 40
 action_size = 12
 
 # fcnet.
@@ -69,8 +69,9 @@ lr_schedule = [
     [1, 1.0e-7]]
 gamma = 1  # 0.99
 # TODO: Teste größere batches! default ist 4000
-train_batch = 4000  # default 4000
+train_batch = 2000 # 4000  # default 4000
 mini_batch = 128  # default: 128
+rollout_fragment_length = 2500
 num_workers = 0
 #  If batch_mode is “complete_episodes”, rollout_fragment_length is ignored.
 batch_mode = 'complete_episodes'  # 'truncate_episodes'
@@ -168,6 +169,8 @@ config["train_batch_size"] = train_batch  # default = 4000
 config["sgd_minibatch_size"] = mini_batch
 # Batch mode
 config['batch_mode'] = batch_mode
+# rollout_fragment_length
+#config["rollout_fragment_length"] = rollout_fragment_length
 
 # -- Wrap LSTM around model if use_lstm is set True.
 if use_lstm:

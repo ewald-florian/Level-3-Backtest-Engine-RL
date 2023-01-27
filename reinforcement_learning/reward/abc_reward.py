@@ -83,6 +83,19 @@ class BaseReward(ABC):
             episode_end_is = self.agent_metrics.overall_is
         return episode_end_is
 
+    def incentivize_waiting(self, reward_factor=0.002):
+        """
+        Return a small reward for waiting to incentivice the
+        agent to take this action more often. This reward function can also
+        be used for pretraining.
+        :param reward_factor
+            float, reward factor which the agent should earn for waiting.
+        """
+        if ActionStorage.action == 0:
+            return reward_factor
+        else:
+            return 0
+
     @property
     def pnl_unrealized(self):
         """Unrealized PnL"""

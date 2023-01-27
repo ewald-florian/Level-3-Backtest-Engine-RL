@@ -97,10 +97,6 @@ class BaseActionSpace(ABC):
         # -- Zero ending inventory constraint.
         self.zero_ending_inventory_constraint()
 
-        # DEBUGGING MODE
-        #action = 0
-        ###############
-
         # Base variables for limit and qt.
         # I use Context since it contains the (blocked) simulation state.
         best_bid = list(Context.context_list[-1][1].keys())[0]
@@ -112,22 +108,12 @@ class BaseActionSpace(ABC):
         third_best_ask = list(Context.context_list[-1][2].keys())[2]
         ticksize = Market.instances["ID"].ticksize
 
-        # DEBUGGING
-        #print("Context")
-        #print(best_bid)
-        #print(best_bid_qt_list)
-        #print(best_bid_qt)
-        #print(best_ask)
-        #print(second_best_ask)
-        #print(third_best_ask)
-
         # -- Define several price limits.
         market_order = best_bid - 100 * ticksize  # defacto market-order
         buy_limit_1 = best_ask
         buy_limit_2 = second_best_ask
         buy_limit_3 = third_best_ask
 
-        # TODO 1: Welche Qts machen am meisten Sinn?
         # -- define several quantities (ratios of initial inv).
         #  5% of initial env
         qt_1 = int(AgentContext.initial_inventory * 0.05)
@@ -136,7 +122,6 @@ class BaseActionSpace(ABC):
         # 20% of initial env
         qt_3 = int(AgentContext.initial_inventory * 0.20)
         # TWAP Quantity (based on provided number of twap intervals)
-        # TODO: num twap kann ich in AgentContext speichern.
         twap_qt = AgentContext.initial_inventory / self.num_twap_intervals
         twap_qt = round(twap_qt, -4)
 
