@@ -55,13 +55,13 @@ class ObservationSpace(BaseObservationSpace):
         Implement the market observation.
         """
         # Raw market data.
-        raw_obs = self.raw_market_features
+        #raw_obs = self.raw_market_features
         # Hand-crafted market data.
         crafted_obs = self.handcrafted_market_features
         # Append raw and handcrafted market features.
-        market_obs = np.append(raw_obs, crafted_obs)
+        #market_obs = np.append(raw_obs, crafted_obs)
 
-        return market_obs
+        return crafted_obs #market_obs
 
     def agent_observation(self) -> np.array:
         """
@@ -71,6 +71,18 @@ class ObservationSpace(BaseObservationSpace):
         agent_obs = self.standard_agent_observation
 
         return agent_obs
+
+    def holistic_observation(self):
+        """
+        Combine market_obs and agent_obs to one array which
+        can be fed into the NN.
+        """
+        market_obs = self.market_observation()
+
+        holistic_obs = market_obs
+        holistic_obs.astype('float32')
+
+        return holistic_obs
 
 
 class Reward(BaseReward):
@@ -93,9 +105,9 @@ class Reward(BaseReward):
     def receive_reward(self):
         """Define the Specific reward signal."""
 
-        # reward = self.immediate_absolute_is_reward
+        reward = self.immediate_absolute_is_reward
         # reward = self.terminal_absolute_is_reward
-        reward = self.incentivize_waiting(reward_factor=20)
+        # reward = self.incentivize_waiting(reward_factor=20)
 
         return reward
 
