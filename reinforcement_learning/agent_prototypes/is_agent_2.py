@@ -93,12 +93,12 @@ class Reward(BaseReward):
     def receive_reward(self):
         """Define the Specific reward signal."""
 
-        reward_1 = self.immediate_absolute_is_reward()
-        reward_2 = self.incentivize_waiting()
+        reward = self.immediate_absolute_is_reward(scaling_factor=20)
+        #reward = self.incentivize_waiting()
         #reward = self.terminal_absolute_is_reward()
         # reward = self.incentivize_waiting(reward_factor=20)
 
-        return reward_1 + reward_2
+        return reward
 
 
 class ActionSpace(BaseActionSpace):
