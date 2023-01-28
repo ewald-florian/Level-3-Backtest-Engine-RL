@@ -35,7 +35,7 @@ from reinforcement_learning.environment.episode_stats import EpisodeStats
 
 # manage GPUs if executed on server
 if platform.system() == 'Linux':
-    gpuid = 'MIG-b33f9985-2600-590d-9cb1-002ae4ce5957'
+    gpuid = 'MIG-c8ecdc12-433b-5477-9094-19a7aff0f2c7'
     import os
     os.environ["CUDA_VISIBLE_DEVICES"] = gpuid
 
@@ -45,7 +45,7 @@ print("Num GPUs Available TF: ", len(tf.config.list_physical_devices('GPU')))
 # SET UP TRAIN LOOP
 # episode length for agent and replay
 
-name = 'tune_fcn_128_pretrain_incentivice_waiting_scaling_factor_2'
+name = 'tune_fcn_128_pretrain_incentivice_waiting_scaling_factor_2_'
 num_iterations = 50
 save_checkpoints_freq = 10
 print_results_freq = 10
@@ -63,7 +63,7 @@ max_seq_len = None  # default 20
 lstm_cell_size = None  # default 256
 # training
 # TODO: Teste default lr, erstelle lr schedule
-learning_rate = 5e-05  # default 5e-05
+learning_rate = 5e-04  # default 5e-05
 lr_schedule = None
 gamma = 1  # 0.99
 # TODO: Teste größere batches! default ist 4000
@@ -71,7 +71,7 @@ train_batch = 2000  # default 4000
 mini_batch = 100 # default: 128
 num_workers = 0
 #  If batch_mode is “complete_episodes”, rollout_fragment_length is ignored.
-batch_mode = 'truncate_episodes'  # 'truncate_episodes' 'complete_episodes'
+batch_mode = 'complete_episodes'  # 'truncate_episodes' 'complete_episodes'
 # other settings.
 disable_env_checking = False
 print_entire_result = False
