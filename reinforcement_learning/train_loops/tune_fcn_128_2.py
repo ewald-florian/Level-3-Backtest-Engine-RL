@@ -4,7 +4,6 @@
 Template for train loops (new version: "2023-01-24")
 """
 
-
 # build ins
 import json
 import pprint
@@ -24,8 +23,6 @@ from reinforcement_learning.environment.tradingenvironment import \
     TradingEnvironment
 from reinforcement_learning.agent_prototypes.twap_incentive_agent_reduced \
     import TwapIncentiveAgentReduced
-from reinforcement_learning.agent_prototypes.twap_incentive_agent \
-    import TwapIncentiveAgent
 from reinforcement_learning.agent_prototypes.is_agent_2 import ISAgent2
 from replay_episode.replay import Replay
 from utils.result_path_generator import generate_result_path
@@ -37,74 +34,77 @@ from reinforcement_learning.environment.episode_stats import EpisodeStats
 if platform.system() == 'Linux':
     gpuid = 'MIG-c8ecdc12-433b-5477-9094-19a7aff0f2c7'
     import os
+
     os.environ["CUDA_VISIBLE_DEVICES"] = gpuid
 
 import tensorflow as tf
+
 print("Num GPUs Available TF: ", len(tf.config.list_physical_devices('GPU')))
 
 # SET UP TRAIN LOOP
 # episode length for agent and replay
 
-name = 'tune_fcn_128_pretrain_incentivice_waiting_scaling_factor_2_'
-num_iterations = 50
+name = 'is_agent2_all_obs_immediate_rew_scaling_factor_20_'
+num_iterations = 100
 save_checkpoints_freq = 10
 print_results_freq = 10
 # environment.
 episode_length = "10s"  # "60s", "30s"
-obs_size = 40
+obs_size = 40  # 40
 action_size = 12
 
 # fcnet.
 fcnet_hiddens = [128, 128]
-fcnet_activation = 'tanh'
+fcnet_activation = 'relu'
 # lstm.
 use_lstm = False
 max_seq_len = None  # default 20
 lstm_cell_size = None  # default 256
 # training
 # TODO: Teste default lr, erstelle lr schedule
-learning_rate = 5e-04  # default 5e-05
-lr_schedule = None
+learning_rate = 5e-05  # default 5e-05
+# TODO
+lr_schedule = [
+    [0, 1.0e-6],
+    [1, 1.0e-7]]
 gamma = 1  # 0.99
 # TODO: Teste größere batches! default ist 4000
-train_batch = 2000  # default 4000
-mini_batch = 100 # default: 128
+train_batch = 2000 # 4000  # default 4000
+mini_batch = 128  # default: 128
+rollout_fragment_length = 2500
 num_workers = 0
 #  If batch_mode is “complete_episodes”, rollout_fragment_length is ignored.
-batch_mode = 'complete_episodes'  # 'truncate_episodes' 'complete_episodes'
+batch_mode = 'complete_episodes'  # 'truncate_episodes'
 # other settings.
 disable_env_checking = False
-print_entire_result = False
+print_entire_result = True
 rllib_log_level = 'WARN'  # WARN, 'DEBUG'
+# agent
+agent = ISAgent2(verbose=True,
+                 episode_length=episode_length,
+                 initial_inventory=2000_0000,
+                 )
 
 # Generate A string which contains all relevant infos.
 training_name = generate_string(
-                    name,
-                    episode_length,
-                    fcnet_hiddens,
-                    fcnet_activation,
-                    use_lstm,
-                    max_seq_len,
-                    lstm_cell_size,
-                    learning_rate,
-                    gamma,
-                    train_batch,
-                    mini_batch,
-                    batch_mode,
+    name,
+    episode_length,
+    fcnet_hiddens,
+    fcnet_activation,
+    use_lstm,
+    max_seq_len,
+    lstm_cell_size,
+    learning_rate,
+    gamma,
+    train_batch,
+    mini_batch,
+    batch_mode,
 )
-
-print(training_name)
-# agent
-agent = ISAgent2(verbose=True,
-                episode_length=episode_length,
-                initial_inventory=800_0000
-                )
 
 # -- Create paths and files to store information.
 
 # generate pathname to store results
 result_file = generate_result_path(name=training_name)
-all_episode_result_file = generate_result_path(name=training_name + "_all_eps")
 print("RESULT_FILE:", result_file)
 # generate json file to store episode statistics.
 stats_path = generate_episode_stats_path(name=training_name)
@@ -114,7 +114,7 @@ print("EP_STATS_FILE:", EpisodeStats.path_name)
 # -- Set up the training configuration.
 
 # Start a new instance of Ray
-ray.init()
+ray.init(num_gpus=1)
 
 # instantiate replay_episode and pass agent object as input argument
 replay = Replay(rl_agent=agent,
@@ -137,21 +137,21 @@ config["env_config"]["action_size"] = action_size
 # TODO: For efficient use of GPU time, use a small number of GPU workers and a
 #  large number of envs per worker.
 config["num_workers"] = num_workers
-#config["ignore_worker_failures"] = True
-
+# config["ignore_worker_failures"] = True
+# TODO: verstehen was genau das heißt, wird das env immer wieder resettet?
+# config["num_envs_per_worker"] = 1
 # Horizon: max time steps after which an episode will be terminated.
 #  Note this limit should never be hit when everything works.
 config["horizon"] = 100_000
-
-# NOTE: GPU settings resulted in errors on the server!
-#  hence, leave default settings.
-#config["num_gpus"] = 1
-#config["num_cpus_per_worker"] = 1
+# Make sure to use GPU.
+# TODO: test on server!
+# config["num_gpus"] = 1
+# config["num_cpus_per_worker"] = 1
 config["disable_env_checking"] = disable_env_checking
 config["log_level"] = rllib_log_level
 # set framework
-config["framework"] = "tf2"
-config["eager_tracing"] = True
+config["framework"] = "tf"
+#config["eager_tracing"] = False
 # FCN size.
 config["model"] = {}
 config["model"]["fcnet_hiddens"] = fcnet_hiddens
@@ -161,13 +161,16 @@ config["gamma"] = gamma
 # learning rate.
 # TODO: Include lr scheduler (decreasing lr over time)
 config["lr"] = learning_rate
-#config["lr_schedule"] = lr_schedule
+# config["lr_schedule"] = lr_schedule
 # Training batch size.
+# TODO: wieder einkommentieren
 config["train_batch_size"] = train_batch  # default = 4000
 # Mini batch size.
 config["sgd_minibatch_size"] = mini_batch
 # Batch mode
 config['batch_mode'] = batch_mode
+# rollout_fragment_length
+#config["rollout_fragment_length"] = rollout_fragment_length
 
 # -- Wrap LSTM around model if use_lstm is set True.
 if use_lstm:
@@ -187,25 +190,12 @@ results = []
 episode_data = []
 episode_json = []
 
-# Dict to store infos about each individual training episode.
-all_episode_results = {"train_iteration": [],
-                       "episode_len": [],
-                       "episode_reward": []}
-
 # -- Run training loops.
 
 for iteration in range(num_iterations):
 
     # train and get results.
     result = rllib_trainer.train()
-
-    # STORE PROGRESS FOR ALL EPISODES
-    all_ep_lengths = result['hist_stats']['episode_lengths']
-    all_ep_rewards = result['hist_stats']['episode_reward']
-    train_iter = [iteration] * len(all_ep_lengths)
-    all_episode_results["episode_len"].extend(all_ep_lengths)
-    all_episode_results["episode_reward"].extend(all_ep_rewards)
-    all_episode_results["train_iteration"].extend(train_iter)
 
     # Store complete result to results list.
     results.append(result)
@@ -232,7 +222,8 @@ for iteration in range(num_iterations):
 
     if iteration % print_results_freq == 0:
         checkpoint_file = rllib_trainer.save()
-        print(f'{iteration:3d}: Min/Mean/Max reward: {result["episode_reward_min"]:8.4f}/{result["episode_reward_mean"]:8.4f}/{result["episode_reward_mean"]}')
+        print(
+            f'{iteration:3d}: Min/Mean/Max reward: {result["episode_reward_min"]:8.4f}/{result["episode_reward_mean"]:8.4f}/{result["episode_reward_mean"]}')
 
         # print results.
         if print_entire_result:
@@ -240,20 +231,20 @@ for iteration in range(num_iterations):
             pp = pprint.PrettyPrinter(indent=4)
             pp.pprint(results)
 
-# -- Store Train iteration results to df and Print Results.
+# -- Store to df and Print Results.
 result_df = pd.DataFrame(data=episode_data)
 print(result_df.head(5))
 result_df.to_csv(result_file, index=False)
 
-# -- Store each episode results to df and print
-print("all episode data")
-all_eps_df = pd.DataFrame(all_episode_results)
-result_df.to_csv(all_episode_result_file, index=False)
-
 # Save trainer to checkpoint file.
 # TODO: name checkpoint file (or folder)
 checkpoint_file = rllib_trainer.save()
-print(f"Trainer (at iteration {rllib_trainer.iteration} was saved in '{checkpoint_file}'!")
+print(
+    f"Trainer (at iteration {rllib_trainer.iteration} was saved in '{checkpoint_file}'!")
+
+# Here is what a checkpoint directory contains:
+print("The checkpoint directory contains the following files:")
+print(os.listdir(os.path.dirname(checkpoint_file)))
 
 # Shut down ray.
 ray.shutdown()
