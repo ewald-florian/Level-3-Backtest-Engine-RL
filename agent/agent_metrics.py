@@ -135,15 +135,21 @@ class AgentMetrics:
         return unrealized_quantity
 
     @property
+    def executed_quantity(self):
+        """Compute the executed (liquidated quantity)"""
+        realized_quantity = sum(trade['executed_volume'] for trade in
+                                AgentTrade.history)
+        return realized_quantity
+
+    @property
     def realized_quantity(self):
         """Compute the realized quantity."""
 
         realized_quantity = 0
 
-        if self.get_realized_trades:
+        if len(AgentTrade.history) > 0:
             # realized quantity
-            realized_trades = self.get_realized_trades
-            unrealized_trades = self.get_unrealized_trades
+            realized_trades = AgentTrade.history
 
             realized_buy_trades = list(filter(lambda d: d['agent_side'] == 1,
                                               realized_trades))
@@ -386,11 +392,11 @@ class AgentMetrics:
 
             if vwap_buy or vwap_sell:
 
-                realized_buy_trades = list(filter(lambda d: d['agent_side'] == 1,
-                                                  realized_trades))
+                realized_buy_trades = list(
+                    filter(lambda d: d['agent_side'] == 1, realized_trades))
 
-                realized_sell_trades = list(filter(lambda d: d['agent_side'] == 2,
-                                                   realized_trades))
+                realized_sell_trades = list(
+                    filter(lambda d: d['agent_side'] == 2, realized_trades))
 
                 qt_bought = sum(trade['executed_volume']
                                 for trade in realized_buy_trades)
@@ -505,7 +511,6 @@ class AgentMetrics:
         # Reward is scaled with -100.
         return round(last_is*scaling_factor, 4)
 
-    @property
     def overall_is(self, scaling_factor=-1000):
         """
         Volume weighted implementation shortfall of all filled trades.

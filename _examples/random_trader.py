@@ -1,3 +1,4 @@
+
 """For Demonstration Purposes"""
 
 from market.market_interface import MarketInterface
@@ -64,9 +65,9 @@ class RandomTrader:
 if __name__ == '__main__':
 
     # inst: -> generate episode start list
-    replay = Replay(identifier="FME",
-                    start_date="2022-02-16",
-                    end_date="2022-02-16",
+    replay = Replay(identifier="BAY",
+                    start_date="2021-01-01",
+                    end_date="2021-04-30",
                     episode_length="1H",
                     frequency="1m",
                     seed=42,

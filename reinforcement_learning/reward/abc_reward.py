@@ -47,10 +47,13 @@ class BaseReward(ABC):
         """
         raise NotImplementedError("Implement receive_reward in subclass.")
 
-    @property
-    def immediate_absolute_is_reward(self):
-        """Returns 0 if no trade happened and IS of last trade if a new
-        trades happened. """
+    def immediate_absolute_is_reward(self, scaling_factor=1):
+        """
+        Returns 0 if no trade happened and IS of last trade if new
+        trades happened.
+        :param scaling_factor:
+            flaot, scale the reward.
+        """
         # set is to 0
         latest_trade_is = 0
         # Check if new trades occurred.
@@ -62,10 +65,9 @@ class BaseReward(ABC):
             # Update class intern trade counter.
             self.number_of_trades = len(AgentTrade.history)
         # return is as reward
-        return latest_trade_is
+        return latest_trade_is*scaling_factor
 
-    @property
-    def terminal_absolute_is_reward(self):
+    def terminal_absolute_is_reward(self, scaling_factor=1):
         """IS over all trades at the end of the episode. This method returns
         the overall IS over all trades, in order to be used as terminal reward
         it needs the input argument last_episode_step which is a boolean
@@ -73,15 +75,15 @@ class BaseReward(ABC):
 
         The done-flag can be used as last_episode_flag if it is determined
         before the reward is called.
-        :param last_episode_step
-            bool, True if last_episode_step False otherwise.
+        :param scaling_factor:
+            flaot, scale the reward.
         """
         episode_end_is = 0
         # If done, compute cumulative volume weighted IS
         # if done:
         if EnvironmentTransition.transition[0]:
-            episode_end_is = self.agent_metrics.overall_is
-        return episode_end_is
+            episode_end_is = self.agent_metrics.overall_is()
+        return episode_end_is*scaling_factor
 
     def incentivize_waiting(self, reward_factor=0.002):
         """

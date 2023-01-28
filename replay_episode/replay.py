@@ -166,55 +166,6 @@ class Replay:
         # -- update step_counter
         self.step_counter += 1
 
-    # Note: old rl step which returned obs, reward, done, info
-    def rl_step_old(self, action=None):
-        """
-        RL-step method, to be called in the environment.step() method.
-        ---------------------------------------------------------------
-        Central Method to step the backtesting engine externally based
-        on the episode __next__() method. Can be called from an external
-        iterative training loop, for example in the "step" method of an
-        RL-environment class in Open-AI Gym convention.
-
-        :param action
-            ..., action given by the policy
-        :return observation
-            np.array(), current observation of the environment
-        :return reward
-            float, latest reward given to the agent
-        :return done
-            bool, True if episode is done
-        :return info
-            dict, additional information on the environment, can be empty
-        """
-
-        # -- market step
-        self._market_step()
-
-        # -- save context
-        state_l3 = Market.instances['ID'].state_l3
-        Context(state_l3)
-
-        # -- rl-agent step
-        # TODO: I could store this in an EnvTransition class...
-        done = self.done
-        info = {}  # TODO: fill with relevant background infos...
-
-        ################## DEVELOPMENT AREA ##################################
-        # agent_prototypes can just be changed to test different set-ups
-        # -------------------------------------------------------------------
-
-        # note: all details need to be implemented in rlagent class
-        observation, reward = self.rl_agent.step(action)
-
-        #######################################################################
-
-        # -- update step_counter
-        self.step_counter += 1
-
-        # -- return
-        return observation, reward, done, info
-
     # non-RL step . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
     def normal_step(self):
@@ -405,7 +356,6 @@ class Replay:
 
     # internally stepped replay_episode . . . . . . . . . . . . . . . . . .
 
-    # TODO: implement (low priority since I don't need this method..)
     def run_backtest(self):
         """"
         Internal Stepping:

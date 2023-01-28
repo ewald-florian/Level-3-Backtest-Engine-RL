@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Template for train loops (new version: "2023-01-24")
+Test to train and restore agent.
+Technisch gesehen funktioniert es!
 """
 
 # build ins
@@ -41,11 +42,10 @@ import tensorflow as tf
 
 print("Num GPUs Available TF: ", len(tf.config.list_physical_devices('GPU')))
 
-# SET UP TRAIN LOOP
-# episode length for agent and replay
+# -- Part 1: Set up and train.
 
-name = 'is_agent2_all_obs_immediate_rew_scaling_factor_1_'
-num_iterations = 100
+name = 'test_train_restore'
+num_iterations = 2
 save_checkpoints_freq = 10
 print_results_freq = 10
 # environment.
@@ -69,9 +69,9 @@ lr_schedule = [
     [1, 1.0e-7]]
 gamma = 1  # 0.99
 # TODO: Teste größere batches! default ist 4000
-train_batch = 2000 # 4000  # default 4000
-mini_batch = 128  # default: 128
-rollout_fragment_length = 2500
+train_batch = 32 # 4000  # default 4000
+mini_batch = 8  # default: 128
+rollout_fragment_length = 32
 num_workers = 0
 #  If batch_mode is “complete_episodes”, rollout_fragment_length is ignored.
 batch_mode = 'complete_episodes'  # 'truncate_episodes'
@@ -249,19 +249,63 @@ print(os.listdir(os.path.dirname(checkpoint_file)))
 # Shut down ray.
 ray.shutdown()
 
-"""
-# NOTES
+# -- Part 2: restore agent from file.
+# --------------------------------
+config_copy = config.copy()
+config_copy["lambda"] = 0.666
+del rllib_trainer
+print("deleted old trainer")
 
-# Evaluation
-config["evaluation_interval"] = 1
-config["evaluation_duration"] = 1
-config["evaluation_duration_unit"] = "episodes"
+# Create new rllib trainer.
+# Note: this needs a correct config file!
+new_trainer = PPOTrainer(config=config_copy)
+print("created new trainer")
+# Restore old agent:
+new_trainer.restore(checkpoint_file)
+print("restored trainer from:", checkpoint_file)
 
-# config['batch_mode'] = 'complete_episodes'
+print(new_trainer.config)
 
-Agent Information:
- print(rllib_trainer._episodes_total)
- print(rllib_trainer._iteration)
- print(rllib_trainer.agent_timesteps_total)
- print(rllib_trainer._time_total)
-"""
+# -- Part 3) Run the environment with the loaded agent in "test-mode"
+# Instantiate environment.
+
+# Manually set up trading environment.
+env = TradingEnvironment(config["env_config"])
+# Reset env, get initial obs.
+obs = env.reset()
+
+# Reset counters.
+num_episodes = 0
+episode_reward = 0.0
+# Dict to store rewards for each test-episode.
+reward_dict = {}
+
+# How many episodes should be tested.
+num_test_episodes = 1
+
+while num_episodes < num_test_episodes:
+    # Compute action from my trained policy.
+    action = new_trainer.compute_single_action(
+        observation=obs,
+        explore=False,
+        policy_id="default_policy"
+    )
+    # Send action to env.
+    obs, reward, done, info = env.step(action)
+    # Count the reward.
+    episode_reward += reward
+
+    # If episode is done, reset env and start new episode.
+    if done:
+        print(f"Episode done: Total reward = {episode_reward}")
+        # Add to reward_dict.
+        reward_dict[num_episodes] = episode_reward
+        obs = env.reset()
+        num_episodes += 1
+        episode_reward = 0.0
+        # TODO: store episode stats if done!
+        #  ... use the infra structure EpisodeStats.
+
+
+# Output reward_dict:
+print(reward_dict)

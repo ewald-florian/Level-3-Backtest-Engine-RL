@@ -72,7 +72,7 @@ config["env_config"] = {
         "replay_episode": replay},
 }
 # Size of the observation space
-config["env_config"]["observation_size"] = 33
+config["env_config"]["observation_size"] = 34
 config["env_config"]["action_size"] = 13
 config["num_workers"] = 0
 # TODO: enable env checking and check the environment.
