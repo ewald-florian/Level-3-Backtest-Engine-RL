@@ -32,7 +32,7 @@ from reinforcement_learning.environment.episode_stats import EpisodeStats
 
 # manage GPUs if executed on server
 if platform.system() == 'Linux':
-    gpuid = 'MIG-c8c5eee1-c148-5f66-9889-9759c8656d2b'
+    gpuid = 'MIG-9985302b-0b2c-5903-929d-eb0313c73e0c'
     import os
 
     os.environ["CUDA_VISIBLE_DEVICES"] = gpuid
@@ -44,7 +44,7 @@ print("Num GPUs Available TF: ", len(tf.config.list_physical_devices('GPU')))
 # SET UP TRAIN LOOP
 # episode length for agent and replay
 
-name = 'is_agent2_all_obs_immediate_rew_scaling_factor_1_'
+name = 'is_agent2_all_obs_immediate_rew_scaling_factor_1_waiting_incentive_0_002_'
 num_iterations = 100
 save_checkpoints_freq = 10
 print_results_freq = 10
