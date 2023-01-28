@@ -117,7 +117,7 @@ if __name__ == '__main__':
 # TODO: name vom asset und strategie in filename einbauen.
 path = '/Users/florianewald/Desktop/test_initial_market.csv'
 df = pd.DataFrame(results)
-df.to_csv(path)
+df.to_csv(path, index=False)
 
 
 # TODO: Sicherstellen, dass Market Impact aktiviert ist (wobei es ja eh nur

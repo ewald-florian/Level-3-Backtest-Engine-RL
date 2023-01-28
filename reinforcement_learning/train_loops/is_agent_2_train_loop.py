@@ -82,7 +82,7 @@ rllib_log_level = 'WARN'  # WARN, 'DEBUG'
 # agent
 agent = ISAgent2(verbose=True,
                  episode_length=episode_length,
-                 initial_inventory=800_0000,
+                 initial_inventory=2000_0000,
                  )
 
 # Generate A string which contains all relevant infos.

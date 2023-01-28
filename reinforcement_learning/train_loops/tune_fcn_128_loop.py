@@ -45,8 +45,8 @@ print("Num GPUs Available TF: ", len(tf.config.list_physical_devices('GPU')))
 # SET UP TRAIN LOOP
 # episode length for agent and replay
 
-name = 'testing'
-num_iterations = 4
+name = 'tune_fcn_128_pretrain_incentivice_waiting_scaling_factor_2'
+num_iterations = 50
 save_checkpoints_freq = 10
 print_results_freq = 10
 # environment.
@@ -67,8 +67,8 @@ learning_rate = 5e-05  # default 5e-05
 lr_schedule = None
 gamma = 1  # 0.99
 # TODO: Teste größere batches! default ist 4000
-train_batch = 25  # default 4000
-mini_batch = 5 # default: 128
+train_batch = 2000  # default 4000
+mini_batch = 100 # default: 128
 num_workers = 0
 #  If batch_mode is “complete_episodes”, rollout_fragment_length is ignored.
 batch_mode = 'complete_episodes'  # 'truncate_episodes'
@@ -96,10 +96,9 @@ training_name = generate_string(
 print(training_name)
 # agent
 agent = ISAgent2(verbose=True,
-                           episode_length=episode_length,
-                           initial_inventory=800_0000
-                           )
-
+                episode_length=episode_length,
+                initial_inventory=800_0000
+                )
 
 # -- Create paths and files to store information.
 
