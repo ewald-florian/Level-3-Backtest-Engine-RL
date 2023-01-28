@@ -49,7 +49,7 @@ class InitialMarketOrderTrader:
                       f'qt: {self.initial_inventory}')
 
         # Set first_step_over flag to True:
-        self.first_step_over = False
+        self.first_step_over = True
 
     def reset(self):
         pass

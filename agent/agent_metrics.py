@@ -532,7 +532,7 @@ class AgentMetrics:
 
         overall_is = weighted_trade_is_sum / volume_sum
 
-        return round(overall_is*scaling_factor, 4)
+        return overall_is*scaling_factor
 
     @property
     def exposure_budget_left(self):
