@@ -35,7 +35,7 @@ from reinforcement_learning.environment.episode_stats import EpisodeStats
 
 # manage GPUs if executed on server
 if platform.system() == 'Linux':
-    gpuid = 'MIG-9985302b-0b2c-5903-929d-eb0313c73e0c'
+    gpuid = 'MIG-b33f9985-2600-590d-9cb1-002ae4ce5957'
     import os
     os.environ["CUDA_VISIBLE_DEVICES"] = gpuid
 
@@ -71,7 +71,7 @@ train_batch = 2000  # default 4000
 mini_batch = 100 # default: 128
 num_workers = 0
 #  If batch_mode is “complete_episodes”, rollout_fragment_length is ignored.
-batch_mode = 'complete_episodes'  # 'truncate_episodes'
+batch_mode = 'truncate_episodes'  # 'truncate_episodes' 'complete_episodes'
 # other settings.
 disable_env_checking = False
 print_entire_result = False
