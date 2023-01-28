@@ -35,7 +35,7 @@ from reinforcement_learning.environment.episode_stats import EpisodeStats
 
 # manage GPUs if executed on server
 if platform.system() == 'Linux':
-    gpuid = 'MIG-c8c5eee1-c148-5f66-9889-9759c8656d2b'
+    gpuid = 'MIG-9985302b-0b2c-5903-929d-eb0313c73e0c'
     import os
     os.environ["CUDA_VISIBLE_DEVICES"] = gpuid
 
@@ -56,7 +56,7 @@ action_size = 12
 
 # fcnet.
 fcnet_hiddens = [128, 128]
-fcnet_activation = 'relu'
+fcnet_activation = 'tanh'
 # lstm.
 use_lstm = False
 max_seq_len = None  # default 20
