@@ -98,15 +98,17 @@ if __name__ == '__main__':
     initial_inv = initial_inventory_dict[symbol]['Avg-10s-Vol']
     testset_start = "2021-05-14"
     testset_end = "2021-06-30"
+    episode_len = "10s"
+    frequency = "1m"
 
     # inst: -> generates episode start list
     # TODO: I HAVE TO USE THE EXACT SAME SAMPLING SET-UP AS IN THE RL-STRATEGY
     #  TO GET THE SAME EPISODE LIST (or better I even save the episode list)
     replay = Replay(identifier=symbol,
-                    start_date="2021-01-01", #"2021-05-14",# "2021-01-01",
-                    end_date="2021-04-30",#"2021-06-30",#"2021-04-30",
-                    episode_length="10s",
-                    frequency="1m",
+                    start_date=testset_start, #"2021-05-14",# "2021-01-01",
+                    end_date=testset_end,#"2021-06-30",#"2021-04-30",
+                    episode_length=episode_len,
+                    frequency=frequency,
                     seed=42,
                     shuffle=False,
                     random_identifier=False,
