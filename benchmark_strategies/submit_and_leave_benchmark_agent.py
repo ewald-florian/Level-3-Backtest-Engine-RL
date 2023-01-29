@@ -30,6 +30,7 @@ class SubmitLeaveTrader:
 
     - Forced execution before the end of the episode.
     """
+
     def __init__(self,
                  initial_inventory: int = 100_0000,
                  verbose=True):
@@ -66,7 +67,7 @@ class SubmitLeaveTrader:
         """
         ticksize = Market.instances["ID"].ticksize
         best_bid = Market.instances["ID"].best_bid
-        marketable_limit = best_bid - 1000*ticksize
+        marketable_limit = best_bid - 1000 * ticksize
 
         remaining_inv = (self.initial_inventory -
                          self.agent_metrics.executed_quantity)
@@ -92,21 +93,24 @@ if __name__ == '__main__':
 
     # TODO: I can also iterate over the symbols to let it run in one loop.
     # SET UP THE BACKTEST:
-    name = "submit_leave_Avg-10s-Vol_"
+    # -------------------------
+    name = "initial_market_Avg-10s-Vol_"
     symbol = "BAY"
     # TODO: Use same initial inventory as for RL-agent.
-    initial_inv = initial_inventory_dict[symbol]['Avg-10s-Vol']
-    testset_start = "2021-05-14"
-    testset_end = "2021-06-30"
+    initial_inv = initial_inventory_dict[symbol]['Avg-10s-Vol'] * 1_0000
+    testset_start = "2021-05-14",  # "2021-01-01"
+    testset_end = "2021-06-30",  # "2021-04-30"
     episode_len = "10s"
     frequency = "1m"
+    num_iterations_to_store_results = 1_000
+    # -------------------------
 
     # inst: -> generates episode start list
     # TODO: I HAVE TO USE THE EXACT SAME SAMPLING SET-UP AS IN THE RL-STRATEGY
     #  TO GET THE SAME EPISODE LIST (or better I even save the episode list)
     replay = Replay(identifier=symbol,
-                    start_date=testset_start, #"2021-05-14",# "2021-01-01",
-                    end_date=testset_end,#"2021-06-30",#"2021-04-30",
+                    start_date=testset_start,  # "2021-05-14",# "2021-01-01",
+                    end_date=testset_end,  # "2021-06-30",#"2021-04-30",
                     episode_length=episode_len,
                     frequency=frequency,
                     seed=42,
@@ -143,13 +147,13 @@ if __name__ == '__main__':
                 agent.submit_initial_limit_order()
 
                 # Forced liquidation 2 steps before episode end.
-                if (replay.episode._step == (replay.episode.__len__() - 5) and \
+                if (replay.episode._step == (replay.episode.__len__() - 5) and
                         not agent.forced_execution_done):
                     agent.force_execution_episode_end()
 
                 # The episode ends early when the entire inventory is sold.
                 if (agent.agent_metrics.executed_quantity >=
-                    agent.initial_inventory):
+                        agent.initial_inventory):
                     # Break terminates the loop over the steps and goes to the next
                     # episode.
                     results.append(np.array([replay.episode.episode_start,
@@ -158,7 +162,17 @@ if __name__ == '__main__':
                                              agent.agent_metrics.vwap_sell,
                                              replay.episode._step]))
 
-                    break
+                    # Intermediate result storage (will be overwritten)
+                    if episode % num_iterations_to_store_results == 0:
+                        df = pd.DataFrame(results,
+                                          columns=["episode_start_time",
+                                                   "is", "vwap_sell",
+                                                   "episode_len"])
+                        df.to_csv(result_path, index=False)
+                        # Print to terminal.
+                        print(df)
+
+                break
 
         # Make exception since the episode start list will be over.
         except:
