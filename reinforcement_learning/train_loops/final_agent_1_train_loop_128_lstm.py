@@ -57,11 +57,11 @@ action_size = 12
 
 # fcnet.
 fcnet_hiddens = [128, 128]
-fcnet_activation = 'tanh'
+fcnet_activation = 'relu'
 # lstm.
 use_lstm = True
-max_seq_len = 20  # default 20
-lstm_cell_size = 256  # default 256
+max_seq_len = 10  # default 20
+lstm_cell_size = 128  # default 256
 # training
 learning_rate = 5e-05  # default 5e-05
 # TODO
