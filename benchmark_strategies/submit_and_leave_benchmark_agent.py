@@ -32,7 +32,7 @@ class SubmitLeaveTrader:
     """
 
     def __init__(self,
-                 initial_inventory: int = 100_0000,
+                 initial_inventory=None,
                  verbose=True):
 
         self.initial_inventory = initial_inventory
@@ -141,15 +141,18 @@ if __name__ == '__main__':
             # Iterate over Episode Steps.
             for i in range(replay.episode.__len__()):
 
+
                 # Call normal step.
                 replay.normal_step()
 
                 # Apply strategy.
                 agent.submit_initial_limit_order()
 
+
                 # Forced liquidation 2 steps before episode end.
                 if (replay.episode._step == (replay.episode.__len__() - 5) and
                         not agent.forced_execution_done):
+
                     agent.force_execution_episode_end()
 
                 # The episode ends early when the entire inventory is sold.
@@ -172,8 +175,8 @@ if __name__ == '__main__':
                         df.to_csv(result_path, index=False)
                         # Print to terminal.
                         print(df)
-
-                break
+                    # Break Loop After DF was saved.
+                    break
 
         # Make exception since the episode start list will be over.
         except:

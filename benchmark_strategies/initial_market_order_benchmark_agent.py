@@ -27,7 +27,7 @@ class InitialMarketOrderTrader:
     Test Backtest Engine with random submissions and cancellations.
     """
     def __init__(self,
-                 initial_inventory: int = 100_0000,
+                 initial_inventory=None,
                  verbose=True):
 
         self.initial_inventory = initial_inventory
