@@ -98,8 +98,8 @@ if __name__ == '__main__':
     symbol = "BAY"
     # TODO: Use same initial inventory as for RL-agent.
     initial_inv = initial_inventory_dict[symbol]['Avg-10s-Vol'] * 1_0000
-    testset_start = "2021-05-14",  # "2021-01-01"
-    testset_end = "2021-06-30",  # "2021-04-30"
+    testset_start = "2021-05-14"  # "2021-01-01" # "2021-05-14"
+    testset_end = "2021-06-30"  # "2021-04-30", "2021-06-30"
     episode_len = "10s"
     frequency = "1m"
     num_iterations_to_store_results = 1_000
