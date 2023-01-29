@@ -57,7 +57,7 @@ action_size = 12
 
 # fcnet.
 fcnet_hiddens = [128, 128]
-fcnet_activation = 'relu'
+fcnet_activation = 'tanh'
 # lstm.
 use_lstm = True
 max_seq_len = 8  # default 20
