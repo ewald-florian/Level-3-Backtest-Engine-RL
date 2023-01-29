@@ -33,7 +33,7 @@ from reinforcement_learning.environment.episode_stats import EpisodeStats
 
 # manage GPUs if executed on server.
 if platform.system() == 'Linux':
-    gpuid = 'MIG-b33f9985-2600-590d-9cb1-002ae4ce5957'
+    gpuid = 'MIG-ac3c47b3-456e-56ff-aa3e-5731e429d659'
     import os
     os.environ["CUDA_VISIBLE_DEVICES"] = gpuid
 
