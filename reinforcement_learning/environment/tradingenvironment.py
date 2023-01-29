@@ -65,6 +65,9 @@ class TradingEnvironment(gym.Env):
         except:
             self.replay = env_config['env_config']['config']['replay_episode']
 
+        # DEBUGGING
+        self.step_counter = 0
+
     def step(self, action):
         """
         Executes a step in the environment by applying the action.
@@ -82,6 +85,10 @@ class TradingEnvironment(gym.Env):
         :return: info
             dict, additional info, can be empty
         """
+
+        #DEBUGGING
+        #print(self.step_counter)
+        self.step_counter += 1
 
         # assert if action is valid
         assert self.action_space.contains(action), "Invalid Action"
@@ -119,6 +126,9 @@ class TradingEnvironment(gym.Env):
         the environment. Reset has to be called at the beginning of each
         episode.
         """
+        # DEBUGGING
+        print("collected steps:", self.step_counter)
+        self.step_counter = 0
         # Reset replay_episode.
         first_obs = self.replay.rl_reset()
 
