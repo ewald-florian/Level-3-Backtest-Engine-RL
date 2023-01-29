@@ -109,6 +109,7 @@ training_name = generate_string(
 result_file = generate_result_path(name=training_name)
 all_episode_result_file = generate_result_path(name=training_name + "_all_eps")
 print("RESULT_FILE:", result_file)
+print("ALL_EPS_RESULT_FILE:", all_episode_result_file)
 # generate json file to store episode statistics.
 stats_path = generate_episode_stats_path(name=training_name)
 EpisodeStats(stats_path)
