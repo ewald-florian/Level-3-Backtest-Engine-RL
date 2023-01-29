@@ -93,7 +93,7 @@ class Reward(BaseReward):
     def receive_reward(self):
         """Define the Specific reward signal."""
 
-        reward = self.immediate_absolute_is_reward()
+        #reward = self.immediate_absolute_is_reward()
         #reward = self.incentivize_waiting()
         #reward = self.terminal_absolute_is_reward()
         reward = self.incentivize_waiting(reward_factor=2)

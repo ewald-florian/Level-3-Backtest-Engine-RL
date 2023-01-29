@@ -44,7 +44,7 @@ print("Num GPUs Available TF: ", len(tf.config.list_physical_devices('GPU')))
 # SET UP TRAIN LOOP
 # episode length for agent and replay
 
-name = 'is_agent2_all_obs_immediate_rew_scaling_factor_20_'
+name = 'is_agent2_fcn128_PRETRAININGWAIT_factor2_'
 num_iterations = 100
 save_checkpoints_freq = 10
 print_results_freq = 10
@@ -55,7 +55,7 @@ action_size = 12
 
 # fcnet.
 fcnet_hiddens = [128, 128]
-fcnet_activation = 'relu'
+fcnet_activation = 'tanh'
 # lstm.
 use_lstm = False
 max_seq_len = None  # default 20
