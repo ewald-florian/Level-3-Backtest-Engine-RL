@@ -94,7 +94,7 @@ if __name__ == '__main__':
     # TODO: I can also iterate over the symbols to let it run in one loop.
     # SET UP THE BACKTEST:
     # -------------------------
-    name = "initial_market_Avg-10s-Vol_"
+    name = "submit_and_leave_Avg-10s-Vol_"
     symbol = "BAY"
     # TODO: Use same initial inventory as for RL-agent.
     initial_inv = initial_inventory_dict[symbol]['Avg-10s-Vol'] * 1_0000
