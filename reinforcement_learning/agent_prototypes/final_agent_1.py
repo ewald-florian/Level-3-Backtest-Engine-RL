@@ -8,9 +8,6 @@ agent of the master thesis:
 AGENTID = 290123
 """
 
-
-# TODO: Implement TWAP incentive.
-
 from copy import copy
 
 import numpy as np
@@ -97,7 +94,10 @@ class Reward(BaseReward):
         #reward = self.immediate_absolute_is_reward()
         #reward = self.incentivize_waiting()
         #reward = self.terminal_absolute_is_reward()
-        reward = self.incentivize_waiting(reward_factor=0.0001)
+        # For pretraining.
+        reward = self.incentivize_waiting(reward_factor=5)
+        # For stabilizing the model in later stages.
+        #reward = self.incentivize_waiting(reward_factor=0.0001)
 
         return reward
 

@@ -4,7 +4,6 @@
 Template for train loops (new version: "2023-01-24")
 """
 
-
 # build ins
 import json
 import pprint
@@ -37,9 +36,11 @@ from reinforcement_learning.environment.episode_stats import EpisodeStats
 if platform.system() == 'Linux':
     gpuid = 'MIG-c8c5eee1-c148-5f66-9889-9759c8656d2b'
     import os
+
     os.environ["CUDA_VISIBLE_DEVICES"] = gpuid
 
 import tensorflow as tf
+
 print("Num GPUs Available TF: ", len(tf.config.list_physical_devices('GPU')))
 
 # SET UP TRAIN LOOP
@@ -68,7 +69,7 @@ lr_schedule = None
 gamma = 1  # 0.99
 # TODO: Teste größere batches! default ist 4000
 train_batch = 25  # default 4000
-mini_batch = 5 # default: 128
+mini_batch = 5  # default: 128
 num_workers = 0
 #  If batch_mode is “complete_episodes”, rollout_fragment_length is ignored.
 batch_mode = 'complete_episodes'  # 'truncate_episodes'
@@ -79,27 +80,26 @@ rllib_log_level = 'WARN'  # WARN, 'DEBUG'
 
 # Generate A string which contains all relevant infos.
 training_name = generate_string(
-                    name,
-                    episode_length,
-                    fcnet_hiddens,
-                    fcnet_activation,
-                    use_lstm,
-                    max_seq_len,
-                    lstm_cell_size,
-                    learning_rate,
-                    gamma,
-                    train_batch,
-                    mini_batch,
-                    batch_mode,
+    name,
+    episode_length,
+    fcnet_hiddens,
+    fcnet_activation,
+    use_lstm,
+    max_seq_len,
+    lstm_cell_size,
+    learning_rate,
+    gamma,
+    train_batch,
+    mini_batch,
+    batch_mode,
 )
 
 print(training_name)
 # agent
 agent = ISAgent2(verbose=True,
-                           episode_length=episode_length,
-                           initial_inventory=800_0000
-                           )
-
+                 episode_length=episode_length,
+                 initial_inventory=800_0000
+                 )
 
 # -- Create paths and files to store information.
 
@@ -138,7 +138,7 @@ config["env_config"]["action_size"] = action_size
 # TODO: For efficient use of GPU time, use a small number of GPU workers and a
 #  large number of envs per worker.
 config["num_workers"] = num_workers
-#config["ignore_worker_failures"] = True
+# config["ignore_worker_failures"] = True
 
 # Horizon: max time steps after which an episode will be terminated.
 #  Note this limit should never be hit when everything works.
@@ -146,8 +146,8 @@ config["horizon"] = 100_000
 
 # NOTE: GPU settings resulted in errors on the server!
 #  hence, leave default settings.
-#config["num_gpus"] = 1
-#config["num_cpus_per_worker"] = 1
+# config["num_gpus"] = 1
+# config["num_cpus_per_worker"] = 1
 config["disable_env_checking"] = disable_env_checking
 config["log_level"] = rllib_log_level
 # set framework
@@ -162,7 +162,7 @@ config["gamma"] = gamma
 # learning rate.
 # TODO: Include lr scheduler (decreasing lr over time)
 config["lr"] = learning_rate
-#config["lr_schedule"] = lr_schedule
+# config["lr_schedule"] = lr_schedule
 # Training batch size.
 config["train_batch_size"] = train_batch  # default = 4000
 # Mini batch size.
@@ -233,7 +233,8 @@ for iteration in range(num_iterations):
 
     if iteration % print_results_freq == 0:
         checkpoint_file = rllib_trainer.save()
-        print(f'{iteration:3d}: Min/Mean/Max reward: {result["episode_reward_min"]:8.4f}/{result["episode_reward_mean"]:8.4f}/{result["episode_reward_mean"]}')
+        print(
+            f'{iteration:3d}: Min/Mean/Max reward: {result["episode_reward_min"]:8.4f}/{result["episode_reward_mean"]:8.4f}/{result["episode_reward_mean"]}')
 
         # print results.
         if print_entire_result:
@@ -254,7 +255,8 @@ result_df.to_csv(all_episode_result_file, index=False)
 # Save trainer to checkpoint file.
 # TODO: name checkpoint file (or folder)
 checkpoint_file = rllib_trainer.save()
-print(f"Trainer (at iteration {rllib_trainer.iteration} was saved in '{checkpoint_file}'!")
+print(
+    f"Trainer (at iteration {rllib_trainer.iteration} was saved in '{checkpoint_file}'!")
 
 # Shut down ray.
 ray.shutdown()

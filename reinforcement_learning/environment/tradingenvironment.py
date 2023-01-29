@@ -86,10 +86,6 @@ class TradingEnvironment(gym.Env):
             dict, additional info, can be empty
         """
 
-        #DEBUGGING
-        #print(self.step_counter)
-        self.step_counter += 1
-
         # assert if action is valid
         assert self.action_space.contains(action), "Invalid Action"
 
@@ -112,11 +108,6 @@ class TradingEnvironment(gym.Env):
             action_list = ActionStorage.action_history
             EpisodeStats.store_episode_results(oms, agent_trade, action_list)
 
-            # DEBUGGING
-            #waitlist = [x for x in action_list if x == 0]
-            #print("(ENV) Number of times waited:", len(waitlist), "Out of:",
-            #      len(action_list))
-
         # return
         return observation, reward, done, info
 
@@ -126,9 +117,6 @@ class TradingEnvironment(gym.Env):
         the environment. Reset has to be called at the beginning of each
         episode.
         """
-        # DEBUGGING
-        print("collected steps:", self.step_counter)
-        self.step_counter = 0
         # Reset replay_episode.
         first_obs = self.replay.rl_reset()
 

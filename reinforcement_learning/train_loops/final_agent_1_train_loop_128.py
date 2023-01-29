@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Template for train loops (new version: "2023-01-24")
+Train Loop for Final Agent 1.
+AGENTID = 012823
 """
 
 # build ins
@@ -30,11 +31,10 @@ from utils.episode_stats_path_generator import generate_episode_stats_path
 from utils.string_generator import generate_string
 from reinforcement_learning.environment.episode_stats import EpisodeStats
 
-# manage GPUs if executed on server
+# manage GPUs if executed on server.
 if platform.system() == 'Linux':
     gpuid = 'MIG-c8c5eee1-c148-5f66-9889-9759c8656d2b'
     import os
-
     os.environ["CUDA_VISIBLE_DEVICES"] = gpuid
 
 import tensorflow as tf
@@ -47,8 +47,8 @@ print("Num GPUs Available TF: ", len(tf.config.list_physical_devices('GPU')))
 # Provide checkpoint path if trainer should be restored.
 restoring_checkpoint_path = None
 # TODO: make loop name and train rame separately
-name = 'test_final_agent_1_fcn_128_'
-num_iterations = 1
+name = 'final_agent_1_fcn_128_pretrain_wait_no_1_incentive_5_'
+num_iterations = 200
 save_checkpoints_freq = 10
 print_results_freq = 10
 # environment.
@@ -107,6 +107,7 @@ training_name = generate_string(
 
 # generate pathname to store results
 result_file = generate_result_path(name=training_name)
+all_episode_result_file = generate_result_path(name=training_name + "_all_eps")
 print("RESULT_FILE:", result_file)
 # generate json file to store episode statistics.
 stats_path = generate_episode_stats_path(name=training_name)
@@ -182,7 +183,6 @@ if use_lstm:
 # -- Instantiate the Trainer object using above config.
 rllib_trainer = PPOTrainer(config=config)
 
-
 # -- Reload from checkpoint.
 if restoring_checkpoint_path:
     rllib_trainer.restore(restoring_checkpoint_path)
@@ -197,17 +197,24 @@ if restoring_checkpoint_path:
 results = []
 episode_data = []
 episode_json = []
+# Dict to store infos about each individual training episode.
+all_episode_results = {"train_iteration": [],
+                       "episode_len": [],
+                       "episode_reward": []}
 
 # -- Run training loops.
 
 for iteration in range(num_iterations):
 
-    # DEBUGGING
-    print("train_iteration: ", iteration)
-
     # train and get results.
     result = rllib_trainer.train()
-
+    # Store progress info for all episodes of the train iteration.
+    all_ep_lengths = result['hist_stats']['episode_lengths']
+    all_ep_rewards = result['hist_stats']['episode_reward']
+    train_iter = [iteration] * len(all_ep_lengths)
+    all_episode_results["episode_len"].extend(all_ep_lengths)
+    all_episode_results["episode_reward"].extend(all_ep_rewards)
+    all_episode_results["train_iteration"].extend(train_iter)
     # Store complete result to results list.
     results.append(result)
     # store relevant iteration metrics from the result dict to the episode dict
@@ -224,8 +231,12 @@ for iteration in range(num_iterations):
     episode_json.append(json.dumps(episode))
 
     # store results every iteration in case the training loop breaks.
+    # - iteration level.
     result_df = pd.DataFrame(data=episode_data)
     result_df.to_csv(result_file, index=False)
+    # - episode level.
+    all_eps_df = pd.DataFrame(all_episode_results)
+    result_df.to_csv(all_episode_result_file, index=False)
 
     # Save checkpoint every x iterations.
     if iteration % save_checkpoints_freq == 0:
@@ -244,14 +255,16 @@ for iteration in range(num_iterations):
 
 # -- Store to df and Print Results.
 result_df = pd.DataFrame(data=episode_data)
-print(result_df.head(5))
+print(result_df.tail(5))
 result_df.to_csv(result_file, index=False)
+# -- Store each episode results to df and print
+all_eps_df = pd.DataFrame(all_episode_results)
+result_df.to_csv(all_episode_result_file, index=False)
 
 # Save trainer to checkpoint file.
 checkpoint_file = rllib_trainer.save()
 print(f"Trainer (at iteration {rllib_trainer.iteration}) was "
       f"saved in '{checkpoint_file}'!")
-
 
 # Shut down ray.
 ray.shutdown()
