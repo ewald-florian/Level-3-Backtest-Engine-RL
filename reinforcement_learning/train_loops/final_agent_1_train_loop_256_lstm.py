@@ -33,7 +33,7 @@ from reinforcement_learning.environment.episode_stats import EpisodeStats
 
 # manage GPUs if executed on server.
 if platform.system() == 'Linux':
-    gpuid = 'UUID: MIG-b33f9985-2600-590d-9cb1-002ae4ce5957'
+    gpuid = 'MIG-c8ecdc12-433b-5477-9094-19a7aff0f2c7'
     import os
     os.environ["CUDA_VISIBLE_DEVICES"] = gpuid
 
@@ -46,7 +46,7 @@ print("Num GPUs Available TF: ", len(tf.config.list_physical_devices('GPU')))
 
 # Provide checkpoint path if trainer should be restored.
 restoring_checkpoint_path = None
-name = 'final_agent_1_fcn_256_pretrain_wait_no_1_incentive_5_'
+name = 'final_agent_1_fcn_LSTM256_pretrain_wait_no_1_incentive_5_'
 num_iterations = 200
 save_checkpoints_freq = 10
 print_results_freq = 10
@@ -59,9 +59,9 @@ action_size = 12
 fcnet_hiddens = [256, 256, 128]
 fcnet_activation = 'relu'
 # lstm.
-use_lstm = False
-max_seq_len = None  # default 20
-lstm_cell_size = None  # default 256
+use_lstm = True
+max_seq_len = 10  # default 20
+lstm_cell_size = 128  # default 256
 # training
 learning_rate = 5e-05  # default 5e-05
 # TODO
