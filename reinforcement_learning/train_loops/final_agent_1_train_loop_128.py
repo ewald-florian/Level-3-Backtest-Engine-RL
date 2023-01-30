@@ -45,10 +45,11 @@ print("Num GPUs Available TF: ", len(tf.config.list_physical_devices('GPU')))
 # episode length for agent and replay
 
 # Provide checkpoint path if trainer should be restored.
-restoring_checkpoint_path = None
-# TODO: make loop name and train rame separately
-name = 'final_agent_1_fcn_128_pretrain_wait_no_1_incentive_5_'
-num_iterations = 200
+restoring_checkpoint_path = "/home/jovyan/ray_results/PPO_TradingEnvironment_2023-01-29_19-22-573oui6mvo/checkpoint_000200"
+name = 'final_agent_1_fcn_128_pretrain_twapincentive_'
+
+print("SET ITERATIONS TO 200")
+num_iterations = 0
 save_checkpoints_freq = 10
 print_results_freq = 10
 # environment.

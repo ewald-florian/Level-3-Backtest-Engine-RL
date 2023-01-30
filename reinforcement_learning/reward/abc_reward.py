@@ -4,10 +4,11 @@
 """
 Abstract Reward class for RL-Agent
 """
-#----------------------------------------------------------------------------
-__author__ =  'florian'
-__date__ =  '08-10-2022'
+# ----------------------------------------------------------------------------
+__author__ = 'florian'
+__date__ = '08-10-2022'
 __version__ = '0.1'
+
 # ---------------------------------------------------------------------------
 
 from abc import ABC, abstractmethod
@@ -18,6 +19,7 @@ from agent.agent_order import OrderManagementSystem as OMS
 from context.agent_context import AgentContext
 from reinforcement_learning.transition.env_transition import \
     EnvironmentTransition
+from market.market import Market
 from reinforcement_learning.action_space.action_storage import ActionStorage
 
 
@@ -37,6 +39,7 @@ class BaseReward(ABC):
         # Agent Trade counter for trade specific rewards
         self.number_of_trades = 0
         self.number_or_orders = 0
+        self.recorded_orders = 0
 
     @abstractmethod
     def receive_reward(self):
@@ -65,7 +68,7 @@ class BaseReward(ABC):
             # Update class intern trade counter.
             self.number_of_trades = len(AgentTrade.history)
         # return is as reward
-        return latest_trade_is*scaling_factor
+        return latest_trade_is * scaling_factor
 
     def terminal_absolute_is_reward(self, scaling_factor=1):
         """IS over all trades at the end of the episode. This method returns
@@ -83,7 +86,7 @@ class BaseReward(ABC):
         # if done:
         if EnvironmentTransition.transition[0]:
             episode_end_is = self.agent_metrics.overall_is()
-        return episode_end_is*scaling_factor
+        return episode_end_is * scaling_factor
 
     def incentivize_waiting(self, reward_factor=0.002):
         """
@@ -125,8 +128,79 @@ class BaseReward(ABC):
         self.last_pnl = self.pnl_realized
         return pnl_difference
 
+    def twap_time_incentive_reward(self, num_twap_steps=20):
+        """
+        This is a TWAP based reward which rewards the agent if he
+        submits his orders closer to a TWAP-strategy with a given
+        number of orders N. This reward is used for pretraining to incentivice
+        the agent to better allocate submissions over the entire
+        episode and to avoid liquidating everything just in the beginning.
+
+        The reward signal is scaled and clipped in the range [0,5].
+        :param num_twap_steps
+            int, number of TWAP child orders.
+        """
+        twap_reward = 0
+
+        # Check if the agent has submitted a new order.
+        if len(OMS.order_list) > self.recorded_orders:
+            # Special case for first order: The reward is based on the difference
+            # between episode start time and first order timestamp. The agent
+            # should be incentivized to place his first order as quickly as
+            # possible.
+            if len(OMS.order_list) == 1:
+                current_order_timestamp = OMS.order_list[-1]['timestamp']
+
+                start_time_deviation = -abs(AgentContext.start_time -
+                                           current_order_timestamp)
+
+                max = 0
+                min = (-AgentContext.episode_length / num_twap_steps)
+                y = (start_time_deviation - min) * 5 / (max - min)
+
+                # Clip.
+                if twap_reward > 5:
+                    twap_reward = 5
+                elif twap_reward < 0:
+                    twap_reward = 0
+                # Count the order.
+                self.recorded_orders += 1
+
+            # For the following orders.
+            else:
+                # Compute the differ between the current and the latest order.
+                current_order_timestamp = OMS.order_list[-1]['timestamp']
+                last_order_timestamp = OMS.order_list[-2]['timestamp']
+                agent_order_difference = abs(last_order_timestamp -
+                                             current_order_timestamp)
+                # Compute the deviation of the order from the TWAP-interval
+                twap_interval_length = (AgentContext.episode_length /
+                                        num_twap_steps)
+
+                twap_time_deviation = - abs(twap_interval_length -
+                                          agent_order_difference)
+
+                # Scale the reward in the range [0, 5] such that a deviation of
+                # 0 yields the highest reward and a deviation of episode
+                # len yields the lowest reward.
+
+                max = 0
+                min = (-AgentContext.episode_length / num_twap_steps)
+                twap_reward = (twap_time_deviation - min)*5 / (max - min)
+
+                # Clip:
+                if twap_reward > 5:
+                    twap_reward = 5
+                elif twap_reward < 0:
+                    twap_reward = 0
+                # Count the order.
+                self.recorded_orders += 1
+
+        # Clip between 0 and 5.
+        return twap_reward
+
     @property
-    def twap_incentive_reward(self):
+    def twap_incentive_reward_old(self):
         """
         This reward component incentivices the agent to adjust his strategy
         to TWAP strategy. The intuition behind that is that an execution
@@ -135,21 +209,22 @@ class BaseReward(ABC):
         of orders and the submission frequency of the agent.
         """
         # Set to zero if no new orders were submitted.
-        twap_penalty = 0
+        twap_reward = 0
         # Special case first order: penalty for waiting.
         if len(OMS.order_list) == 1:
             # -- Time aspect.
             current_order_timestamp = OMS.order_list[-1]['timestamp']
             episode_start_time = AgentContext.start_time
             agent_order_time_difference = abs(current_order_timestamp -
-                                         episode_start_time)
+                                              episode_start_time)
             twap_time_deviation = abs(self.twap_interval -
-                                 agent_order_time_difference)
+                                      agent_order_time_difference)
             # Convert to seconds.
             twap_time_deviation = int(twap_time_deviation / 1e9)
             # -- Quantity aspect.
             current_order_qt = OMS.order_list[-1]['quantity']
-            twap_qt_deviation = abs(current_order_qt-self.twap_child_quantity)
+            twap_qt_deviation = abs(
+                current_order_qt - self.twap_child_quantity)
             # Convert to pieces
             twap_qt_deviation = twap_qt_deviation / 1_0000
             # -- Combination.
@@ -164,7 +239,7 @@ class BaseReward(ABC):
             # -- Time aspect.
             current_order_timestamp = OMS.order_list[-1]['timestamp']
             last_order_timestamp = OMS.order_list[-2]['timestamp']
-            agent_order_difference = abs(last_order_timestamp-
+            agent_order_difference = abs(last_order_timestamp -
                                          current_order_timestamp)
 
             twap_time_deviation = abs(self.twap_interval -
@@ -227,5 +302,6 @@ class BaseReward(ABC):
         Reset reward class.
         """
         self.__class__.reward = None
+        self.recorded_orders = 0
         self.last_pnl = 0
         self.agent_metrics = AgentMetrics()

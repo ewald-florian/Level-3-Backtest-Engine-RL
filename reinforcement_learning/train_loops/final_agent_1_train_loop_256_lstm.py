@@ -46,7 +46,7 @@ print("Num GPUs Available TF: ", len(tf.config.list_physical_devices('GPU')))
 
 # Provide checkpoint path if trainer should be restored.
 restoring_checkpoint_path = None
-name = 'final_agent_1_fcn_LSTM256_pretrain_wait_no_1_incentive_5_'
+name = 'final_agent_1_fcn_LSTM256_pretrain_twapincentive_'
 num_iterations = 200
 save_checkpoints_freq = 10
 print_results_freq = 10
