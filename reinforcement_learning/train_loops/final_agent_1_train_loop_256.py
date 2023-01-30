@@ -80,10 +80,9 @@ disable_env_checking = False
 print_entire_result = False  # contains a lot of useless info.
 rllib_log_level = 'WARN'  # WARN, 'DEBUG'
 # instantiate agent.
-agent = FinalOEAgent1(verbose=True,
+agent = FinalOEAgent1(verbose=False,
                       episode_length=episode_length,
-                      # TODO: get initial inv from inv_dict!
-                      initial_inventory=2000_0000,
+                      initial_inventory_level="Avg-10s-Vol",
                       )
 
 # Generate A string which contains all relevant infos for path names.

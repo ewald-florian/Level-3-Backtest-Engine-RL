@@ -16,6 +16,7 @@ import pandas as pd
 from market.market import Market
 from market.market_interface import MarketInterface
 from context.context import Context
+from replay_episode.episode import Episode
 from feature_engineering.market_features import MarketFeatures
 from reinforcement_learning.reward.abc_reward import BaseReward
 from reinforcement_learning.observation_space.abc_observation_space \
@@ -33,6 +34,7 @@ from reinforcement_learning.action_space.abc_action_space import \
     BaseActionSpace
 from market.market_metrics import MarketMetrics
 from market.market_trade import MarketTrade
+from utils.initial_inventory import initial_inventory_dict
 
 
 class ObservationSpace(BaseObservationSpace):
@@ -133,20 +135,26 @@ class FinalOEAgent1(RlBaseAgent):
     """
 
     def __init__(self,
-                 initial_inventory: int = 800_0000,
+                 initial_inventory_level: str = "Avg-10s-Vol",
                  verbose=False,
                  episode_length="10s",
                  ):
         """
-        When initialized, SpecialAgent builds compositions of MarketInterface,
+        When initialized, Agent builds compositions of MarketInterface,
         Reward and ObservationSpace. Note that Reward and ObservationSpace
         are subclasses which should be implemented to meet the specific
         requirements of this special agent, a specific observation and a
         specific reward function.
-        """
 
-        # static
-        self.initial_inventory = initial_inventory
+        Using the identifier which is stored in Episode.current_identifier,
+        the Agent can access the asset-specific initial inventory in the
+        initial_inventory_dict (utils). Thereby the initial_inventory_level
+        must be given as argument.
+        """
+        self.initial_inventory_level = initial_inventory_level
+        # Get initial inventory from initial_inventory_dict.
+        self.initial_inventory = initial_inventory_dict[
+            Episode.current_identifier][self.initial_inventory_level]*1_0000
         # Store initial inventory to agent context.
         AgentContext.update_initial_inventory(self.initial_inventory)
         # Store Episode Length:
@@ -198,6 +206,10 @@ class FinalOEAgent1(RlBaseAgent):
     def reset(self):
         """Reset"""
         super().__init__()
+
+        # Get initial inventory from initial_inventory_dict.
+        self.initial_inventory = initial_inventory_dict[
+            Episode.current_identifier][self.initial_inventory_level]*1_0000
 
         self.verbose = self.verbose
 

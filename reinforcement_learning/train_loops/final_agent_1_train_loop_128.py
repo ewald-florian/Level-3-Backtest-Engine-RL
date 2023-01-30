@@ -70,8 +70,8 @@ lr_schedule = [
     [0, 1.0e-6],
     [1, 1.0e-7]]
 gamma = 1  # 0.99
-train_batch = 2560 # 2560  # 4000  # default 4000
-mini_batch = 128 # default: 128
+train_batch = 2560  # 2560  # 4000  # default 4000
+mini_batch = 128  # default: 128
 rollout_fragment_length = train_batch
 num_workers = 0
 #  If batch_mode is “complete_episodes”, rollout_fragment_length is ignored.
@@ -81,10 +81,9 @@ disable_env_checking = False
 print_entire_result = False  # contains a lot of useless info.
 rllib_log_level = 'WARN'  # WARN, 'DEBUG'
 # instantiate agent.
-agent = FinalOEAgent1(verbose=True,
+agent = FinalOEAgent1(verbose=False,
                       episode_length=episode_length,
-                      # TODO: get initial inv from inv_dict!
-                      initial_inventory=2000_0000,
+                      initial_inventory_level="Avg-10s-Vol",
                       )
 
 # Generate A string which contains all relevant infos for path names.
@@ -123,6 +122,13 @@ ray.init(num_gpus=1)
 # instantiate replay_episode and pass agent object as input argument
 replay = Replay(rl_agent=agent,
                 episode_length=agent.episode_length,
+                # Note: saved for later when I run on several symbols.
+                #identifier_list=["DTE", "BAY"],
+                #random_identifier=True,
+                #start_date="2021-01-01",
+                #end_date="2021-01-08",
+                #shuffle=False,
+                #####
                 verbose=False)
 
 # -- Generate config file for PPO trainer.

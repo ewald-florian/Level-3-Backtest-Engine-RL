@@ -59,7 +59,16 @@ initial_inventory_dict = {
                '5%-ADV': 93715,
                'ADV': 1874300,
                'Avg-10s-Vol': 614,
-               'Avg-1m-Vol': 3689}
+               'Avg-1m-Vol': 3689},
+    # Note: Added for Rllib Env Checking.
+    'INITIALIZE': {   '0.1%-ADV': 3333,
+               '0.5%-ADV': 3333,
+               '1%-ADV': 3333,
+               '2x-Avg-10s-Vol': 3333,
+               '5%-ADV': 3333,
+               'ADV': 3333,
+               'Avg-10s-Vol': 3333,
+               'Avg-1m-Vol': 3333}
 }
 
 
