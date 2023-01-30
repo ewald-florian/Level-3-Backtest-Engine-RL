@@ -186,6 +186,7 @@ rllib_trainer = PPOTrainer(config=config)
 if restoring_checkpoint_path:
     rllib_trainer.restore(restoring_checkpoint_path)
     print("RESTORED FROM CHECKPOINT, iterations: ", rllib_trainer._iteration)
+    print("RESTORED FROM", restoring_checkpoint_path)
 
 # print policy model
 # print(rllib_trainer.get_policy().model.base_model.summary())

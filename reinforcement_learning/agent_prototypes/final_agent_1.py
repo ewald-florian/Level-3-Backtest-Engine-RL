@@ -101,6 +101,7 @@ class Reward(BaseReward):
         # For stabilizing the model in later stages.
         #reward = self.incentivize_waiting(reward_factor=0.0001)
         reward = self.twap_time_incentive_reward()
+        #print("immediate absolute reward: ", reward)
 
         return reward
 
