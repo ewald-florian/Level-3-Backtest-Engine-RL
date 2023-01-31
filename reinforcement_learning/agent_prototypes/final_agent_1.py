@@ -214,7 +214,7 @@ class FinalOEAgent1(RlBaseAgent):
             Episode.current_identifier][self.initial_inventory_level]*1_0000
 
         # DEGUGGING
-        print("inv", self.initial_inventory_level)
+        print("inv", self.initial_inventory)
 
         self.verbose = self.verbose
 
