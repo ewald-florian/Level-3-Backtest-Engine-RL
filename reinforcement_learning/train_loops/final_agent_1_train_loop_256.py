@@ -72,8 +72,8 @@ lr_schedule = [
 gamma = 1  # 0.99
 train_batch = 2560 # 2560  # 4000  # default 4000
 mini_batch = 128 # default: 128
-rollout_fragment_length = 1280
-num_workers = 2
+rollout_fragment_length = train_batch
+num_workers = 0
 #  If batch_mode is “complete_episodes”, rollout_fragment_length is ignored.
 batch_mode = 'complete_episodes'  # 'truncate_episodes'
 # other settings.
@@ -141,7 +141,7 @@ config["env_config"]["action_size"] = action_size
 # Notes: 0:  use the learner GPU for inference.
 config["num_workers"] = num_workers
 # config["ignore_worker_failures"] = True
-config["num_envs_per_worker"] = 1
+#config["num_envs_per_worker"] = 1
 # Horizon: max time steps after which an episode will be terminated.
 #  Note this limit should never be hit when everything works.
 config["horizon"] = 100_000
