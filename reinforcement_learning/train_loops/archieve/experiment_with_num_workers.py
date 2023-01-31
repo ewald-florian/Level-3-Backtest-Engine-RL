@@ -120,7 +120,7 @@ EpisodeStats(stats_path)
 # Start a new instance of Ray (Note: num_gpus=1 required for server)
 # TODO: I removed GPU to test it on the server.
 
-ray.init()
+ray.init(num_gpus=1)
 
 # instantiate replay_episode and pass agent object as input argument
 replay = Replay(rl_agent=agent,
