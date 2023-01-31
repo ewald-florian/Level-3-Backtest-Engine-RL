@@ -15,7 +15,7 @@ from ray.rllib.agents.ppo import PPOTrainer
 
 from reinforcement_learning.environment.tradingenvironment import \
     TradingEnvironment
-from reinforcement_learning.agent_prototypes._archieve.twap_incentive_agent import \
+from reinforcement_learning.agent_prototypes.archieve.twap_incentive_agent import \
     TwapIncentiveAgent
 from replay_episode.replay import Replay
 from utils.episode_stats_path_generator import generate_episode_stats_path
