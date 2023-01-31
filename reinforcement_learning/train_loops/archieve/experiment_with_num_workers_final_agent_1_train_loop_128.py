@@ -76,7 +76,8 @@ mini_batch = 128  # default: 128
 rollout_fragment_length = 1280
 num_workers = 2
 num_envs_per_worker = 1
-framework = "tf"
+framework = "tf2"
+eager_tracing = False
 #  If batch_mode is “complete_episodes”, rollout_fragment_length is ignored.
 batch_mode = 'complete_episodes'  # 'truncate_episodes'
 # other settings.
@@ -167,6 +168,8 @@ config["log_level"] = rllib_log_level
 # -- Model
 
 config["framework"] = framework
+if framework == "tf2":
+    config["eager_tracing"] = eager_tracing
 # Note: tf2 and eager tracing do not work on server.
 # config["eager_tracing"] = False
 config["model"] = {}
