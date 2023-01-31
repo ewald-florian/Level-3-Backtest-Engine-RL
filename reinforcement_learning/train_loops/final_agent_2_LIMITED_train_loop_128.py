@@ -59,6 +59,7 @@ episode_length = "10s"  # "60s", "30s"
 obs_size = 10  # 40
 action_size = 6
 
+
 # fcnet.
 fcnet_hiddens = [128, 128]
 fcnet_activation = 'relu'
