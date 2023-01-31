@@ -49,7 +49,7 @@ print("Num GPUs Available TF: ", len(tf.config.list_physical_devices('GPU')))
 restoring_checkpoint_path = "/home/jovyan/ray_results/PPO_TradingEnvironment_2023-01-31_14-58-33ji26iggn/checkpoint_000682"
 name = 'final_agent_1_fcn_128_IS_REWARD_TRAININGSET_RUN2_WAIT_INCENTIVE_0_000001'
 
-num_iterations = 200
+num_iterations = 600
 save_checkpoints_freq = 10
 print_results_freq = 10
 # environment.
