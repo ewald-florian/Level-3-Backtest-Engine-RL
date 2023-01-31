@@ -95,7 +95,7 @@ if __name__ == '__main__':
     # SET UP THE BACKTEST:
     # -------------------------
     name = "submit_and_leave_Avg-10s-Vol_"
-    symbol = "DTE"
+    symbol = "CBK"
     # TODO: Use same initial inventory as for RL-agent.
     initial_inv = initial_inventory_dict[symbol]['Avg-10s-Vol'] * 1_0000
     testset_start = "2021-05-14" #"2021-01-01" # "2021-05-14"
