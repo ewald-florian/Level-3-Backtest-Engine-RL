@@ -200,7 +200,6 @@ class MultiWorkerTest(RlBaseAgent):
         self.step_counter += 1
         print("STEP:", self.step_counter)
         print("Num Orders: ", len(OMS.order_list))
-        print("OMS: ", OMS.order_list)
 
         observation = copy(self.observation_space.holistic_observation())
         reward = copy(self.reward.receive_reward())
