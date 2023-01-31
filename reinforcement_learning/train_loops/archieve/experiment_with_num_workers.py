@@ -183,7 +183,7 @@ config["sgd_minibatch_size"] = mini_batch
 # Batch mode
 config['batch_mode'] = batch_mode
 # rollout_fragment_length
-config["rollout_fragment_length"] = rollout_fragment_length
+# config["rollout_fragment_length"] = rollout_fragment_length
 
 # -- LSTM.
 if use_lstm:
