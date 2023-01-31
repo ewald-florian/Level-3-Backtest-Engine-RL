@@ -4,12 +4,6 @@
 """
 Abstract Action Space class for RL-Agent
 """
-# ----------------------------------------------------------------------------
-__author__ = 'florian'
-__date__ = '12-20-2022'
-__version__ = '0.1'
-
-# ---------------------------------------------------------------------------
 
 from abc import ABC, abstractmethod
 
@@ -207,6 +201,8 @@ class BaseActionSpace(ABC):
         self.zero_ending_inventory_constraint()
 
         # Best Bid Qt.
+        best_bid = list(Context.context_list[-1][1].keys())[0]
+        best_bid_qt_list = Context.context_list[-1][1][best_bid]
         best_bid_qt = sum([d['quantity'] for d in best_bid_qt_list])
         # 5% of initial env
         qt_1 = int(AgentContext.initial_inventory * 0.05)
@@ -239,7 +235,7 @@ class BaseActionSpace(ABC):
         if action == 4:
             order_quantity = qt_3
 
-        if action == 4:
+        if action == 5:
             order_quantity = twap_qt
 
         # Place order via market interface.

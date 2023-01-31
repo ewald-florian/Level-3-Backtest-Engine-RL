@@ -45,8 +45,9 @@ print("Num GPUs Available TF: ", len(tf.config.list_physical_devices('GPU')))
 # episode length for agent and replay
 
 # Provide checkpoint path if trainer should be restored.
-restoring_checkpoint_path = "/home/jovyan/ray_results/PPO_TradingEnvironment_2023-01-29_21-29-39dv38gw6w/checkpoint_000200"
-name = 'final_agent_1_fcn_LSTM256_pretrain_twapincentive_'
+# TODO: ADD CHECKPOINT PATH
+restoring_checkpoint_path = xyz
+name = 'final_agent_1_fcn_LSTM256_pretrain_IS_REWARD_BAY_'
 num_iterations = 200
 save_checkpoints_freq = 10
 print_results_freq = 10

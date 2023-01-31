@@ -45,8 +45,9 @@ print("Num GPUs Available TF: ", len(tf.config.list_physical_devices('GPU')))
 # episode length for agent and replay
 
 # Provide checkpoint path if trainer should be restored.
+# TODO: ADD CHECKPOINT PATH
 restoring_checkpoint_path = None #
-name = 'final_agent_1_fcn_128_pretrain_twapincentive_'
+name = 'final_agent_1_fcn_128_IS_REWARD_BAY_'
 
 num_iterations = 200
 save_checkpoints_freq = 10
@@ -123,11 +124,12 @@ ray.init(num_gpus=1)
 replay = Replay(rl_agent=agent,
                 episode_length=agent.episode_length,
                 # Note: saved for later when I run on several symbols.
-                #identifier_list=["DTE", "BAY"],
+                # Testset:
+                #identifier_list=['BAY', 'SAP', 'LIN', 'ALV', 'DTE'],
                 #random_identifier=True,
                 #start_date="2021-01-01",
-                #end_date="2021-01-08",
-                #shuffle=False,
+                #end_date="2021-01-08",#"2021-04-30",
+                #shuffle=True,
                 #####
                 verbose=False)
 

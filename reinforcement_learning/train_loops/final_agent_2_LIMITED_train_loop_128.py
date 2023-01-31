@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Train Loop for Final Agent 1 with MODEL 2 (128-LSTM)
+Train Loop for Final Agent 2. Model 1: 128
 AGENTID = 012823
+
+10 Observations, 6 Actions
 """
 
 # build ins
@@ -22,8 +24,8 @@ from ray import tune
 # library imports
 from reinforcement_learning.environment.tradingenvironment import \
     TradingEnvironment
-from reinforcement_learning.agent_prototypes.final_agent_1 \
-    import FinalOEAgent1
+from reinforcement_learning.agent_prototypes.final_agent_2_limited \
+    import FinalOEAgent2Limited
 
 from replay_episode.replay import Replay
 from utils.result_path_generator import generate_result_path
@@ -33,7 +35,7 @@ from reinforcement_learning.environment.episode_stats import EpisodeStats
 
 # manage GPUs if executed on server.
 if platform.system() == 'Linux':
-    gpuid = 'MIG-b33f9985-2600-590d-9cb1-002ae4ce5957'
+    gpuid = 'MIG-ac3c47b3-456e-56ff-aa3e-5731e429d659'
     import os
     os.environ["CUDA_VISIBLE_DEVICES"] = gpuid
 
@@ -45,19 +47,20 @@ print("Num GPUs Available TF: ", len(tf.config.list_physical_devices('GPU')))
 # episode length for agent and replay
 
 # Provide checkpoint path if trainer should be restored.
-# TODO: Add Checkpoint Path
-restoring_checkpoint_path = xcv
-name = 'final_agent_1_fcn_256_IS_REWARD_BAY_'
+# TODO: ADD CHECKPOINT PATH
+restoring_checkpoint_path = None #
+name = 'final_agent_2_LIMITED_fcn_128_WAIT_PRETRAIN_'
+
 num_iterations = 200
 save_checkpoints_freq = 10
 print_results_freq = 10
 # environment.
 episode_length = "10s"  # "60s", "30s"
-obs_size = 40  # 40
-action_size = 12
+obs_size = 10  # 40
+action_size = 6
 
 # fcnet.
-fcnet_hiddens = [256, 256, 128]
+fcnet_hiddens = [128, 128]
 fcnet_activation = 'relu'
 # lstm.
 use_lstm = False
@@ -70,8 +73,8 @@ lr_schedule = [
     [0, 1.0e-6],
     [1, 1.0e-7]]
 gamma = 1  # 0.99
-train_batch = 2560 # 2560  # 4000  # default 4000
-mini_batch = 128 # default: 128
+train_batch = 2560  # 2560  # 4000  # default 4000
+mini_batch = 128  # default: 128
 rollout_fragment_length = train_batch
 num_workers = 0
 #  If batch_mode is “complete_episodes”, rollout_fragment_length is ignored.
@@ -81,7 +84,7 @@ disable_env_checking = False
 print_entire_result = False  # contains a lot of useless info.
 rllib_log_level = 'WARN'  # WARN, 'DEBUG'
 # instantiate agent.
-agent = FinalOEAgent1(verbose=False,
+agent = FinalOEAgent2Limited(verbose=False,
                       episode_length=episode_length,
                       initial_inventory_level="Avg-10s-Vol",
                       )
@@ -122,6 +125,14 @@ ray.init(num_gpus=1)
 # instantiate replay_episode and pass agent object as input argument
 replay = Replay(rl_agent=agent,
                 episode_length=agent.episode_length,
+                # Note: saved for later when I run on several symbols.
+                # Testset:
+                #identifier_list=['BAY', 'SAP', 'LIN', 'ALV', 'DTE'],
+                #random_identifier=True,
+                #start_date="2021-01-01",
+                #end_date="2021-01-08",#"2021-04-30",
+                #shuffle=True,
+                #####
                 verbose=False)
 
 # -- Generate config file for PPO trainer.
@@ -187,7 +198,6 @@ rllib_trainer = PPOTrainer(config=config)
 if restoring_checkpoint_path:
     rllib_trainer.restore(restoring_checkpoint_path)
     print("RESTORED FROM CHECKPOINT, iterations: ", rllib_trainer._iteration)
-    print("RESTORED FROM", restoring_checkpoint_path)
 
 # print policy model
 # print(rllib_trainer.get_policy().model.base_model.summary())

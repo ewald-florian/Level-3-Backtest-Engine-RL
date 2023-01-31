@@ -45,8 +45,9 @@ print("Num GPUs Available TF: ", len(tf.config.list_physical_devices('GPU')))
 # episode length for agent and replay
 
 # Provide checkpoint path if trainer should be restored.
+# TODO: Add Checkpoint Path
 restoring_checkpoint_path = None
-name = 'final_agent_1_fcn_LSTM128_pretrain_twapincentive_'
+name = 'final_agent_1_fcn_LSTM128_IS_REWARD_BAY_'
 num_iterations = 200
 save_checkpoints_freq = 10
 print_results_freq = 10

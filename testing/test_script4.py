@@ -1,4 +1,4 @@
-from reinforcement_learning.agent_prototypes.sample_agent import RlAgent
+from reinforcement_learning.agent_prototypes._archieve.sample_agent import RlAgent
 
 agent = RlAgent()
 

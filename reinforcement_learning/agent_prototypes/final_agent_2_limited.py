@@ -1,14 +1,12 @@
-""" In order to have a baseline strategy for the agent, he should get small
-incentives to learn the TWAP strategy and apply it if nothing else happens.
-This is a agent prototype to develop and test this reward.
-
-AGENTID = 211222
 """
-__author__ = "florian"
-__date__ = "2022-12-12"
-__version__ = "0.1"
+This file contains the implementation of the final "main" optimal execution
+agent of the master thesis:
 
-# TODO: Implement TWAP incentive.
+- Limited Market Observation (-)
+- Limited Action Space (12)
+
+AGENTID = 300123
+"""
 
 from copy import copy
 
@@ -18,6 +16,7 @@ import pandas as pd
 from market.market import Market
 from market.market_interface import MarketInterface
 from context.context import Context
+from replay_episode.episode import Episode
 from feature_engineering.market_features import MarketFeatures
 from reinforcement_learning.reward.abc_reward import BaseReward
 from reinforcement_learning.observation_space.abc_observation_space \
@@ -35,6 +34,7 @@ from reinforcement_learning.action_space.abc_action_space import \
     BaseActionSpace
 from market.market_metrics import MarketMetrics
 from market.market_trade import MarketTrade
+from utils.initial_inventory import initial_inventory_dict
 
 
 class ObservationSpace(BaseObservationSpace):
@@ -54,13 +54,9 @@ class ObservationSpace(BaseObservationSpace):
         """
         Implement the market observation.
         """
-        # Raw market data.
-        raw_obs = self.raw_market_features
-        # Hand-crafted market data.
-        crafted_obs = self.handcrafted_market_features
+        # Use only handcrafted features.
+        market_obs = self.handcrafted_market_features
         # Append raw and handcrafted market features.
-        market_obs = np.append(raw_obs, crafted_obs)
-
         return market_obs
 
     def agent_observation(self) -> np.array:
@@ -69,7 +65,6 @@ class ObservationSpace(BaseObservationSpace):
         """
         # Use standard agent obs with elapsed time and remaining inventory.
         agent_obs = self.standard_agent_observation
-
         return agent_obs
 
 
@@ -93,11 +88,15 @@ class Reward(BaseReward):
     def receive_reward(self):
         """Define the Specific reward signal."""
 
-        reward = self.immediate_absolute_is_reward()
+        #reward = self.immediate_absolute_is_reward()
         #reward = self.incentivize_waiting()
         #reward = self.terminal_absolute_is_reward()
-        reward = self.incentivize_waiting(reward_factor=0.0001)
-
+        # For pretraining.
+        reward = self.incentivize_waiting(reward_factor=5)
+        # For stabilizing the model in later stages.
+        #reward = self.incentivize_waiting(reward_factor=0.0001)
+        #reward = self.twap_time_incentive_reward()
+        #print("immediate absolute reward: ", reward)
         return reward
 
 
@@ -122,30 +121,37 @@ class ActionSpace(BaseActionSpace):
         :param action,
             ..., next action
         """
-        self.limit_and_qt_action(action)
+        # Limited Action which determines only the quantity.
+        self.qt_action(action)
 
 
-class ISAgent2(RlBaseAgent):
+class FinalOEAgent2Limited(RlBaseAgent):
     """
     Agent with a larger action space, e.g. selection between different
     limits and quantities.
     """
 
     def __init__(self,
-                 initial_inventory: int = 800_0000,
+                 initial_inventory_level: str = "Avg-10s-Vol",
                  verbose=False,
-                 episode_length="1m",
+                 episode_length="10s",
                  ):
         """
-        When initialized, SpecialAgent builds compositions of MarketInterface,
+        When initialized, Agent builds compositions of MarketInterface,
         Reward and ObservationSpace. Note that Reward and ObservationSpace
         are subclasses which should be implemented to meet the specific
         requirements of this special agent, a specific observation and a
         specific reward function.
-        """
 
-        # static
-        self.initial_inventory = initial_inventory
+        Using the identifier which is stored in Episode.current_identifier,
+        the Agent can access the asset-specific initial inventory in the
+        initial_inventory_dict (utils). Thereby the initial_inventory_level
+        must be given as argument.
+        """
+        self.initial_inventory_level = initial_inventory_level
+        # Get initial inventory from initial_inventory_dict.
+        self.initial_inventory = initial_inventory_dict[
+            Episode.current_identifier][self.initial_inventory_level]*1_0000
         # Store initial inventory to agent context.
         AgentContext.update_initial_inventory(self.initial_inventory)
         # Store Episode Length:
@@ -155,7 +161,6 @@ class ISAgent2(RlBaseAgent):
         # print("INITIAL INV", AgentContext.initial_inventory)
 
         self.verbose = verbose
-        self.quantity = 10_0000
         # Convert episode_length to nanoseconds
         self.episode_length = pd.to_timedelta(episode_length).delta
 
@@ -179,6 +184,7 @@ class ISAgent2(RlBaseAgent):
 
         # get action from ActionStorage
         action = ActionStorage.action
+
         self._take_action(action)
 
         observation = copy(self.observation_space.holistic_observation())
@@ -198,7 +204,11 @@ class ISAgent2(RlBaseAgent):
     def reset(self):
         """Reset"""
         super().__init__()
-        self.quantity = self.quantity
+
+        # Get initial inventory from initial_inventory_dict.
+        self.initial_inventory = initial_inventory_dict[
+            Episode.current_identifier][self.initial_inventory_level]*1_0000
+
         self.verbose = self.verbose
 
         # compositions

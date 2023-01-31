@@ -9,17 +9,13 @@
 
 
 import ray
-import os
-import numpy as np
-import gym
-from gym import spaces
 from ray.rllib.agents.ppo import PPOTrainer
 # TODO: gibt es nicht mehr.
 #from ray.rllib.algorithms.algorithm import Algorithm
 
 from reinforcement_learning.environment.tradingenvironment import \
     TradingEnvironment
-from reinforcement_learning.agent_prototypes.twap_incentive_agent import \
+from reinforcement_learning.agent_prototypes._archieve.twap_incentive_agent import \
     TwapIncentiveAgent
 from replay_episode.replay import Replay
 from utils.episode_stats_path_generator import generate_episode_stats_path

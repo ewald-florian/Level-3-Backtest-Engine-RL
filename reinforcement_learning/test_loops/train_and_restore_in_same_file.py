@@ -17,14 +17,11 @@ import pandas as pd
 # rllib imports
 import ray
 from ray.rllib.agents.ppo import PPOTrainer
-from ray import tune
 
 # library imports
 from reinforcement_learning.environment.tradingenvironment import \
     TradingEnvironment
-from reinforcement_learning.agent_prototypes.twap_incentive_agent_reduced \
-    import TwapIncentiveAgentReduced
-from reinforcement_learning.agent_prototypes.is_agent_2 import ISAgent2
+from reinforcement_learning.agent_prototypes._archieve.is_agent_2 import ISAgent2
 from replay_episode.replay import Replay
 from utils.result_path_generator import generate_result_path
 from utils.episode_stats_path_generator import generate_episode_stats_path
