@@ -164,7 +164,7 @@ config["log_level"] = rllib_log_level
 
 # -- Model
 
-config["framework"] = "tf"
+config["framework"] = "tf2"
 # Note: tf2 and eager tracing do not work on server.
 # config["eager_tracing"] = False
 config["model"] = {}
