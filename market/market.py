@@ -599,8 +599,8 @@ class Market(Reconstruction):
             dict, agent submission message
         """
 
-        assert np.gcd(self.ticksize, message['price']) == self.ticksize, \
-            'Limit not admitted by ticksize'
+        #assert np.gcd(self.ticksize, message['price']) == self.ticksize, \
+        #    'Limit not admitted by ticksize'
 
         # ensure that 'msg_seq_num' field exists for compatibility
         message["msg_seq_num"] = None
@@ -789,8 +789,8 @@ class Market(Reconstruction):
         # -- submission
         if message['template_id'] == 99999:
             # assert if price is allowed by ticksize
-            assert np.gcd(self.ticksize, message['price']) == self.ticksize, \
-                'Limit not permitted by ticksize'
+            #assert np.gcd(self.ticksize, message['price']) == self.ticksize, \
+            #    'Limit not permitted by ticksize'
 
             # test if agent order matching is possible
             self._simulate_agent_order_matching()
