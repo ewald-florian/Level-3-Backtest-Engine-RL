@@ -77,7 +77,7 @@ rollout_fragment_length = 1280
 num_workers = 2
 num_envs_per_worker = 1
 framework = "tf2"
-eager_tracing = False
+eager_tracing = True
 #  If batch_mode is “complete_episodes”, rollout_fragment_length is ignored.
 batch_mode = 'complete_episodes'  # 'truncate_episodes'
 # other settings.
