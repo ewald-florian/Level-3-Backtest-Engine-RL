@@ -46,8 +46,8 @@ print("Num GPUs Available TF: ", len(tf.config.list_physical_devices('GPU')))
 
 # Provide checkpoint path if trainer should be restored.
 # TODO: ADD CHECKPOINT PATH
-restoring_checkpoint_path = "/home/jovyan/ray_results/PPO_TradingEnvironment_2023-01-31_02-53-11byvd0295/checkpoint_000581"
-name = 'final_agent_1_fcn_128_IS_REWARD_BAY_RUN1_'
+restoring_checkpoint_path = "/home/jovyan/ray_results/PPO_TradingEnvironment_2023-01-31_14-58-33ji26iggn/checkpoint_000682"
+name = 'final_agent_1_fcn_128_IS_REWARD_TRAININGSET_RUN2_WAIT_INCENTIVE_0_000001'
 
 num_iterations = 200
 save_checkpoints_freq = 10
@@ -73,8 +73,8 @@ lr_schedule = [
 gamma = 1  # 0.99
 train_batch = 2560  # 2560  # 4000  # default 4000
 mini_batch = 128  # default: 128
-rollout_fragment_length = train_batch
-num_workers = 0
+rollout_fragment_length =  1280
+num_workers = 2
 #  If batch_mode is “complete_episodes”, rollout_fragment_length is ignored.
 batch_mode = 'complete_episodes'  # 'truncate_episodes'
 # other settings.
@@ -125,11 +125,11 @@ replay = Replay(rl_agent=agent,
                 episode_length=agent.episode_length,
                 # Note: saved for later when I run on several symbols.
                 # Testset:
-                #identifier_list=['BAY', 'SAP', 'LIN', 'ALV', 'DTE'],
-                #random_identifier=True,
-                #start_date="2021-01-01",
-                #end_date="2021-01-08",#"2021-04-30",
-                #shuffle=True,
+                identifier_list=['BAY', 'SAP', 'LIN', 'ALV', 'DTE'],
+                random_identifier=True,
+                start_date="2021-01-01",
+                end_date="2021-04-30",#"2021-04-30",
+                shuffle=True,
                 #####
                 verbose=False)
 

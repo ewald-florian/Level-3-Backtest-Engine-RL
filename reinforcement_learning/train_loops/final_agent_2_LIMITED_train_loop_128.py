@@ -48,10 +48,10 @@ print("Num GPUs Available TF: ", len(tf.config.list_physical_devices('GPU')))
 
 # Provide checkpoint path if trainer should be restored.
 # NOTE: This is the checkpoint from the training iterations on server.
-restoring_checkpoint_path = "/Users/florianewald/ray_results/PPOTrainer_TradingEnvironment_2023-01-31_14-26-02m9jfn4_s/checkpoint_000200/checkpoint-200"
-name = 'final_agent_2_LIMITED_fcn_128_TWAP_PRETRAIN_'
+restoring_checkpoint_path = "/Users/florianewald/ray_results/PPOTrainer_TradingEnvironment_2023-01-31_17-11-09tqxzg_yc/checkpoint_000301/checkpoint-301"
+name = 'final_agent_2_LIMITED_fcn_128_TWAP_PRETRAIN_RUN2'
 
-num_iterations = 200
+num_iterations = 100
 save_checkpoints_freq = 10
 print_results_freq = 10
 # environment.
