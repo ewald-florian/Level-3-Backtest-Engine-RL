@@ -47,8 +47,8 @@ print("Num GPUs Available TF: ", len(tf.config.list_physical_devices('GPU')))
 # episode length for agent and replay
 
 # Provide checkpoint path if trainer should be restored.
-# TODO: ADD CHECKPOINT PATH
-restoring_checkpoint_path = None #
+# NOTE: This is the checkpoint from the training iterations on server.
+restoring_checkpoint_path = None
 name = 'final_agent_2_LIMITED_fcn_128_WAIT_PRETRAIN_'
 
 num_iterations = 200
@@ -74,7 +74,7 @@ lr_schedule = [
     [0, 1.0e-6],
     [1, 1.0e-7]]
 gamma = 1  # 0.99
-train_batch = 2560  # 2560  # 4000  # default 4000
+train_batch = 256#0  # 2560  # 4000  # default 4000
 mini_batch = 128  # default: 128
 rollout_fragment_length = train_batch
 num_workers = 0
@@ -165,9 +165,9 @@ config["log_level"] = rllib_log_level
 
 # -- Model
 
-config["framework"] = "tf"
+config["framework"] = "tf2"
 # Note: tf2 and eager tracing do not work on server.
-# config["eager_tracing"] = False
+config["eager_tracing"] = True
 config["model"] = {}
 # config["model"]["num_layers"] = num_layers
 config["model"]["fcnet_hiddens"] = fcnet_hiddens
