@@ -153,9 +153,9 @@ config["log_level"] = rllib_log_level
 
 # -- Model
 
-config["framework"] = "tf2"
+config["framework"] = "tf"
 # Note: tf2 and eager tracing do not work on server.
-config["eager_tracing"] = False
+#config["eager_tracing"] = False
 config["model"] = {}
 # config["model"]["num_layers"] = num_layers
 config["model"]["fcnet_hiddens"] = fcnet_hiddens
