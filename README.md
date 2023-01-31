@@ -20,3 +20,5 @@ The RL-extension provides the abstract classes BaseObservationSpace,
 BaseReward, BaseActionSpace which can be subclassed for the development of 
 custom RL-agents. The transition package can be used for the implementation
 of the MDP. 
+
+To run a backtest, the path to the database must be provided in episode.py.

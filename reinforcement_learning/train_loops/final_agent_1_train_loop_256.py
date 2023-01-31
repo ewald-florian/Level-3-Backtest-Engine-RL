@@ -46,8 +46,9 @@ print("Num GPUs Available TF: ", len(tf.config.list_physical_devices('GPU')))
 
 # Provide checkpoint path if trainer should be restored.
 # TODO: Add Checkpoint Path
-restoring_checkpoint_path = "/home/jovyan/ray_results/PPO_TradingEnvironment_2023-01-30_19-14-103cp10x7z/checkpoint_000400"
-name = 'final_agent_1_fcn_256_IS_REWARD_BAY_'
+restoring_checkpoint_path = "/home/jovyan/ray_results/PPO_TradingEnvironment_2023-01-31_16-01-29i82b5pe6/checkpoint_000502"
+name = 'final_agent_1_fcn_256_IS_REWARD_RUN2_TRAININGSET_WAIT_INCENTIVE_0_000001'
+name = "DEGUGGING_MULTY_SYMBOL"
 num_iterations = 200
 save_checkpoints_freq = 10
 print_results_freq = 10
@@ -72,8 +73,8 @@ lr_schedule = [
 gamma = 1  # 0.99
 train_batch = 2560 # 2560  # 4000  # default 4000
 mini_batch = 128 # default: 128
-rollout_fragment_length = train_batch
-num_workers = 0
+rollout_fragment_length = 1280
+num_workers = 2
 #  If batch_mode is “complete_episodes”, rollout_fragment_length is ignored.
 batch_mode = 'complete_episodes'  # 'truncate_episodes'
 # other settings.
@@ -120,8 +121,17 @@ print("EP_STATS_FILE:", EpisodeStats.path_name)
 ray.init(num_gpus=1)
 
 # instantiate replay_episode and pass agent object as input argument
+# instantiate replay_episode and pass agent object as input argument
 replay = Replay(rl_agent=agent,
                 episode_length=agent.episode_length,
+                # Note: saved for later when I run on several symbols.
+                # Testset:
+                identifier_list=['BAY', 'SAP', 'LIN', 'ALV', 'DTE'],
+                random_identifier=True,
+                start_date="2021-01-01",
+                end_date="2021-04-30",#"2021-04-30",
+                shuffle=True,
+                #####
                 verbose=False)
 
 # -- Generate config file for PPO trainer.
@@ -141,7 +151,9 @@ config["env_config"]["action_size"] = action_size
 # Notes: 0:  use the learner GPU for inference.
 config["num_workers"] = num_workers
 # config["ignore_worker_failures"] = True
-#config["num_envs_per_worker"] = 1
+# NOTE: Only use one Environment per worker!!!
+if num_workers > 0:
+    config["num_envs_per_worker"] = 1
 # Horizon: max time steps after which an episode will be terminated.
 #  Note this limit should never be hit when everything works.
 config["horizon"] = 100_000
