@@ -93,15 +93,14 @@ class Reward(BaseReward):
     def receive_reward(self):
         """Define the Specific reward signal."""
 
-        reward = self.immediate_absolute_is_reward()
+        #reward = self.immediate_absolute_is_reward()
         #reward = self.incentivize_waiting()
         #reward = self.terminal_absolute_is_reward()
         # For pretraining.
         #reward = self.incentivize_waiting(reward_factor=5)
         # For stabilizing the model in later stages.
         #reward = self.incentivize_waiting(reward_factor=0.0001)
-        #reward = self.twap_time_incentive_reward()
-        #print("immediate absolute reward: ", reward)
+        reward = self.twap_time_incentive_reward()
 
         return reward
 
