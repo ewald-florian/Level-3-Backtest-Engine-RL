@@ -74,7 +74,7 @@ gamma = 1  # 0.99
 train_batch = 2560 # 2560  # 4000  # default 4000
 mini_batch = 128 # default: 128
 rollout_fragment_length = 1280
-num_workers = 2
+num_workers = 0
 #  If batch_mode is “complete_episodes”, rollout_fragment_length is ignored.
 batch_mode = 'complete_episodes'  # 'truncate_episodes'
 # other settings.
