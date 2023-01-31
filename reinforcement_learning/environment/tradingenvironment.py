@@ -85,7 +85,7 @@ class TradingEnvironment(gym.Env):
         :return: info
             dict, additional info, can be empty
         """
-
+        print("(ENV): step")
         # assert if action is valid
         assert self.action_space.contains(action), "Invalid Action"
 
@@ -106,7 +106,7 @@ class TradingEnvironment(gym.Env):
             oms = copy.deepcopy(OMS.order_list)
             agent_trade = copy.deepcopy(AgentTrade.history)
             action_list = ActionStorage.action_history
-            print("****Ich habe store episode stats in tradingenv auskommentiert")
+            #print("****Ich habe store episode stats in tradingenv auskommentiert")
             #EpisodeStats.store_episode_results(oms, agent_trade, action_list)
 
         # return
