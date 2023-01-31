@@ -73,7 +73,7 @@ lr_schedule = [
 gamma = 1  # 0.99
 train_batch = 2560  # 2560  # 4000  # default 4000
 mini_batch = 128  # default: 128
-rollout_fragment_length = train_batch
+rollout_fragment_length = 1280
 num_workers = 2
 #  If batch_mode is “complete_episodes”, rollout_fragment_length is ignored.
 batch_mode = 'complete_episodes'  # 'truncate_episodes'
@@ -183,7 +183,7 @@ config["sgd_minibatch_size"] = mini_batch
 # Batch mode
 config['batch_mode'] = batch_mode
 # rollout_fragment_length
-config["rollout_fragment_length"] = 512#rollout_fragment_length
+config["rollout_fragment_length"] = rollout_fragment_length
 
 # -- LSTM.
 if use_lstm:
