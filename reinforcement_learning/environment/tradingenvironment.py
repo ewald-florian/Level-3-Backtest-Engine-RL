@@ -85,7 +85,6 @@ class TradingEnvironment(gym.Env):
         :return: info
             dict, additional info, can be empty
         """
-        print("(ENV): step")
         # assert if action is valid
         assert self.action_space.contains(action), "Invalid Action"
 

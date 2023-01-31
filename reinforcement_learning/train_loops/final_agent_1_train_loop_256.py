@@ -46,7 +46,7 @@ print("Num GPUs Available TF: ", len(tf.config.list_physical_devices('GPU')))
 
 # Provide checkpoint path if trainer should be restored.
 # TODO: Add Checkpoint Path
-restoring_checkpoint_path = xcv
+restoring_checkpoint_path = "/home/jovyan/ray_results/PPO_TradingEnvironment_2023-01-30_19-14-103cp10x7z/checkpoint_000400"
 name = 'final_agent_1_fcn_256_IS_REWARD_BAY_'
 num_iterations = 200
 save_checkpoints_freq = 10
@@ -72,8 +72,8 @@ lr_schedule = [
 gamma = 1  # 0.99
 train_batch = 2560 # 2560  # 4000  # default 4000
 mini_batch = 128 # default: 128
-rollout_fragment_length = train_batch
-num_workers = 0
+rollout_fragment_length = 1280
+num_workers = 2
 #  If batch_mode is “complete_episodes”, rollout_fragment_length is ignored.
 batch_mode = 'complete_episodes'  # 'truncate_episodes'
 # other settings.
@@ -141,7 +141,7 @@ config["env_config"]["action_size"] = action_size
 # Notes: 0:  use the learner GPU for inference.
 config["num_workers"] = num_workers
 # config["ignore_worker_failures"] = True
-# config["num_envs_per_worker"] = 1
+config["num_envs_per_worker"] = 1
 # Horizon: max time steps after which an episode will be terminated.
 #  Note this limit should never be hit when everything works.
 config["horizon"] = 100_000
@@ -153,9 +153,9 @@ config["log_level"] = rllib_log_level
 
 # -- Model
 
-config["framework"] = "tf"
+config["framework"] = "tf2"
 # Note: tf2 and eager tracing do not work on server.
-# config["eager_tracing"] = False
+config["eager_tracing"] = True
 config["model"] = {}
 # config["model"]["num_layers"] = num_layers
 config["model"]["fcnet_hiddens"] = fcnet_hiddens
