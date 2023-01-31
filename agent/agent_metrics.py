@@ -177,7 +177,6 @@ class AgentMetrics:
             int, side on which the OE agent trades. 2 for execution agent, 1
             for acquisition agent.
         """
-
         # Compute sum of quantity of respective side.
         realized_trades = AgentTrade.history
         if realized_trades:

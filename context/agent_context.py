@@ -24,7 +24,8 @@ class AgentContext:
     start_time = None
     end_time = None
     episode_length = None
-    initial_inventory = None
+    print("*****I Changed AgentContext initial inv from None to 0, check if this is a problem")
+    initial_inventory = 0
     high_activity_flag = None
 
     def __init__(self):

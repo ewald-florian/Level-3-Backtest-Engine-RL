@@ -11,7 +11,8 @@ class EpisodeStats:
     to store episode stats during the current training loop.
     """
     # class attribute tuple
-    path_name = None
+
+    path_name = None #"/Users/florianewald/Desktop"  # For env checking.
 
     @classmethod
     def __init__(cls,
