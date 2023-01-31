@@ -1,10 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Train Loop for Final Agent 2. Model 1: 128
+Train Loop for Final Agent 1. Model 1: 128
 AGENTID = 012823
-
-10 Observations, 6 Actions
 """
 
 # build ins
@@ -24,8 +22,8 @@ from ray import tune
 # library imports
 from reinforcement_learning.environment.tradingenvironment import \
     TradingEnvironment
-from reinforcement_learning.agent_prototypes.final_agent_2_limited \
-    import FinalOEAgent2Limited
+from reinforcement_learning.agent_prototypes.archieve.multi_worker_test_agent \
+    import MultiWorkerTest
 
 from replay_episode.replay import Replay
 from utils.result_path_generator import generate_result_path
@@ -35,7 +33,7 @@ from reinforcement_learning.environment.episode_stats import EpisodeStats
 
 # manage GPUs if executed on server.
 if platform.system() == 'Linux':
-    gpuid = 'MIG-ac3c47b3-456e-56ff-aa3e-5731e429d659'
+    gpuid = "MIG-ac3c47b3-456e-56ff-aa3e-5731e429d659" #'MIG-c8c5eee1-c148-5f66-9889-9759c8656d2b'
     import os
     os.environ["CUDA_VISIBLE_DEVICES"] = gpuid
 
@@ -47,18 +45,17 @@ print("Num GPUs Available TF: ", len(tf.config.list_physical_devices('GPU')))
 # episode length for agent and replay
 
 # Provide checkpoint path if trainer should be restored.
-# NOTE: This is the checkpoint from the training iterations on server.
-restoring_checkpoint_path = "/Users/florianewald/ray_results/PPOTrainer_TradingEnvironment_2023-01-31_14-26-02m9jfn4_s/checkpoint_000200/checkpoint-200"
-name = 'final_agent_2_LIMITED_fcn_128_TWAP_PRETRAIN_'
+# TODO: ADD CHECKPOINT PATH
+restoring_checkpoint_path = None#"/home/jovyan/ray_results/PPO_TradingEnvironment_2023-01-30_16-40-08uht_cgw7/checkpoint_000381"
+name = 'exp_num_workers'
 
-num_iterations = 200
+num_iterations = 5
 save_checkpoints_freq = 10
 print_results_freq = 10
 # environment.
 episode_length = "10s"  # "60s", "30s"
-obs_size = 10  # 40
-action_size = 6
-
+obs_size = 40  # 40
+action_size = 12
 
 # fcnet.
 fcnet_hiddens = [128, 128]
@@ -74,18 +71,21 @@ lr_schedule = [
     [0, 1.0e-6],
     [1, 1.0e-7]]
 gamma = 1  # 0.99
-train_batch = 256#0  # 2560  # 4000  # default 4000
+train_batch = 2560  # 2560  # 4000  # default 4000
 mini_batch = 128  # default: 128
-rollout_fragment_length = train_batch
-num_workers = 0
+rollout_fragment_length = 1280
+num_workers = 2
+num_envs_per_worker = 1
+framework = "tf2"
+eager_tracing = False
 #  If batch_mode is “complete_episodes”, rollout_fragment_length is ignored.
 batch_mode = 'complete_episodes'  # 'truncate_episodes'
 # other settings.
-disable_env_checking = False
+disable_env_checking = True
 print_entire_result = False  # contains a lot of useless info.
 rllib_log_level = 'WARN'  # WARN, 'DEBUG'
 # instantiate agent.
-agent = FinalOEAgent2Limited(verbose=False,
+agent = MultiWorkerTest(verbose=False,
                       episode_length=episode_length,
                       initial_inventory_level="Avg-10s-Vol",
                       )
@@ -112,15 +112,17 @@ training_name = generate_string(
 result_file = generate_result_path(name=training_name)
 all_episode_result_file = generate_result_path(name=training_name + "_all_eps")
 print("RESULT_FILE:", result_file)
-print("ALL_EPS_RESULT_FILE:", all_episode_result_file)
+#print("ALL_EPS_RESULT_FILE:", all_episode_result_file)
 # generate json file to store episode statistics.
 stats_path = generate_episode_stats_path(name=training_name)
 EpisodeStats(stats_path)
-print("EP_STATS_FILE:", EpisodeStats.path_name)
+#print("EP_STATS_FILE:", EpisodeStats.path_name)
 
 # -- Set up the training configuration.
 
 # Start a new instance of Ray (Note: num_gpus=1 required for server)
+# TODO: I removed GPU to test it on the server.
+
 ray.init(num_gpus=1)
 
 # instantiate replay_episode and pass agent object as input argument
@@ -153,7 +155,8 @@ config["env_config"]["action_size"] = action_size
 # Notes: 0:  use the learner GPU for inference.
 config["num_workers"] = num_workers
 # config["ignore_worker_failures"] = True
-# config["num_envs_per_worker"] = 1
+if num_workers > 0:
+    config["num_envs_per_worker"] = num_envs_per_worker
 # Horizon: max time steps after which an episode will be terminated.
 #  Note this limit should never be hit when everything works.
 config["horizon"] = 100_000
@@ -164,10 +167,10 @@ config["disable_env_checking"] = disable_env_checking
 config["log_level"] = rllib_log_level
 
 # -- Model
-
-config["framework"] = "tf2"
+config["framework"] = framework
 # Note: tf2 and eager tracing do not work on server.
-config["eager_tracing"] = True
+if framework == "tf2":
+    config["eager_tracing"] = eager_tracing
 config["model"] = {}
 # config["model"]["num_layers"] = num_layers
 config["model"]["fcnet_hiddens"] = fcnet_hiddens

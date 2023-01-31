@@ -33,7 +33,7 @@ from reinforcement_learning.environment.episode_stats import EpisodeStats
 
 # manage GPUs if executed on server.
 if platform.system() == 'Linux':
-    gpuid = "MIG-b33f9985-2600-590d-9cb1-002ae4ce5957" #'MIG-c8c5eee1-c148-5f66-9889-9759c8656d2b'
+    gpuid = "MIG-ac3c47b3-456e-56ff-aa3e-5731e429d659" #'MIG-c8c5eee1-c148-5f66-9889-9759c8656d2b'
     import os
     os.environ["CUDA_VISIBLE_DEVICES"] = gpuid
 
@@ -75,6 +75,9 @@ train_batch = 2560  # 2560  # 4000  # default 4000
 mini_batch = 128  # default: 128
 rollout_fragment_length = 1280
 num_workers = 2
+num_envs_per_worker = 1
+framework = "tf"
+eager_tracing = True
 #  If batch_mode is “complete_episodes”, rollout_fragment_length is ignored.
 batch_mode = 'complete_episodes'  # 'truncate_episodes'
 # other settings.
@@ -152,7 +155,8 @@ config["env_config"]["action_size"] = action_size
 # Notes: 0:  use the learner GPU for inference.
 config["num_workers"] = num_workers
 # config["ignore_worker_failures"] = True
-config["num_envs_per_worker"] = 1
+if num_workers > 0:
+    config["num_envs_per_worker"] = num_envs_per_worker
 # Horizon: max time steps after which an episode will be terminated.
 #  Note this limit should never be hit when everything works.
 config["horizon"] = 100_000
@@ -163,10 +167,10 @@ config["disable_env_checking"] = disable_env_checking
 config["log_level"] = rllib_log_level
 
 # -- Model
-
-config["framework"] = "tf2"
+config["framework"] = framework
 # Note: tf2 and eager tracing do not work on server.
-config["eager_tracing"] = True
+if framework == "tf2":
+    config["eager_tracing"] = eager_tracing
 config["model"] = {}
 # config["model"]["num_layers"] = num_layers
 config["model"]["fcnet_hiddens"] = fcnet_hiddens
