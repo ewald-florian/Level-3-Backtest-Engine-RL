@@ -60,7 +60,8 @@ action_size = 12
 fcnet_hiddens = [128, 128]
 fcnet_activation = 'relu'
 # lstm.
-use_lstm = True
+print("TTTTTTTTTTTTtest")
+use_lstm = False # print("TTTTTTTTTTTTtest")
 max_seq_len = 10  # default 20
 lstm_cell_size = 128  # default 256
 # training
