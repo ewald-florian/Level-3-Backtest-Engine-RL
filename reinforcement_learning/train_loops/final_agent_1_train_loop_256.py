@@ -43,7 +43,6 @@ print("Num GPUs Available TF: ", len(tf.config.list_physical_devices('GPU')))
 
 # SET UP TRAIN LOOP
 # episode length for agent and replay
-
 # Provide checkpoint path if trainer should be restored.
 # TODO: Add Checkpoint Path
 
