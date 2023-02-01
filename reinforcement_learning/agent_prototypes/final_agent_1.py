@@ -99,7 +99,7 @@ class Reward(BaseReward):
         # For pretraining.
         #reward = self.incentivize_waiting(reward_factor=5)
         # For stabilizing the model in later stages.
-        wait_reward = self.incentivize_waiting(reward_factor=0.0000001)
+        wait_reward = self.incentivize_waiting(reward_factor=0.001)
         #reward = self.twap_time_incentive_reward()
         reward = wait_reward + is_reward
         return reward

@@ -48,8 +48,8 @@ print("Num GPUs Available TF: ", len(tf.config.list_physical_devices('GPU')))
 # TODO: Add Checkpoint Path
 
 restoring_checkpoint_path = "/home/jovyan/ray_results/PPO_TradingEnvironment_2023-01-31_12-44-01vbafv6p6/checkpoint_000521/"
-name = 'final_agent_1_fcn_256_IS_REWARD_RUN2_TRAININGSET_WAIT_INCENTIVE_0_000001'
-num_iterations = 600
+name = 'A1_fcn_256_FINAL_RUN_ISREWARD_TRAININGSET_WAIT_INCENTIVE_0_001_'
+num_iterations = 1000
 save_checkpoints_freq = 10
 print_results_freq = 10
 # environment.
