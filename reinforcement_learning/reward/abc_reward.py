@@ -50,7 +50,7 @@ class BaseReward(ABC):
         """
         raise NotImplementedError("Implement receive_reward in subclass.")
 
-    def immediate_absolute_is_reward(self, scaling_factor=10):
+    def immediate_absolute_is_reward(self, scaling_factor=1):
         """
         Returns 0 if no trade happened and IS of last trade if new
         trades happened.
