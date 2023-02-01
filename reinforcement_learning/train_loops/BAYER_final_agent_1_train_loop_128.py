@@ -46,7 +46,7 @@ print("Num GPUs Available TF: ", len(tf.config.list_physical_devices('GPU')))
 
 # Provide checkpoint path if trainer should be restored.
 # TODO: ADD CHECKPOINT PATH
-restoring_checkpoint_path = "/home/jovyan/ray_results/PPO_TradingEnvironment_2023-01-31_02-59-27yb3l15ky/checkpoint_000541"
+restoring_checkpoint_path = "/home/jovyan/ray_results/PPO_TradingEnvironment_2023-01-30_16-40-08uht_cgw7/checkpoint_000381/"
 name = 'BAYER_FCN128_128_FINAL_RUN_ISREWARD_TRAININGSET_WAIT_INCENTIVE_0_001_'
 
 num_iterations = 1000
