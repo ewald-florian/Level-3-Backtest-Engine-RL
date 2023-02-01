@@ -46,7 +46,7 @@ print("Num GPUs Available TF: ", len(tf.config.list_physical_devices('GPU')))
 
 # Provide checkpoint path if trainer should be restored.
 # TODO: Add Checkpoint Path
-restoring_checkpoint_path = "/home/jovyan/ray_results/PPO_TradingEnvironment_2023-01-31_15-27-55d6idy3na/checkpoint_000652"
+restoring_checkpoint_path = "/home/jovyan/ray_results/PPO_TradingEnvironment_2023-01-31_20-42-42ht2ne36y/checkpoint_000873"
 name = 'final_agent_1_fcn_LSTM128_IS_REWARD_RUN2_TRAININGSET_WAIT_INCENTIVE_0_000001'
 num_iterations = 600
 save_checkpoints_freq = 10
@@ -72,8 +72,8 @@ lr_schedule = [
 gamma = 1  # 0.99
 train_batch = 2560 # 2560  # 4000  # default 4000
 mini_batch = 128 # default: 128
-rollout_fragment_length = 1280
-num_workers = 2
+rollout_fragment_length = 2560
+num_workers = 0
 #  If batch_mode is “complete_episodes”, rollout_fragment_length is ignored.
 batch_mode = 'complete_episodes'  # 'truncate_episodes'
 # other settings.
