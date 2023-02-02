@@ -3,3 +3,6 @@
 data
 _notebooks
 _archieve
+reinforcement_learning/train_results
+reinforcement_learning/episode_stats
+test_results
