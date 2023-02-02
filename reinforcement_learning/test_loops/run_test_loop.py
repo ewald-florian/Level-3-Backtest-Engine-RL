@@ -38,11 +38,13 @@ from utils.test_result_path import generate_test_result_path
 # -- config file specifications are required to restore the weights.
 
 # manage GPUs if executed on server.
+"""
 if platform.system() == 'Linux':
     gpuid = 'MIG-b33f9985-2600-590d-9cb1-002ae4ce5957'
     import os
 
-    os.environ["CUDA_VISIBLE_DEVICES"] = gpuid
+    os.environ['CUDA_VISIBLE_DEVICES'] = gpuid
+"""
 
 print("Num GPUs Available TF: ", len(tf.config.list_physical_devices('GPU')))
 
@@ -105,8 +107,8 @@ elif STRATEGY_NAME == "A2_LIMITED":
     CHECKPOINT_PATH = "/Users/florianewald/ray_results/PPOTrainer_TradingEnvironment_2023-01-31_22-31-19agy3bqbz/checkpoint_000401/checkpoint-401"
 
 # Start ray.
-# ray.init(num_gpus=1, num_cpus=1)
-ray.init(num_gpus=1)
+ray.init(num_gpus=0, num_cpus=1)
+# ray.init(num_gpus=1)
 
 # Initialize agent for Replay.
 agent = AGENT(verbose=False,
