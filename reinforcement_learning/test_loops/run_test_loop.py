@@ -39,7 +39,7 @@ from utils.test_result_path import generate_test_result_path
 
 # manage GPUs if executed on server.
 if platform.system() == 'Linux':
-    gpuid = 'MIG-ac3c47b3-456e-56ff-aa3e-5731e429d659'
+    gpuid = 'MIG-b33f9985-2600-590d-9cb1-002ae4ce5957'
     import os
 
     os.environ["CUDA_VISIBLE_DEVICES"] = gpuid
