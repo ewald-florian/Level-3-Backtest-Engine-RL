@@ -131,7 +131,7 @@ replay = Replay(rl_agent=agent,
                 # Testset:
                 identifier_list=['BAY', 'SAP', 'LIN', 'ALV', 'DTE'],
                 random_identifier=True,
-                start_date="2021-01-01",
+                start_date="2021-01-26",
                 end_date="2021-04-30",#"2021-04-30",
                 shuffle=True,
                 #####
