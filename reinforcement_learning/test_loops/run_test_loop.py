@@ -58,9 +58,9 @@ print("Num GPUs Available TF: ", len(tf.config.list_physical_devices('GPU')))
 #
 # ----------------------------
 # TODO: Insert Agent Name
-STRATEGY_NAME = "A1_FCN_256"
+STRATEGY_NAME = "A2_LIMITED"
 AGENT = FinalOEAgent1  # FinalOEAgent2Limited
-SYMBOL = "SAP"
+SYMBOL = "BAY"
 # ----------------------------
 TEST_START = "2021-05-14"
 TEST_END = "2021-06-30"
@@ -96,7 +96,8 @@ if STRATEGY_NAME == "A1_FCN_128":
 elif STRATEGY_NAME == "A1_FCN_128_LSTM":
     CHECKPOINT_PATH = ...
 elif STRATEGY_NAME == "A1_FCN_256":
-    CHECKPOINT_PATH = "/home/jovyan/ray_results/PPO_TradingEnvironment_2023-02-01_16-29-5770ets8gb/checkpoint_001102"
+    CHECKPOINT_PATH = "/Users/florianewald/Downloads/A1_FCN_256_final_checkpoint"
+    #CHECKPOINT_PATH = "/home/jovyan/ray_results/PPO_TradingEnvironment_2023-02-01_16-29-5770ets8gb/checkpoint_001102"
 elif STRATEGY_NAME == "A1_FCN_256_LSTM":
 
     CHECKPOINT_PATH = "/home/jovyan/ray_results/PPO_TradingEnvironment_2023-02-01_16-21-24t0r6c3vt/checkpoint_001012"
@@ -104,7 +105,8 @@ elif STRATEGY_NAME == "A1_BAY":
     CHECKPOINT_PATH = ...
 
 elif STRATEGY_NAME == "A2_LIMITED":
-    CHECKPOINT_PATH = "/Users/florianewald/ray_results/PPOTrainer_TradingEnvironment_2023-01-31_22-31-19agy3bqbz/checkpoint_000401/checkpoint-401"
+    CHECKPOINT_PATH = "/Users/florianewald/ray_results/PPOTrainer_TradingEnvironment_2023-02-02_12-40-48qhxzjq6z/checkpoint_000925/checkpoint-925"
+    #CHECKPOINT_PATH = "/Users/florianewald/ray_results/PPOTrainer_TradingEnvironment_2023-01-31_22-31-19agy3bqbz/checkpoint_000401/checkpoint-401"
 
 # Start ray.
 ray.init(num_gpus=0, num_cpus=1)
