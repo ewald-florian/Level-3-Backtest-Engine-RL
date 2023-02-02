@@ -58,9 +58,9 @@ print("Num GPUs Available TF: ", len(tf.config.list_physical_devices('GPU')))
 #
 # ----------------------------
 # TODO: Insert Agent Name
-STRATEGY_NAME = "A2_LIMITED"
-AGENT = FinalOEAgent2Limited  # FinalOEAgent2Limited
-SYMBOL = "SAP"
+STRATEGY_NAME = "A1_FCN_256"
+AGENT = FinalOEAgent1  # FinalOEAgent2Limited # FinalOEAgent1
+SYMBOL = "BAY"
 # ----------------------------
 TEST_START = "2021-05-14"
 TEST_END = "2021-06-30"
@@ -79,7 +79,7 @@ print(80*"*")
 
 # Paths to base config dicts.
 if platform.system() == 'Darwin':  # macos
-    base_config_path = "/Users/florianewald/PycharmProjects/Level-3-Backtest-" \
+    base_config_path = "/Users/florianewald/PycharmProjects/Level-3-Backtest-"\
                        "Engine-RL/reinforcement_learning/base_configs/"
 
 elif platform.system() == 'Linux':
@@ -96,8 +96,8 @@ if STRATEGY_NAME == "A1_FCN_128":
 elif STRATEGY_NAME == "A1_FCN_128_LSTM":
     CHECKPOINT_PATH = ...
 elif STRATEGY_NAME == "A1_FCN_256":
-    CHECKPOINT_PATH = "/Users/florianewald/Downloads/A1_FCN_256_final_checkpoint"
-    #CHECKPOINT_PATH = "/home/jovyan/ray_results/PPO_TradingEnvironment_2023-02-01_16-29-5770ets8gb/checkpoint_001102"
+    # CHECKPOINT_PATH = "/Users/florianewald/Downloads/A1_FCN_256_final_checkpoint"
+    CHECKPOINT_PATH = "/home/jovyan/ray_results/PPO_TradingEnvironment_2023-02-01_16-29-5770ets8gb/checkpoint_001102"
 elif STRATEGY_NAME == "A1_FCN_256_LSTM":
 
     CHECKPOINT_PATH = "/home/jovyan/ray_results/PPO_TradingEnvironment_2023-02-01_16-21-24t0r6c3vt/checkpoint_001012"
