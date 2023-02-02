@@ -133,7 +133,7 @@ replay = Replay(rl_agent=agent,
 base_config["env"] = TradingEnvironment
 base_config['env_config']['config']['replay_episode'] = replay
 base_config["disable_env_checking"] = True
-#base_config["framework"] = "tf"
+base_config["framework"] = "tf2"
 
 print("(INSTANTIATED) FROM {}".format(base_config_path))
 trained_strategy = PPOTrainer(config=base_config)
