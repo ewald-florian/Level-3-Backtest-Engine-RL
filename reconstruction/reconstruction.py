@@ -313,6 +313,7 @@ class Reconstruction:
 
             # -- update internal limit order book state ...
 
+
             # order add
             if message["template_id"] == 13100:
                 self._order_add(message)
