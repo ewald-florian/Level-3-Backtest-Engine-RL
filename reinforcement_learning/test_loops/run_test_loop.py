@@ -98,9 +98,11 @@ elif STRATEGY_NAME == "A1_FCN_128_LSTM":
 elif STRATEGY_NAME == "A1_FCN_256":
     CHECKPOINT_PATH = "/home/jovyan/ray_results/PPO_TradingEnvironment_2023-02-01_16-29-5770ets8gb/checkpoint_001102"
 elif STRATEGY_NAME == "A1_FCN_256_LSTM":
+
     CHECKPOINT_PATH = "/home/jovyan/ray_results/PPO_TradingEnvironment_2023-02-01_16-21-24t0r6c3vt/checkpoint_001012"
 elif STRATEGY_NAME == "A1_BAY":
     CHECKPOINT_PATH = ...
+
 elif STRATEGY_NAME == "A2_LIMITED":
     CHECKPOINT_PATH = "/Users/florianewald/ray_results/PPOTrainer_TradingEnvironment_2023-01-31_22-31-19agy3bqbz/checkpoint_000401/checkpoint-401"
 
@@ -126,6 +128,7 @@ replay = Replay(rl_agent=agent,
 base_config["env"] = TradingEnvironment
 base_config['env_config']['config']['replay_episode'] = replay
 base_config["disable_env_checking"] = True
+base_config["framework"] = "tf"
 
 print("(INSTANTIATED) FROM {}".format(base_config_path))
 trained_strategy = PPOTrainer(config=base_config)
