@@ -107,7 +107,8 @@ elif STRATEGY_NAME == "A2_LIMITED":
     CHECKPOINT_PATH = "/Users/florianewald/ray_results/PPOTrainer_TradingEnvironment_2023-01-31_22-31-19agy3bqbz/checkpoint_000401/checkpoint-401"
 
 # Start ray.
-ray.init(num_gpus=0, num_cpus=1)
+# ray.init(num_gpus=1, num_cpus=1)
+ray.init(num_gpus=1)
 
 # Initialize agent for Replay.
 agent = AGENT(verbose=False,
