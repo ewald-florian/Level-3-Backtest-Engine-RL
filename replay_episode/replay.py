@@ -1,20 +1,11 @@
 #!/usr/bin/env python3  Line 1
 # -*- coding: utf-8 -*- Line 2
-# ---------------------------------------------------------------------------
 """ Replay Module for the Level-3 backtest engine"""
-# ---------------------------------------------------------------------------
-__author__ = "florian"
-__date__ = "2022-09-25"
-__version__ = "0.2"
-
-# ---------------------------------------------------------------------------
 
 import random
 import datetime
 import logging
-
 logging.getLogger().setLevel(logging.INFO)
-
 # !pip install pandas-market-calendars # -> dependency!
 import pandas_market_calendars as mcal
 import pandas as pd
@@ -48,8 +39,8 @@ class Replay:
                  identifier: str = "BAY",#"BMW",
                  start_date: str = "2021-01-01",#"2022-02-01",
                  end_date: str = "2021-04-30",#"2022-02-02",
-                 episode_length: str = "1m",
-                 frequency: str = "1m",
+                 episode_length: str = "10s",
+                 frequency: str = "5m",
                  seed: int = None,
                  shuffle: bool = True,
                  random_identifier: bool = False,

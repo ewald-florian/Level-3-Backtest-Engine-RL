@@ -45,22 +45,36 @@ if platform.system() == 'Linux':
 print("Num GPUs Available TF: ", len(tf.config.list_physical_devices('GPU')))
 
 # -- Set Up.
+# "A1_FCN_128"
+# "A1_FCN_128_LSTM"
+# "A1_FCN_256"
+# "A1_FCN_256_LSTM"
+# "A1_BAY"
+# "A2_LIMITED"
+#
 # ---------------
-STRATEGY_NAME = "A2_LIMITED"  # TODO: Make name with timestamp.now, symbol and strategy
+# TODO: Insert Agent Name
+STRATEGY_NAME = "A1_FCN_256_LSTM"
 SYMBOL = "BAY"
-TEST_START = "2021-01-04"
-TEST_END = "2021-01-08"
+TEST_START = "2021-04-15"
+TEST_END = "2021-06-30"
 FREQUENCY = "5m"
-NUM_ITERS_STORE_RESULTS = 100
+NUM_ITERS_STORE_RESULTS = 5
 VERBOSE = True
 NUM_TEST_EPISODES = 100
 PRINT_FREQUENCY = 10
-BASE_CONFIG_PATH = "/Users/florianewald/PycharmProjects/Level-3-Backtest-" \
-                   "Engine-RL/reinforcement_learning/base_configs/"
-# ----------------
 
-# TODO: einfach über name ladebas
-base_config_path = BASE_CONFIG_PATH + STRATEGY_NAME + "_base_config.json"
+
+# Paths to base config dicts.
+if platform.system() == 'Darwin':  # macos
+    base_config_path = "/Users/florianewald/PycharmProjects/Level-3-Backtest-"\
+                       "Engine-RL/reinforcement_learning/base_configs/"
+
+elif platform.system() == 'Linux':
+    base_config_path = "/Users/florianewald/PycharmProjects/Level-3-Backtest-"\
+                       "Engine-RL/reinforcement_learning/base_configs/"
+
+base_config_path = base_config_path + STRATEGY_NAME + "_base_config.json"
 with open(base_config_path, 'r') as fp:
     base_config = json.load(fp)
 
@@ -72,14 +86,15 @@ elif STRATEGY_NAME == "A1_FCN_128_LSTM":
 elif STRATEGY_NAME == "A1_FCN_256":
     CHECKPOINT_PATH = ...
 elif STRATEGY_NAME == "A1_FCN_256_LSTM":
-    CHECKPOINT_PATH = ...
+    # TODO: This is a priliminary checkpoint path for testing.
+    CHECKPOINT_PATH = "/home/jovyan/ray_results/PPO_TradingEnvironment_2023-02-01_16-21-24t0r6c3vt/checkpoint_000442"
 elif STRATEGY_NAME == "A1_BAY":
     CHECKPOINT_PATH = ...
 elif STRATEGY_NAME == "A2_LIMITED":
     CHECKPOINT_PATH = "/Users/florianewald/ray_results/PPOTrainer_TradingEnvironment_2023-01-31_22-31-19agy3bqbz/checkpoint_000401/checkpoint-401"
 
 # Start ray.
-ray.init(num_gpus=1, num_cpus=1)
+ray.init(num_gpus=0, num_cpus=1)
 
 # Initialize agent for Replay.
 agent = FinalOEAgent2Limited(verbose=False,
@@ -90,20 +105,16 @@ agent = FinalOEAgent2Limited(verbose=False,
 replay = Replay(rl_agent=agent,
                 episode_length="10s",
                 identifier=SYMBOL,
-                # Note: saved for later when I run on several symbols.
-                # Testset:
-                # identifier_list=['BAY', 'SAP', 'LIN', 'ALV', 'DTE'],
-                # random_identifier=True,
-                # start_date="2021-01-01",
-                # end_date="2021-01-08",#"2021-04-30",
-                # shuffle=True,
-                #####
+                start_date=TEST_START,
+                end_date=TEST_END,
+                shuffle=False,
                 verbose=False)
 
 # Extend base config with instances.
 base_config["env"] = TradingEnvironment
 base_config['env_config']['config']['replay_episode'] = replay
 
+print("(INSTANTIATED) FROM {}".format(base_config_path))
 trained_strategy = PPOTrainer(config=base_config)
 trained_strategy.restore(CHECKPOINT_PATH)
 print("(RESTORED) RESTORED AGENT WITH {} ITERATIONS".format(
@@ -145,7 +156,6 @@ while episode_counter < NUM_TEST_EPISODES:
     # If episode is done, collect stats and reset env.
     if done:
         # -- Store results.
-        print(f"Episode done: Total reward = {episode_reward}")
 
         # Get results from env.
         reward = episode_reward
@@ -179,6 +189,11 @@ while episode_counter < NUM_TEST_EPISODES:
         episode_counter += 1
         # Reset the reward.
         episode_reward = 0
+
+        # DEBUGGING
+        #print("initial inventory", env.replay.rl_agent.initial_inventory)
+        #print("episode start: ", env.replay.episode.episode_start)
+        #print("identifier: ", env.replay.episode.identifier)
 
 # -- Store Final Results.
 # Store final  results to DF:
