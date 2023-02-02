@@ -46,7 +46,7 @@ print("Num GPUs Available TF: ", len(tf.config.list_physical_devices('GPU')))
 
 # Provide checkpoint path if trainer should be restored.
 # TODO: ADD CHECKPOINT PATH
-restoring_checkpoint_path = "/home/jovyan/ray_results/PPO_TradingEnvironment_2023-01-30_16-40-08uht_cgw7/checkpoint_000381/"
+restoring_checkpoint_path = None #"/home/jovyan/ray_results/PPO_TradingEnvironment_2023-01-30_16-40-08uht_cgw7/checkpoint_000381/"
 name = 'BAYER_FCN128_128_FINAL_RUN_ISREWARD_TRAININGSET_WAIT_INCENTIVE_0_001_'
 
 num_iterations = 1000
@@ -190,6 +190,10 @@ if use_lstm:
     config["model"]["use_lstm"] = use_lstm
     config["model"]["max_seq_len"] = max_seq_len
     config["model"]["lstm_cell_size"] = lstm_cell_size
+
+# -- Save base congig
+#from utils.create_base_config import create_base_config_file
+#create_base_config_file(config_dict=config, name="A1_BAY")
 
 # -- Instantiate the Trainer object using above config.
 rllib_trainer = PPOTrainer(config=config)

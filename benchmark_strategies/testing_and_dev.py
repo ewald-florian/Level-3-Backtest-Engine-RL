@@ -16,7 +16,7 @@ from agent.agent_order import OrderManagementSystem as OMS
 from agent.agent_trade import AgentTrade
 from context.context import Context
 
-from utils.benchmark_result_path import generate_benchmark_result_path
+from utils.test_result_path import generate_test_result_path
 from utils.initial_inventory import initial_inventory_dict
 
 
@@ -120,8 +120,8 @@ if __name__ == '__main__':
     # print(replay.episode_start_list)
 
     results = []
-    result_path = generate_benchmark_result_path(symbol=replay.identifier,
-                                                 benchmark_strategy=name)
+    result_path = generate_test_result_path(symbol=replay.identifier,
+                                            benchmark_strategy=name)
 
     # Iterate over episodes.
     for episode in range(1_000_000):  # -> end will not be reached.

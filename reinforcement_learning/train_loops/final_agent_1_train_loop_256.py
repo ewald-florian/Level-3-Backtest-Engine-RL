@@ -191,6 +191,8 @@ if use_lstm:
     config["model"]["max_seq_len"] = max_seq_len
     config["model"]["lstm_cell_size"] = lstm_cell_size
 
+from utils.create_base_config import create_base_config_file
+create_base_config_file(config_dict=config, name="A1_FCN_256")
 # -- Instantiate the Trainer object using above config.
 rllib_trainer = PPOTrainer(config=config)
 

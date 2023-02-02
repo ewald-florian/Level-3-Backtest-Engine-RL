@@ -31,6 +31,7 @@ from replay_episode.replay import Replay
 from utils.result_path_generator import generate_result_path
 from utils.episode_stats_path_generator import generate_episode_stats_path
 from utils.string_generator import generate_string
+from utils.create_base_config import create_base_config_file
 from reinforcement_learning.environment.episode_stats import EpisodeStats
 
 # manage GPUs if executed on server.
@@ -191,6 +192,7 @@ if use_lstm:
     config["model"]["use_lstm"] = use_lstm
     config["model"]["max_seq_len"] = max_seq_len
     config["model"]["lstm_cell_size"] = lstm_cell_size
+
 
 # -- Instantiate the Trainer object using above config.
 rllib_trainer = PPOTrainer(config=config)
