@@ -28,6 +28,8 @@ from reinforcement_learning.environment.tradingenvironment import \
     TradingEnvironment
 from reinforcement_learning.agent_prototypes.final_agent_2_limited \
     import FinalOEAgent2Limited
+from reinforcement_learning.agent_prototypes.final_agent_1 import \
+    FinalOEAgent1
 
 from replay_episode.replay import Replay
 from utils.test_result_path import generate_test_result_path
@@ -52,10 +54,12 @@ print("Num GPUs Available TF: ", len(tf.config.list_physical_devices('GPU')))
 # "A1_BAY"
 # "A2_LIMITED"
 #
-# ---------------
+# ----------------------------
 # TODO: Insert Agent Name
 STRATEGY_NAME = "A1_FCN_256"
+AGENT = FinalOEAgent1  # FinalOEAgent2Limited
 SYMBOL = "BAY"
+# ----------------------------
 TEST_START = "2021-04-15"
 TEST_END = "2021-06-30"
 FREQUENCY = "5m"
@@ -63,15 +67,16 @@ NUM_ITERS_STORE_RESULTS = 5_000
 VERBOSE = True
 NUM_TEST_EPISODES = 100
 PRINT_FREQUENCY = 10
+# ----------------------------
 
 
 # Paths to base config dicts.
 if platform.system() == 'Darwin':  # macos
-    base_config_path = "/Users/florianewald/PycharmProjects/Level-3-Backtest-"\
+    base_config_path = "/Users/florianewald/PycharmProjects/Level-3-Backtest-" \
                        "Engine-RL/reinforcement_learning/base_configs/"
 
 elif platform.system() == 'Linux':
-    base_config_path = "/home/jovyan/Level-3-Backtest-"\
+    base_config_path = "/home/jovyan/Level-3-Backtest-" \
                        "Engine-RL/reinforcement_learning/base_configs/"
 
 base_config_path = base_config_path + STRATEGY_NAME + "_base_config.json"
@@ -97,10 +102,10 @@ elif STRATEGY_NAME == "A2_LIMITED":
 ray.init(num_gpus=0, num_cpus=1)
 
 # Initialize agent for Replay.
-agent = FinalOEAgent2Limited(verbose=False,
-                             episode_length="10s",
-                             initial_inventory_level="Avg-10s-Vol",
-                             )
+agent = AGENT(verbose=False,
+              episode_length="10s",
+              initial_inventory_level="Avg-10s-Vol",
+              )
 # Initialize Replay for the TEST-RUN.
 replay = Replay(rl_agent=agent,
                 episode_length="10s",
@@ -192,9 +197,9 @@ while episode_counter < NUM_TEST_EPISODES:
         episode_reward = 0
 
         # DEBUGGING
-        #print("initial inventory", env.replay.rl_agent.initial_inventory)
-        #print("episode start: ", env.replay.episode.episode_start)
-        #print("identifier: ", env.replay.episode.identifier)
+        # print("initial inventory", env.replay.rl_agent.initial_inventory)
+        # print("episode start: ", env.replay.episode.episode_start)
+        # print("identifier: ", env.replay.episode.identifier)
 
 # -- Store Final Results.
 # Store final  results to DF:
