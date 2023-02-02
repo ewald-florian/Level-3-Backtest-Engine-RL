@@ -54,7 +54,7 @@ print("Num GPUs Available TF: ", len(tf.config.list_physical_devices('GPU')))
 #
 # ---------------
 # TODO: Insert Agent Name
-STRATEGY_NAME = "A1_FCN_256_LSTM"
+STRATEGY_NAME = "A1_FCN_256"
 SYMBOL = "BAY"
 TEST_START = "2021-04-15"
 TEST_END = "2021-06-30"
@@ -84,7 +84,7 @@ if STRATEGY_NAME == "A1_FCN_128":
 elif STRATEGY_NAME == "A1_FCN_128_LSTM":
     CHECKPOINT_PATH = ...
 elif STRATEGY_NAME == "A1_FCN_256":
-    CHECKPOINT_PATH = ...
+    CHECKPOINT_PATH = "/home/jovyan/ray_results/PPO_TradingEnvironment_2023-02-01_16-29-5770ets8gb/checkpoint_001022"
 elif STRATEGY_NAME == "A1_FCN_256_LSTM":
     # TODO: This is a priliminary checkpoint path for testing.
     CHECKPOINT_PATH = "/home/jovyan/ray_results/PPO_TradingEnvironment_2023-02-01_16-21-24t0r6c3vt/checkpoint_000442"
