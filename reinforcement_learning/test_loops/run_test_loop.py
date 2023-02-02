@@ -58,7 +58,7 @@ print("Num GPUs Available TF: ", len(tf.config.list_physical_devices('GPU')))
 #
 # ----------------------------
 # TODO: Insert Agent Name
-STRATEGY_NAME = "A1_FCN_128_LSTM"
+STRATEGY_NAME = "A1_FCN_128"
 AGENT = FinalOEAgent1  # FinalOEAgent2Limited # FinalOEAgent1
 SYMBOL = "BAY"
 # ----------------------------
@@ -91,7 +91,7 @@ with open(base_config_path, 'r') as fp:
 
 # Match base config and checkpoint path depending on strategy name.
 if STRATEGY_NAME == "A1_FCN_128":
-    CHECKPOINT_PATH = ...
+    CHECKPOINT_PATH = "/home/jovyan/ray_results/PPO_TradingEnvironment_2023-02-01_17-27-0227wpvlpg/checkpoint_001374"
 
 elif STRATEGY_NAME == "A1_FCN_128_LSTM":
     CHECKPOINT_PATH = "/home/jovyan/ray_results/PPO_TradingEnvironment_2023-02-01_18-07-53kd5zyj95/checkpoint_001314"
