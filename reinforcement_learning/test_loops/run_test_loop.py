@@ -46,9 +46,7 @@ print("Num GPUs Available TF: ", len(tf.config.list_physical_devices('GPU')))
 
 # -- Set Up.
 # ---------------
-CHECKPOINT_PATH = "/Users/florianewald/ray_results/PPOTrainer_TradingEnvironment_2023-01-31_22-31-19agy3bqbz/checkpoint_000401/checkpoint-401"
-BASE_CONFIG = "/Users/florianewald/PycharmProjects/Level-3-Backtest-Engine-RL/reinforcement_learning/base_configs/agent2_fcn128_base_config.json"
-STRATEGY_NAME = "tttest"  # TODO: Make name with timestamp.now, symbol and strategy
+STRATEGY_NAME = "A2_LIMITED"  # TODO: Make name with timestamp.now, symbol and strategy
 SYMBOL = "BAY"
 TEST_START = "2021-01-04"
 TEST_END = "2021-01-08"
@@ -57,32 +55,28 @@ NUM_ITERS_STORE_RESULTS = 100
 VERBOSE = True
 NUM_TEST_EPISODES = 100
 PRINT_FREQUENCY = 10
+BASE_CONFIG_PATH = "/Users/florianewald/PycharmProjects/Level-3-Backtest-" \
+                   "Engine-RL/reinforcement_learning/base_configs/"
 # ----------------
 
-# TODO: einfach über name laden
+# TODO: einfach über name ladebas
+base_config_path = BASE_CONFIG_PATH + STRATEGY_NAME + "_base_config.json"
+with open(base_config_path, 'r') as fp:
+    base_config = json.load(fp)
+
 # Match base config and checkpoint path depending on strategy name.
 if STRATEGY_NAME == "A1_FCN_128":
-    BASE_CONFIG = ...
     CHECKPOINT_PATH = ...
 elif STRATEGY_NAME == "A1_FCN_128_LSTM":
-    BASE_CONFIG = ...
     CHECKPOINT_PATH = ...
 elif STRATEGY_NAME == "A1_FCN_256":
-    BASE_CONFIG = ...
     CHECKPOINT_PATH = ...
 elif STRATEGY_NAME == "A1_FCN_256_LSTM":
-    BASE_CONFIG = ...
     CHECKPOINT_PATH = ...
 elif STRATEGY_NAME == "A1_BAY":
-    BASE_CONFIG = ...
     CHECKPOINT_PATH = ...
 elif STRATEGY_NAME == "A2_LIMITED":
-    BASE_CONFIG = ...
-    CHECKPOINT_PATH = ...
-
-# -- Config.:
-with open(BASE_CONFIG, 'r') as fp:
-    base_config = json.load(fp)
+    CHECKPOINT_PATH = "/Users/florianewald/ray_results/PPOTrainer_TradingEnvironment_2023-01-31_22-31-19agy3bqbz/checkpoint_000401/checkpoint-401"
 
 # Start ray.
 ray.init(num_gpus=1, num_cpus=1)

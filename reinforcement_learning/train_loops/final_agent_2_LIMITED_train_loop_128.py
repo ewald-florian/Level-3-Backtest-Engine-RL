@@ -50,9 +50,9 @@ print("Num GPUs Available TF: ", len(tf.config.list_physical_devices('GPU')))
 # Provide checkpoint path if trainer should be restored.
 # NOTE: This is the checkpoint from the training iterations on server.
 restoring_checkpoint_path = "/Users/florianewald/ray_results/PPOTrainer_TradingEnvironment_2023-01-31_22-31-19agy3bqbz/checkpoint_000401/checkpoint-401"
-name = 'final_agent_2_LIMITED_fcn_128_IS_REWARD_BAY'
+name = 'A2_LIMITED_FINAL_RUN_fcn_128_IS_REWARD_WAIT_REWARD_0_001_ALLASSETS_'
 
-num_iterations = 110
+num_iterations = 1000
 save_checkpoints_freq = 10
 print_results_freq = 10
 # environment.
@@ -283,17 +283,3 @@ print(f"Trainer (at iteration {rllib_trainer.iteration}) was "
 # Shut down ray.
 ray.shutdown()
 
-"""
-# NOTES
-
-# Evaluation
-config["evaluation_interval"] = 1
-config["evaluation_duration"] = 1
-config["evaluation_duration_unit"] = "episodes"
-
-Agent Information:
- print(rllib_trainer._episodes_total)
- print(rllib_trainer._iteration)
- print(rllib_trainer.agent_timesteps_total)
- print(rllib_trainer._time_total)
-"""

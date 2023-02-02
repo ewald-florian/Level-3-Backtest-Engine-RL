@@ -25,20 +25,23 @@ from context.agent_context import AgentContext
 # old dataset
 # local="/Users/florianewald/PycharmProjects/A7_data/"
 # local new sample with Bayer january and february 2021
-local="/Users/florianewald/PycharmProjects/A7_NEW_SAMPLE/"
+local= "/Users/florianewald/PycharmProjects/A7_NEW_SAMPLE/"
 # dataset on server
 server_new = "/home/jovyan/_shared_storage/temp/A7_data/messages/"
-# TODO: nvme and server path
 # new dataset on nvme
-# nvme = "/Volumes/WD_BLUE_NVME/A7_DATA/"
+nvme_path = "/Volumes/WD_BLUE_NVME/A7_DATA_BY_ISIN/"
 
 if platform.system() == 'Darwin':  # macos
-    PATH = local
+    if os.path.isdir(nvme_path):
+        PATH = nvme_path
+    else:
+        PATH = local
 elif platform.system() == 'Linux':
     PATH = server_new
 else:
     raise Exception('Specify PATH in episode.py')
 
+print(f"(INFO) DATA BASE PATH: {PATH}")
 
 class Episode:
 

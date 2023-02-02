@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Train Loop for Final Agent 1 with MODEL 2 (128-LSTM)
+Train Loop for Final Agent 1 with MODEL 4 (256-LSTM)
 AGENTID = 012823
 """
 
