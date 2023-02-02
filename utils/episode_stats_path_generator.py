@@ -19,7 +19,7 @@ server_dir = "/home/jovyan/episode_stats/"
 
 if platform.system() == 'Darwin':  # macos
     if os.path.isdir(local_2):
-        PATH = local_2
+        default_base_dir = local_2
     else:
         default_base_dir = local_dir
 elif platform.system() == 'Linux':

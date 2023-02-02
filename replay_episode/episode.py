@@ -26,7 +26,7 @@ from context.agent_context import AgentContext
 # local="/Users/florianewald/PycharmProjects/A7_data/"
 # local new sample with Bayer january and february 2021
 local= "/Users/florianewald/PycharmProjects/A7_NEW_SAMPLE/"
-local_2 = "/Users/candis/Desktop/A7_DATA"
+local_2 = "/Users/candis/Desktop/A7_DATA/"
 # dataset on server
 server_new = "/home/jovyan/_shared_storage/temp/A7_data/messages/"
 # new dataset on nvme
