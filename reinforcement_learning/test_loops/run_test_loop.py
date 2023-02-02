@@ -65,8 +65,7 @@ TEST_END = "2021-06-30"
 FREQUENCY = "5m"
 NUM_ITERS_STORE_RESULTS = 5_000
 VERBOSE = True
-NUM_TEST_EPISODES = 100
-PRINT_FREQUENCY = 10
+NUM_TEST_EPISODES = 1_000_000
 # ----------------------------
 
 
@@ -110,8 +109,8 @@ agent = AGENT(verbose=False,
 replay = Replay(rl_agent=agent,
                 episode_length="10s",
                 identifier=SYMBOL,
-                start_date=TEST_START,
-                end_date=TEST_END,
+                start_date="2021-04-15",
+                end_date="2021-06-30",
                 shuffle=False,
                 verbose=False)
 
