@@ -56,17 +56,25 @@ print("Num GPUs Available TF: ", len(tf.config.list_physical_devices('GPU')))
 #
 # ----------------------------
 # TODO: Insert Agent Name
-STRATEGY_NAME = "A1_FCN_256"
+STRATEGY_NAME = "A1_FCN_256_LSTM"
 AGENT = FinalOEAgent1  # FinalOEAgent2Limited
 SYMBOL = "BAY"
 # ----------------------------
-TEST_START = "2021-04-15"
+TEST_START = "2021-05-14"
 TEST_END = "2021-06-30"
 FREQUENCY = "5m"
-NUM_ITERS_STORE_RESULTS = 5_000
+NUM_ITERS_STORE_RESULTS = 250
 VERBOSE = True
 NUM_TEST_EPISODES = 1_000_000
 # ----------------------------
+print(80*"*")
+print("TEST LOOP STARTED")
+print("STRATEGY: ", STRATEGY_NAME)
+print("SYMBOL: ", SYMBOL)
+print("Start:", TEST_START)
+print("Start:", TEST_END)
+print("Start:", TEST_END)
+print(80*"*")
 
 
 # Paths to base config dicts.
@@ -88,10 +96,9 @@ if STRATEGY_NAME == "A1_FCN_128":
 elif STRATEGY_NAME == "A1_FCN_128_LSTM":
     CHECKPOINT_PATH = ...
 elif STRATEGY_NAME == "A1_FCN_256":
-    CHECKPOINT_PATH = "/home/jovyan/ray_results/PPO_TradingEnvironment_2023-02-01_16-29-5770ets8gb/checkpoint_001022"
+    CHECKPOINT_PATH = "/home/jovyan/ray_results/PPO_TradingEnvironment_2023-02-01_16-29-5770ets8gb/checkpoint_001102"
 elif STRATEGY_NAME == "A1_FCN_256_LSTM":
-    # TODO: This is a priliminary checkpoint path for testing.
-    CHECKPOINT_PATH = "/home/jovyan/ray_results/PPO_TradingEnvironment_2023-02-01_16-21-24t0r6c3vt/checkpoint_000442"
+    CHECKPOINT_PATH = "/home/jovyan/ray_results/PPO_TradingEnvironment_2023-02-01_16-21-24t0r6c3vt/checkpoint_001012"
 elif STRATEGY_NAME == "A1_BAY":
     CHECKPOINT_PATH = ...
 elif STRATEGY_NAME == "A2_LIMITED":
@@ -108,9 +115,10 @@ agent = AGENT(verbose=False,
 # Initialize Replay for the TEST-RUN.
 replay = Replay(rl_agent=agent,
                 episode_length="10s",
+                frequency="5m",
                 identifier=SYMBOL,
-                start_date="2021-04-15",
-                end_date="2021-06-30",
+                start_date=TEST_START,
+                end_date=TEST_END,
                 shuffle=False,
                 verbose=False)
 
