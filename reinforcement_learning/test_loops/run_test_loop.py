@@ -58,11 +58,10 @@ print("Num GPUs Available TF: ", len(tf.config.list_physical_devices('GPU')))
 # TODO: Insert Agent Name
 STRATEGY_NAME = "A1_FCN_256"
 AGENT = FinalOEAgent1  # FinalOEAgent2Limited
-SYMBOL = "BAY"
+SYMBOL = "LIN"
 # ----------------------------
 TEST_START = "2021-05-14"
 TEST_END = "2021-06-30"
-FREQUENCY = "5m"
 NUM_ITERS_STORE_RESULTS = 250
 VERBOSE = True
 NUM_TEST_EPISODES = 1_000_000
@@ -72,8 +71,7 @@ print("TEST LOOP STARTED")
 print("STRATEGY: ", STRATEGY_NAME)
 print("SYMBOL: ", SYMBOL)
 print("Start:", TEST_START)
-print("Start:", TEST_END)
-print("Start:", TEST_END)
+print("End:", TEST_END)
 print(80*"*")
 
 
@@ -157,60 +155,78 @@ reward_dict = {}
 episode_counter = 0
 episode_reward = 0
 
-while episode_counter < NUM_TEST_EPISODES:
-    # Compute action.
-    action = trained_strategy.compute_single_action(
-        observation=obs,
-        explore=False,
-        # TODO: warum habe ich das nochmal gemacht?
-        policy_id="default_policy"
-    )
-    # Send action to env and take step receiving obs, reward, done, info.
-    obs, reward, done, info = env.step(action)
-    # Count the reward.
-    episode_reward += reward
 
-    # If episode is done, collect stats and reset env.
-    if done:
-        # -- Store results.
+# Try excet since eventually the episode start list will be other.
+try:
 
-        # Get results from env.
-        reward = episode_reward
-        episode_start = copy.deepcopy(env.replay.episode.episode_start)
-        overall_is = copy.deepcopy(
-            env.replay.rl_agent.agent_metrics.overall_is(scaling_factor=1))
-        vwap_sell = copy.deepcopy(
-            env.replay.rl_agent.agent_metrics.vwap_sell)
-        total_episode_steps = copy.deepcopy(env.replay.episode._step)
+    while episode_counter < NUM_TEST_EPISODES:
+        # Compute action.
+        action = trained_strategy.compute_single_action(
+            observation=obs,
+            explore=False,
+            # TODO: warum habe ich das nochmal gemacht?
+            policy_id="default_policy"
+        )
+        # Send action to env and take step receiving obs, reward, done, info.
+        obs, reward, done, info = env.step(action)
+        # Count the reward.
+        episode_reward += reward
 
-        # Append results to results list.
-        results.append(np.array([episode_start,
-                                 overall_is,
-                                 vwap_sell,
-                                 total_episode_steps,
-                                 reward]))
+        # If episode is done, collect stats and reset env.
+        if done:
+            # -- Store results.
 
-        if episode_counter % NUM_ITERS_STORE_RESULTS == 0:
-            df = pd.DataFrame(results, columns=["episode_start",
-                                                "overall_is",
-                                                "vwap_sell",
-                                                "total_steps",
-                                                "reward"])
-            df.to_csv(result_path, index=False)
+            # Get results from env.
+            reward = episode_reward
+            episode_start = copy.deepcopy(env.replay.episode.episode_start)
+            overall_is = copy.deepcopy(
+                env.replay.rl_agent.agent_metrics.overall_is(scaling_factor=1))
+            vwap_sell = copy.deepcopy(
+                env.replay.rl_agent.agent_metrics.vwap_sell)
+            total_episode_steps = copy.deepcopy(env.replay.episode._step)
 
-            # Print to terminal.
-            print(df)
+            # Append results to results list.
+            results.append(np.array([episode_start,
+                                     overall_is,
+                                     vwap_sell,
+                                     total_episode_steps,
+                                     reward]))
 
-        # -- Reset the environment to run the next episode.
-        obs = env.reset()
-        episode_counter += 1
-        # Reset the reward.
-        episode_reward = 0
+            if episode_counter % NUM_ITERS_STORE_RESULTS == 0:
+                df = pd.DataFrame(results, columns=["episode_start",
+                                                    "overall_is",
+                                                    "vwap_sell",
+                                                    "total_steps",
+                                                    "reward"])
+                df.to_csv(result_path, index=False)
 
-        # DEBUGGING
-        # print("initial inventory", env.replay.rl_agent.initial_inventory)
-        # print("episode start: ", env.replay.episode.episode_start)
-        # print("identifier: ", env.replay.episode.identifier)
+                # Print to terminal.
+                print(df)
+
+            # -- Reset the environment to run the next episode.
+            obs = env.reset()
+            episode_counter += 1
+            # Reset the reward.
+            episode_reward = 0
+
+            # DEBUGGING
+            # print("initial inventory", env.replay.rl_agent.initial_inventory)
+            # print("episode start: ", env.replay.episode.episode_start)
+            # print("identifier: ", env.replay.episode.identifier)
+
+# Store results when the loop fails since episodes are over.
+except:
+    # -- Store Final Results.
+    # Store final  results to DF:
+    df = pd.DataFrame(results, columns=["episode_start",
+                                        "overall_is",
+                                        "vwap_sell",
+                                        "total_steps",
+                                        "reward"])
+    df.to_csv(result_path, index=False)
+
+
+# Redundantly store results again to be safe.
 
 # -- Store Final Results.
 # Store final  results to DF:
