@@ -129,11 +129,11 @@ replay = Replay(rl_agent=agent,
                 episode_length=agent.episode_length,
                 # Note: saved for later when I run on several symbols.
                 # Testset:
-                #identifier_list=['BAY', 'SAP', 'LIN', 'ALV', 'DTE'],
-                #random_identifier=True,
-                #start_date="2021-01-01",
-                #end_date="2021-01-08",#"2021-04-30",
-                #shuffle=True,
+                identifier_list=['BAY', 'SAP', 'LIN', 'ALV', 'DTE'],
+                random_identifier=True,
+                start_date="2021-01-01",
+                end_date="2021-04-30",#"2021-04-30",
+                shuffle=True,
                 #####
                 verbose=False)
 
