@@ -57,10 +57,10 @@ print("Num GPUs Available TF: ", len(tf.config.list_physical_devices('GPU')))
 # "A2_LIMITED"
 #
 # ----------------------------
-# TODO: Insert Agent Name
-STRATEGY_NAME = "A1_FCN_128"
+# TODO: Insert Agent Name and Symbol!
+STRATEGY_NAME = "A1_BAY"
 AGENT = FinalOEAgent1  # FinalOEAgent2Limited # FinalOEAgent1
-SYMBOL = "DTE"
+SYMBOL = "BAY"
 # ----------------------------
 TEST_START = "2021-05-14"
 TEST_END = "2021-06-30"
@@ -104,7 +104,7 @@ elif STRATEGY_NAME == "A1_FCN_256_LSTM":
     CHECKPOINT_PATH = "/home/jovyan/ray_results/PPO_TradingEnvironment_2023-02-01_16-21-24t0r6c3vt/checkpoint_001012"
 
 elif STRATEGY_NAME == "A1_BAY":
-    CHECKPOINT_PATH = ...
+    CHECKPOINT_PATH = "/home/jovyan/ray_results/PPO_TradingEnvironment_2023-02-01_18-44-573bzdk8pf/checkpoint_000812"
 
 elif STRATEGY_NAME == "A2_LIMITED":
     CHECKPOINT_PATH = "/Users/florianewald/ray_results/PPOTrainer_TradingEnvironment_2023-02-02_12-40-48qhxzjq6z/checkpoint_000925/checkpoint-925"
