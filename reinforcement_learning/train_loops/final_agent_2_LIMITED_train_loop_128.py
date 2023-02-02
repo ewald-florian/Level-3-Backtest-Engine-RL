@@ -49,7 +49,7 @@ print("Num GPUs Available TF: ", len(tf.config.list_physical_devices('GPU')))
 
 # Provide checkpoint path if trainer should be restored.
 # NOTE: This is the checkpoint from the training iterations on server.
-restoring_checkpoint_path = "/Users/florianewald/ray_results/PPOTrainer_TradingEnvironment_2023-02-02_03-22-46jh5yq7hn/checkpoint_000442/checkpoint-442"
+restoring_checkpoint_path = "/Users/florianewald/ray_results/PPOTrainer_TradingEnvironment_2023-02-02_03-51-43dx1x7sjj/checkpoint_000513"
 name = 'A2_LIMITED_FINAL_RUN_fcn_128_IS_REWARD_WAIT_REWARD_0_001_ALLASSETS_'
 
 num_iterations = 1000
@@ -82,7 +82,7 @@ num_workers = 0
 #  If batch_mode is “complete_episodes”, rollout_fragment_length is ignored.
 batch_mode = 'complete_episodes'  # 'truncate_episodes'
 # other settings.
-disable_env_checking = False
+disable_env_checking = True
 print_entire_result = False  # contains a lot of useless info.
 rllib_log_level = 'WARN'  # WARN, 'DEBUG'
 # instantiate agent.
@@ -131,7 +131,7 @@ replay = Replay(rl_agent=agent,
                 # Testset:
                 identifier_list=['BAY', 'SAP', 'LIN', 'ALV', 'DTE'],
                 random_identifier=True,
-                start_date="2021-01-01",
+                start_date="2021-04-01",
                 end_date="2021-04-30",#"2021-04-30",
                 shuffle=True,
                 #####
