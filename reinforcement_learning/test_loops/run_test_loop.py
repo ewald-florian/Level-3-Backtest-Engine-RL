@@ -71,7 +71,7 @@ if platform.system() == 'Darwin':  # macos
                        "Engine-RL/reinforcement_learning/base_configs/"
 
 elif platform.system() == 'Linux':
-    base_config_path = "/Users/florianewald/PycharmProjects/Level-3-Backtest-"\
+    base_config_path = "/home/jovyan/Level-3-Backtest-"\
                        "Engine-RL/reinforcement_learning/base_configs/"
 
 base_config_path = base_config_path + STRATEGY_NAME + "_base_config.json"
