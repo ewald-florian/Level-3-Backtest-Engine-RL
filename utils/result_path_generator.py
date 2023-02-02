@@ -4,15 +4,21 @@
 
 import time
 import platform
+import os
 
 local_dir = "/Users/florianewald/PycharmProjects/Level-3-Backtest-Engine-RL/" \
+            "reinforcement_learning/train_results/"
+local_2 = "/Users/candis/Desktop/Level-3-Backtest-Engine-RL/" \
             "reinforcement_learning/train_results/"
 server_dir_old = "/home/jovyan/Level-3-Backtest-Engine-RL/" \
              "reinforcement_learning/train_results/"
 server_dir = "/home/jovyan/train_results/"
 
 if platform.system() == 'Darwin':  # macos
-    default_base_dir = local_dir
+    if os.path.isdir(local_2):
+        PATH = local_2
+    else:
+        default_base_dir = local_dir
 elif platform.system() == 'Linux':
     default_base_dir = server_dir
 else:

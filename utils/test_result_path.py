@@ -6,6 +6,7 @@ normal strategies.
 """
 import time
 import platform
+import os
 
 '''
 # benchmark paths:
@@ -16,10 +17,14 @@ server_dir = "/home/jovyan/benchmark_results/"
 # test paths:
 local_dir = "/Users/florianewald/PycharmProjects/Level-3-Backtest-Engine-RL/" \
             "test_results/"
+local_2 = "/Users/candis/Desktop/Level-3-Backtest-Engine-RL/test_results/"
 server_dir = "/home/jovyan/test_results/"
 
 if platform.system() == 'Darwin':  # macos
-    default_base_dir = local_dir
+    if os.path.isdir(local_2):
+        PATH = local_2
+    else:
+        default_base_dir = local_dir
 elif platform.system() == 'Linux':
     default_base_dir = server_dir
 else:

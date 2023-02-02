@@ -26,6 +26,7 @@ from context.agent_context import AgentContext
 # local="/Users/florianewald/PycharmProjects/A7_data/"
 # local new sample with Bayer january and february 2021
 local= "/Users/florianewald/PycharmProjects/A7_NEW_SAMPLE/"
+local_2 = "/Users/candis/Desktop/A7_DATA"
 # dataset on server
 server_new = "/home/jovyan/_shared_storage/temp/A7_data/messages/"
 # new dataset on nvme
@@ -34,6 +35,8 @@ nvme_path = "/Volumes/WD_BLUE_NVME/A7_DATA_BY_ISIN/"
 if platform.system() == 'Darwin':  # macos
     if os.path.isdir(nvme_path):
         PATH = nvme_path
+    elif os.path.isdir(local_2):
+        PATH = local_2
     else:
         PATH = local
 elif platform.system() == 'Linux':
