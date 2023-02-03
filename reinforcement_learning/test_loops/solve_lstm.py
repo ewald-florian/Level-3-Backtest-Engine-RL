@@ -136,7 +136,7 @@ replay = Replay(rl_agent=agent,
 base_config["env"] = TradingEnvironment
 base_config['env_config']['config']['replay_episode'] = replay
 base_config["disable_env_checking"] = True
-#base_config["framework"] = "tf2"
+base_config["framework"] = "tf2"
 
 # LSTM
 #base_config["model"]["use_lstm"] = True
