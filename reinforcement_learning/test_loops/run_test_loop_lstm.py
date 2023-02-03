@@ -53,11 +53,11 @@ print("Num GPUs Available TF: ", len(tf.config.list_physical_devices('GPU')))
 # TODO: Insert Agent Name and Symbol!
 STRATEGY_NAME = "A1_FCN_256_LSTM"
 AGENT = FinalOEAgent1  # FinalOEAgent2Limited # FinalOEAgent1
-SYMBOL = "BAY"
+SYMBOL = "LIN"
 # ----------------------------
 TEST_START = "2021-05-14"
 TEST_END = "2021-06-30"
-NUM_ITERS_STORE_RESULTS = 100 # TODO: Adjust
+NUM_ITERS_STORE_RESULTS = 300
 VERBOSE = True
 NUM_TEST_EPISODES = 1_000_000
 # ----------------------------
