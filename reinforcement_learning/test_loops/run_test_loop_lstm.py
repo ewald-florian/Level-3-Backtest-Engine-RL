@@ -163,7 +163,7 @@ env = TradingEnvironment(base_config["env_config"])
 obs = env.reset()
 # Create inital lstm inputs.
 # TODO: get LSTM size from base_config.
-lstm_cell_size = base_config["env_config"]["model"]["lstm_cell_size"]
+lstm_cell_size = base_config["model"]["lstm_cell_size"]
 init_state = [np.zeros([lstm_cell_size], np.float32) for _ in range(2)]
 # Reset state to initial state.
 state = init_state
