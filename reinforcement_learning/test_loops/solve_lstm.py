@@ -138,6 +138,8 @@ base_config['env_config']['config']['replay_episode'] = replay
 base_config["disable_env_checking"] = True
 # base_config["framework"] = "tf2"
 
+base_config['evaluation_config'] = base_config['env_config'].copy()
+
 # IN EVALUATIUON MDOE
 #base_config["in_evaluation"] = True
 #base_config["evaluation_config"] = base_config['env_config'].copy()
@@ -157,7 +159,7 @@ trained_strategy.restore(CHECKPOINT_PATH)
 import pprint
 pp = pprint.PrettyPrinter(indent=4)
 
-pp.pprint("evaluation config")
+print("evaluation config")
 pp.pprint(trained_strategy.config['evaluation_config'])
 
 # -- Result path.
@@ -172,7 +174,7 @@ print("(INFO) TEST RESULTS WILL BE STORED TO: ", result_path)
 # -- Test loop.
 
 # Instantiate environment.
-env = TradingEnvironment(base_config["env_config"])
+env = TradingEnvironment(base_config["evaluation_config"])
 # Reset env, get initial obs.
 print("BEFORE ENV RESET.")
 obs = env.reset()
