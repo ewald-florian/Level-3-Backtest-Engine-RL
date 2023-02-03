@@ -150,6 +150,7 @@ print("(RESTORED) RESTORED AGENT WITH {} ITERATIONS".format(
     trained_strategy.iteration))
 print("(RESTORED) FROM CHECKPOINT: {}".format(CHECKPOINT_PATH))
 
+print("CONFIG: ", trained_strategy.config)
 # -- Result path.
 
 results = []
@@ -162,6 +163,7 @@ print("(INFO) TEST RESULTS WILL BE STORED TO: ", result_path)
 # Instantiate environment.
 env = TradingEnvironment(base_config["env_config"])
 # Reset env, get initial obs.
+print("BEFORE ENV RESET.")
 obs = env.reset()
 
 # Dict to store rewards for each test-episode.
@@ -169,18 +171,21 @@ reward_dict = {}
 episode_counter = 0
 episode_reward = 0
 
-
+print("AFTER ENV RESET.")
 # Try excet since eventually the episode start list will be other.
 #try:
 
 while episode_counter < NUM_TEST_EPISODES:
     # Compute action.
+
+    print("BEFORE COMPUTE FIRST ACTION.")
     action = trained_strategy.compute_single_action(
         observation=obs,
         explore=False,
         # TODO: warum habe ich das nochmal gemacht?
         policy_id="default_policy"
     )
+    print("AFTER COMPUTE FIRST ACTION.")
     # Send action to env and take step receiving obs, reward, done, info.
     obs, reward, done, info = env.step(action)
     # Count the reward.
@@ -189,7 +194,7 @@ while episode_counter < NUM_TEST_EPISODES:
     # If episode is done, collect stats and reset env.
     if done:
         # -- Store results.
-
+        print("EPISODE DONE REACHED.")
         # Get results from env.
         reward = episode_reward
         episode_start = copy.deepcopy(env.replay.episode.episode_start)
