@@ -183,7 +183,15 @@ while episode_counter < NUM_TEST_EPISODES:
     # Compute action.
 
     print("BEFORE COMPUTE FIRST ACTION.")
+    '''
     action = trained_strategy.compute_single_action(
+        observation=obs,
+        explore=False,
+        # TODO: warum habe ich das nochmal gemacht?
+        policy_id="default_policy"
+    )
+    '''
+    action = trained_strategy.compute_action(
         observation=obs,
         explore=False,
         # TODO: warum habe ich das nochmal gemacht?
