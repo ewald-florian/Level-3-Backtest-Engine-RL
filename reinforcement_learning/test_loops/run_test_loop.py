@@ -60,7 +60,7 @@ print("Num GPUs Available TF: ", len(tf.config.list_physical_devices('GPU')))
 # TODO: Insert Agent Name and Symbol!
 STRATEGY_NAME = "A1_FCN_128"
 AGENT = FinalOEAgent1  # FinalOEAgent2Limited # FinalOEAgent1
-SYMBOL = "BMW"
+SYMBOL = "ALV"
 
 # ----------------------------
 TEST_START = "2021-05-14"
