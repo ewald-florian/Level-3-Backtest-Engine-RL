@@ -61,7 +61,6 @@ print("Num GPUs Available TF: ", len(tf.config.list_physical_devices('GPU')))
 STRATEGY_NAME = "A1_FCN_256_LSTM"
 AGENT = FinalOEAgent1  # FinalOEAgent2Limited # FinalOEAgent1
 SYMBOL = "SAP"
-
 # ----------------------------
 TEST_START = "2021-05-14"
 TEST_END = "2021-06-30"
