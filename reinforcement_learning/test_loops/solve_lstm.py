@@ -136,7 +136,7 @@ replay = Replay(rl_agent=agent,
 base_config["env"] = TradingEnvironment
 base_config['env_config']['config']['replay_episode'] = replay
 base_config["disable_env_checking"] = True
-base_config["framework"] = "tf2"
+# base_config["framework"] = "tf2"
 
 # LSTM
 #base_config["model"]["use_lstm"] = True
@@ -150,8 +150,12 @@ print("(RESTORED) RESTORED AGENT WITH {} ITERATIONS".format(
     trained_strategy.iteration))
 print("(RESTORED) FROM CHECKPOINT: {}".format(CHECKPOINT_PATH))
 
-print("CONFIG: ", trained_strategy.config)
+print("CONFIG: ", trained_strategy.get_config())
 # -- Result path.
+
+print("BEFORE TRAIN")
+trained_strategy.train()
+print("AFTER TRAIN")
 
 results = []
 result_path = generate_test_result_path(symbol=replay.identifier,

@@ -169,63 +169,64 @@ episode_reward = 0
 
 
 # Try excet since eventually the episode start list will be other.
-#try:
+try:
 
-while episode_counter < NUM_TEST_EPISODES:
-    # Compute action.
-    action = trained_strategy.compute_single_action(
-        observation=obs,
-        explore=False,
-        # TODO: warum habe ich das nochmal gemacht?
-        policy_id="default_policy"
-    )
-    # Send action to env and take step receiving obs, reward, done, info.
-    obs, reward, done, info = env.step(action)
-    # Count the reward.
-    episode_reward += reward
 
-    # If episode is done, collect stats and reset env.
-    if done:
-        # -- Store results.
+    while episode_counter < NUM_TEST_EPISODES:
+        # Compute action.
+        action = trained_strategy.compute_single_action(
+            observation=obs,
+            explore=False,
+            # TODO: warum habe ich das nochmal gemacht?
+            policy_id="default_policy"
+        )
+        # Send action to env and take step receiving obs, reward, done, info.
+        obs, reward, done, info = env.step(action)
+        # Count the reward.
+        episode_reward += reward
 
-        # Get results from env.
-        reward = episode_reward
-        episode_start = copy.deepcopy(env.replay.episode.episode_start)
-        overall_is = copy.deepcopy(
-            env.replay.rl_agent.agent_metrics.overall_is(scaling_factor=1))
-        vwap_sell = copy.deepcopy(
-            env.replay.rl_agent.agent_metrics.vwap_sell)
-        total_episode_steps = copy.deepcopy(env.replay.episode._step)
+        # If episode is done, collect stats and reset env.
+        if done:
+            # -- Store results.
 
-        # Append results to results list.
-        results.append(np.array([episode_start,
-                                 overall_is,
-                                 vwap_sell,
-                                 total_episode_steps,
-                                 reward]))
+            # Get results from env.
+            reward = episode_reward
+            episode_start = copy.deepcopy(env.replay.episode.episode_start)
+            overall_is = copy.deepcopy(
+                env.replay.rl_agent.agent_metrics.overall_is(scaling_factor=1))
+            vwap_sell = copy.deepcopy(
+                env.replay.rl_agent.agent_metrics.vwap_sell)
+            total_episode_steps = copy.deepcopy(env.replay.episode._step)
 
-        if episode_counter % NUM_ITERS_STORE_RESULTS == 0:
-            df = pd.DataFrame(results, columns=["episode_start",
-                                                "overall_is",
-                                                "vwap_sell",
-                                                "total_steps",
-                                                "reward"])
-            df.to_csv(result_path, index=False)
+            # Append results to results list.
+            results.append(np.array([episode_start,
+                                     overall_is,
+                                     vwap_sell,
+                                     total_episode_steps,
+                                     reward]))
 
-            # Print to terminal.
-            print(df)
+            if episode_counter % NUM_ITERS_STORE_RESULTS == 0:
+                df = pd.DataFrame(results, columns=["episode_start",
+                                                    "overall_is",
+                                                    "vwap_sell",
+                                                    "total_steps",
+                                                    "reward"])
+                df.to_csv(result_path, index=False)
 
-        # -- Reset the environment to run the next episode.
-        obs = env.reset()
-        episode_counter += 1
-        # Reset the reward.
-        episode_reward = 0
+                # Print to terminal.
+                print(df)
 
-        # DEBUGGING
-        # print("initial inventory", env.replay.rl_agent.initial_inventory)
-        # print("episode start: ", env.replay.episode.episode_start)
-        # print("identifier: ", env.replay.episode.identifier)
-'''
+            # -- Reset the environment to run the next episode.
+            obs = env.reset()
+            episode_counter += 1
+            # Reset the reward.
+            episode_reward = 0
+
+            # DEBUGGING
+            # print("initial inventory", env.replay.rl_agent.initial_inventory)
+            # print("episode start: ", env.replay.episode.episode_start)
+            # print("identifier: ", env.replay.episode.identifier)
+
 # Store results when the loop fails since episodes are over.
 except:
     # -- Store Final Results.
@@ -237,7 +238,7 @@ except:
                                         "reward"])
     df.to_csv(result_path, index=False)
 
-'''
+
 # Redundantly store results again to be safe.
 
 # -- Store Final Results.
