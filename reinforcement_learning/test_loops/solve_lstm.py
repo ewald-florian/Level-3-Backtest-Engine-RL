@@ -141,7 +141,7 @@ base_config["disable_env_checking"] = True
 base_config['evaluation_config'] = base_config['env_config'].copy()
 
 # IN EVALUATIUON MDOE
-#base_config["in_evaluation"] = True
+base_config["in_evaluation"] = True
 #base_config["evaluation_config"] = base_config['env_config'].copy()
 #base_config["explore"] = False
 
