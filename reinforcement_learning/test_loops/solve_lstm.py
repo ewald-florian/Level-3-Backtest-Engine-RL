@@ -139,8 +139,11 @@ base_config["disable_env_checking"] = True
 # base_config["framework"] = "tf2"
 
 # IN EVALUATIUON MDOE
-base_config["in_evaluation"] = True
-base_config["evaluation_config"] = {"explore": False, "env_config": {"mode": "test"}}
+#base_config["in_evaluation"] = True
+#base_config["evaluation_config"] = base_config['env_config'].copy()
+#base_config["explore"] = False
+
+#{"explore": False, "env_config": {"mode": "test"}}
 
 # LSTM
 #base_config["model"]["use_lstm"] = True
@@ -150,6 +153,9 @@ base_config["evaluation_config"] = {"explore": False, "env_config": {"mode": "te
 
 trained_strategy = PPOTrainer(config=base_config)
 trained_strategy.restore(CHECKPOINT_PATH)
+
+print("evaluation config")
+print(trained_strategy.config['evaluation_config'])
 
 # -- Result path.
 
