@@ -147,20 +147,13 @@ base_config["evaluation_config"] = {"explore": False, "env_config": {"mode": "te
 #base_config["model"]["max_seq_len"] = 10
 #base_config["model"]["lstm_cell_size"] = 128
 
-print("(INSTANTIATED) FROM {}".format(base_config_path))
+
 trained_strategy = PPOTrainer(config=base_config)
 trained_strategy.restore(CHECKPOINT_PATH)
-print("(RESTORED) RESTORED AGENT WITH {} ITERATIONS".format(
-    trained_strategy.iteration))
-print("(RESTORED) FROM CHECKPOINT: {}".format(CHECKPOINT_PATH))
 
-print("CONFIG: ", trained_strategy.get_config())
 # -- Result path.
 
-# NOTE: training works this is not the problem.
-#print("BEFORE TRAIN")
-#trained_strategy.train()
-#print("AFTER TRAIN")
+
 
 results = []
 result_path = generate_test_result_path(symbol=replay.identifier,
@@ -170,7 +163,7 @@ print("(INFO) TEST RESULTS WILL BE STORED TO: ", result_path)
 # -- Test loop.
 
 # Instantiate environment.
-env = TradingEnvironment(base_config["env_config"])
+env = TradingEnvironment(base_config["evaluation_config"]["env_config"])
 # Reset env, get initial obs.
 print("BEFORE ENV RESET.")
 obs = env.reset()
