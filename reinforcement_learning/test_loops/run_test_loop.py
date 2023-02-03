@@ -60,7 +60,7 @@ print("Num GPUs Available TF: ", len(tf.config.list_physical_devices('GPU')))
 # TODO: Insert Agent Name and Symbol!
 STRATEGY_NAME = "A1_BAY"
 AGENT = FinalOEAgent1  # FinalOEAgent2Limited # FinalOEAgent1
-SYMBOL = "DTE"
+SYMBOL = "CBK"
 # ----------------------------
 TEST_START = "2021-05-14"
 TEST_END = "2021-06-30"
@@ -75,7 +75,6 @@ print("SYMBOL: ", SYMBOL)
 print("Start:", TEST_START)
 print("End:", TEST_END)
 print(80*"*")
-
 
 # Paths to base config dicts.
 if platform.system() == 'Darwin':  # macos
