@@ -138,6 +138,9 @@ base_config['env_config']['config']['replay_episode'] = replay
 base_config["disable_env_checking"] = True
 # base_config["framework"] = "tf2"
 
+# IN EVALUATIUON MDOE
+base_config["in_evaluation"] = True
+
 # LSTM
 #base_config["model"]["use_lstm"] = True
 #base_config["model"]["max_seq_len"] = 10
@@ -153,9 +156,10 @@ print("(RESTORED) FROM CHECKPOINT: {}".format(CHECKPOINT_PATH))
 print("CONFIG: ", trained_strategy.get_config())
 # -- Result path.
 
-print("BEFORE TRAIN")
-trained_strategy.train()
-print("AFTER TRAIN")
+# NOTE: training works this is not the problem.
+#print("BEFORE TRAIN")
+#trained_strategy.train()
+#print("AFTER TRAIN")
 
 results = []
 result_path = generate_test_result_path(symbol=replay.identifier,
@@ -183,20 +187,14 @@ while episode_counter < NUM_TEST_EPISODES:
     # Compute action.
 
     print("BEFORE COMPUTE FIRST ACTION.")
-    '''
+    # Note: `compute_action` has been deprecated. Use `Algorithm.compute_single_action()
     action = trained_strategy.compute_single_action(
         observation=obs,
         explore=False,
         # TODO: warum habe ich das nochmal gemacht?
         policy_id="default_policy"
     )
-    '''
-    action = trained_strategy.compute_action(
-        observation=obs,
-        explore=False,
-        # TODO: warum habe ich das nochmal gemacht?
-        policy_id="default_policy"
-    )
+
     print("AFTER COMPUTE FIRST ACTION.")
     # Send action to env and take step receiving obs, reward, done, info.
     obs, reward, done, info = env.step(action)
