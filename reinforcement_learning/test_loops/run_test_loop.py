@@ -129,6 +129,7 @@ replay = Replay(rl_agent=agent,
                 shuffle=False,
                 verbose=False)
 
+
 # Extend base config with instances.
 base_config["env"] = TradingEnvironment
 base_config['env_config']['config']['replay_episode'] = replay
