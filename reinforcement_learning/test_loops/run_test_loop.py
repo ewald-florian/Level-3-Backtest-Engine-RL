@@ -76,6 +76,7 @@ print("Start:", TEST_START)
 print("End:", TEST_END)
 print(80*"*")
 
+
 # Paths to base config dicts.
 if platform.system() == 'Darwin':  # macos
     base_config_path = "/Users/florianewald/PycharmProjects/Level-3-Backtest-"\
