@@ -63,7 +63,7 @@ fcnet_activation = 'relu'
 
 use_lstm = True
 max_seq_len = 10  # default 20
-lstm_cell_size = 128  # default 256
+lstm_cell_size = 10  # 128  # default 256
 # training
 learning_rate = 5e-05  # default 5e-05
 gamma = 1  # 0.99
@@ -185,109 +185,171 @@ if use_lstm:
     config["model"]["max_seq_len"] = max_seq_len
     config["model"]["lstm_cell_size"] = lstm_cell_size
 
-# -- Instantiate the Trainer object using above config.
-rllib_trainer = PPOTrainer(config=config)
 
-print("config")
-print(rllib_trainer.config)
+######### EVAL
+config['in_evaluation'] = True
+
+#####
+# -- Instantiate the Trainer object using above config.
+trained_strategy = PPOTrainer(config=config)
+
+#print("config")
+#print(trained_strategy.config)
 
 # -- Reload from checkpoint.
 if restoring_checkpoint_path:
-    rllib_trainer.restore(restoring_checkpoint_path)
-    print("RESTORED FROM CHECKPOINT, iterations: ", rllib_trainer._iteration)
+    trained_strategy.restore(restoring_checkpoint_path)
+    print("RESTORED FROM CHECKPOINT, iterations: ", trained_strategy._iteration)
 
-# print policy model
-# print(rllib_trainer.get_policy().model.base_model.summary())
-# print total iteration to check if the trainer is new or reloaded.
-# print(rllib_trainer._episodes_total)
+# -- Result path.
 
-# result storage list.
-results = []
-episode_data = []
-episode_json = []
-# Dict to store infos about each individual training episode.
-all_episode_results = {"train_iteration": [],
-                       "episode_len": [],
-                       "episode_reward": []}
 
-# -- Run training loops.
 
-for iteration in range(num_iterations):
+#results = []
+#result_path = generate_test_result_path(symbol=replay.identifier,
+#                                        strategy_name=STRATEGY_NAME)
+#print("(INFO) TEST RESULTS WILL BE STORED TO: ", result_path)
+###############
+# -- Test loop.
+# TODO: dont use config dict but traied_strategty.config!!!
+print("conf keys 1: ", trained_strategy.config.keys())
+print("'evaluation_config' keys:",  trained_strategy.config['evaluation_config'].keys())
+print("Entire trained_strategy.config['evaluation_config']", trained_strategy.config['evaluation_config'])
+print("Eval: trained_strategy.config['evaluation_config']['env_config']", trained_strategy.config['evaluation_config']['env_config'])
+print("Standard: trained_strategy.config['env_config'] ", trained_strategy.config['env_config'])
+eval_env_config = trained_strategy.config['evaluation_config']['env_config']
 
-    # train and get results.
-    result = rllib_trainer.train()
-    # Store progress info for all episodes of the train iteration.
-    all_ep_lengths = result['hist_stats']['episode_lengths']
-    all_ep_rewards = result['hist_stats']['episode_reward']
-    train_iter = [iteration] * len(all_ep_lengths)
-    all_episode_results["episode_len"].extend(all_ep_lengths)
-    all_episode_results["episode_reward"].extend(all_ep_rewards)
-    all_episode_results["train_iteration"].extend(train_iter)
-    # Store complete result to results list.
-    results.append(result)
-    # store relevant iteration metrics from the result dict to the episode dict
-    results.append(result)
-    episode = {
-        "n": iteration,
-        "episode_reward_min": result["episode_reward_min"],
-        "episode_reward_mean": result["episode_reward_mean"],
-        "episode_reward_max": result["episode_reward_max"],
-        "episode_len_mean": result["episode_len_mean"],
-    }
+# TODO: If this does not work I have to set it before the agent is instatiated.
+#trained_strategy.config['in_evaluation'] = True
 
-    episode_data.append(episode)
-    episode_json.append(json.dumps(episode))
+print("Activated Evaluation Mode", trained_strategy.config['in_evaluation'])
 
-    # store results every iteration in case the training loop breaks.
-    # - iteration level.
-    result_df = pd.DataFrame(data=episode_data)
-    result_df.to_csv(result_file, index=False)
-    # - episode level.
-    all_eps_df = pd.DataFrame(all_episode_results)
-    result_df.to_csv(all_episode_result_file, index=False)
+# TODO: that actually doesnt make any sense.
+# trained_strategy.config['evaluation_config']['model']['use_lstm'] = False
+# TODO: die settings innerhalb von eval_env anschauen
 
-    # Save checkpoint every x iterations.
-    if iteration % save_checkpoints_freq == 0:
-        checkpoint_file = rllib_trainer.save()
-        print("Checkpoint_File", checkpoint_file)
+# TODO
+#'explore': True
+###############
 
-    if iteration % print_results_freq == 0:
-        checkpoint_file = rllib_trainer.save()
-        print(f'{iteration:3d}: Min/Mean/Max reward: {result["episode_reward_min"]:8.4f}/{result["episode_reward_mean"]:8.4f}/{result["episode_reward_mean"]}')
+# Instantiate environment.
+env = TradingEnvironment(eval_env_config) #config["env_config"])
+# Reset env, get initial obs.
+print("BEFORE ENV RESET.")
+obs = env.reset()
 
-        # print results.
-        if print_entire_result:
-            print('(TRAINER) Result Iteration:', rllib_trainer.iteration)
-            pp = pprint.PrettyPrinter(indent=4)
-            pp.pprint(results)
+import numpy as np
+init_state = [np.zeros([lstm_cell_size], np.float32) for _ in range(2)]
+state = init_state.copy()
 
-# -- Store to df and Print Results.
-result_df = pd.DataFrame(data=episode_data)
-print(result_df.tail(5))
-result_df.to_csv(result_file, index=False)
-# -- Store each episode results to df and print
-all_eps_df = pd.DataFrame(all_episode_results)
-result_df.to_csv(all_episode_result_file, index=False)
 
-# Save trainer to checkpoint file.
-checkpoint_file = rllib_trainer.save()
-print(f"Trainer (at iteration {rllib_trainer.iteration}) was "
-      f"saved in '{checkpoint_file}'!")
+
+for i in range(100):
+    # compute first action based on initial state.
+    action, state_out, _ = trained_strategy.compute_single_action(obs, state)
+    print("a", action)
+    state = state_out
+
+
+print("COMPUTED SPECIAL ACTION!")
+
+
+# Dict to store rewards for each test-episode.
+reward_dict = {}
+episode_counter = 0
+episode_reward = 0
+
+print("AFTER ENV RESET.")
+# Try excet since eventually the episode start list will be other.
+#try:
+NUM_TEST_EPISODES = 10
+while episode_counter < NUM_TEST_EPISODES:
+    # Compute action.
+
+    print("BEFORE COMPUTE FIRST ACTION.")
+    # Note: `compute_action` has been deprecated. Use `Algorithm.compute_single_action()
+    action = trained_strategy.compute_single_action(
+        observation=obs,
+        explore=False,
+        # TODO: warum habe ich das nochmal gemacht?
+        policy_id="default_policy"
+    )
+    print("action", action)
+
+    print("AFTER COMPUTE FIRST ACTION.")
+    # Send action to env and take step receiving obs, reward, done, info.
+    obs, reward, done, info = env.step(action)
+    # Count the reward.
+    episode_reward += reward
+
+    # If episode is done, collect stats and reset env.
+    if done:
+        import copy
+        # -- Store results.
+        print("EPISODE DONE REACHED.")
+        # Get results from env.
+        reward = episode_reward
+        episode_start = copy.deepcopy(env.replay.episode.episode_start)
+        overall_is = copy.deepcopy(
+            env.replay.rl_agent.agent_metrics.overall_is(scaling_factor=1))
+        vwap_sell = copy.deepcopy(
+            env.replay.rl_agent.agent_metrics.vwap_sell)
+        total_episode_steps = copy.deepcopy(env.replay.episode._step)
+
+        # Append results to results list.
+        results.append(np.array([episode_start,
+                                 overall_is,
+                                 vwap_sell,
+                                 total_episode_steps,
+                                 reward]))
+
+        if episode_counter % NUM_ITERS_STORE_RESULTS == 0:
+            df = pd.DataFrame(results, columns=["episode_start",
+                                                "overall_is",
+                                                "vwap_sell",
+                                                "total_steps",
+                                                "reward"])
+            df.to_csv(result_path, index=False)
+
+            # Print to terminal.
+            print(df)
+
+        # -- Reset the environment to run the next episode.
+        obs = env.reset()
+        episode_counter += 1
+        # Reset the reward.
+        episode_reward = 0
+
+        # DEBUGGING
+        # print("initial inventory", env.replay.rl_agent.initial_inventory)
+        # print("episode start: ", env.replay.episode.episode_start)
+        # print("identifier: ", env.replay.episode.identifier)
+'''
+# Store results when the loop fails since episodes are over.
+except:
+    # -- Store Final Results.
+    # Store final  results to DF:
+    df = pd.DataFrame(results, columns=["episode_start",
+                                        "overall_is",
+                                        "vwap_sell",
+                                        "total_steps",
+                                        "reward"])
+    df.to_csv(result_path, index=False)
+
+'''
+# Redundantly store results again to be safe.
+
+# -- Store Final Results.
+# Store final  results to DF:
+df = pd.DataFrame(results, columns=["episode_start",
+                                    "overall_is",
+                                    "vwap_sell",
+                                    "total_steps",
+                                    "reward"])
+df.to_csv(result_path, index=False)
+
+print("(INFO) TEST RUN COMPLETE")
+print("(INFO) RESULTS STORED IN: ", result_path)
 
 # Shut down ray.
 ray.shutdown()
-
-"""
-# NOTES
-
-# Evaluation
-config["evaluation_interval"] = 1
-config["evaluation_duration"] = 1
-config["evaluation_duration_unit"] = "episodes"
-
-Agent Information:
- print(rllib_trainer._episodes_total)
- print(rllib_trainer._iteration)
- print(rllib_trainer.agent_timesteps_total)
- print(rllib_trainer._time_total)
-"""

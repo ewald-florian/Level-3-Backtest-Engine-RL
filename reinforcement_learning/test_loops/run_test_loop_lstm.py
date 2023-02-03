@@ -58,7 +58,7 @@ print("Num GPUs Available TF: ", len(tf.config.list_physical_devices('GPU')))
 #
 # ----------------------------
 # TODO: Insert Agent Name and Symbol!
-STRATEGY_NAME = "A1_FCN_256_LSTM"
+STRATEGY_NAME = "A1_FCN_128_LSTM"
 AGENT = FinalOEAgent1  # FinalOEAgent2Limited # FinalOEAgent1
 SYMBOL = "BAY"
 # ----------------------------
@@ -84,8 +84,6 @@ if platform.system() == 'Darwin':  # macos
 elif platform.system() == 'Linux':
     base_config_path = "/home/jovyan/Level-3-Backtest-" \
                        "Engine-RL/reinforcement_learning/base_configs/"
-
-
 
 base_config_path = base_config_path + STRATEGY_NAME + "_base_config.json"
 with open(base_config_path, 'r') as fp:
@@ -136,33 +134,21 @@ replay = Replay(rl_agent=agent,
 base_config["env"] = TradingEnvironment
 base_config['env_config']['config']['replay_episode'] = replay
 base_config["disable_env_checking"] = True
-# base_config["framework"] = "tf2"
-
-base_config['evaluation_config'] = base_config['env_config'].copy()
-base_config["in_evaluation"] = True
-#base_config["evaluation_config"] = base_config['env_config'].copy()
-#base_config["explore"] = False
-
-#{"explore": False, "env_config": {"mode": "test"}}
+#base_config["framework"] = "tf2"
 
 # LSTM
 #base_config["model"]["use_lstm"] = True
 #base_config["model"]["max_seq_len"] = 10
 #base_config["model"]["lstm_cell_size"] = 128
 
-
+print("(INSTANTIATED) FROM {}".format(base_config_path))
 trained_strategy = PPOTrainer(config=base_config)
 trained_strategy.restore(CHECKPOINT_PATH)
-
-import pprint
-pp = pprint.PrettyPrinter(indent=4)
-
-print("evaluation config")
-pp.pprint(trained_strategy.config['evaluation_config'])
+print("(RESTORED) RESTORED AGENT WITH {} ITERATIONS".format(
+    trained_strategy.iteration))
+print("(RESTORED) FROM CHECKPOINT: {}".format(CHECKPOINT_PATH))
 
 # -- Result path.
-
-
 
 results = []
 result_path = generate_test_result_path(symbol=replay.identifier,
@@ -172,81 +158,88 @@ print("(INFO) TEST RESULTS WILL BE STORED TO: ", result_path)
 # -- Test loop.
 
 # Instantiate environment.
-env = TradingEnvironment(base_config["evaluation_config"])
+env = TradingEnvironment(base_config["env_config"])
 # Reset env, get initial obs.
-print("BEFORE ENV RESET.")
 obs = env.reset()
+# Create inital lstm inputs.
+# TODO: get LSTM size from base_config.
+lstm_cell_size = base_config["env_config"]["model"]["lstm_cell_size"]
+init_state = [np.zeros([lstm_cell_size], np.float32) for _ in range(2)]
+# Reset state to initial state.
+state = init_state
 
 # Dict to store rewards for each test-episode.
 reward_dict = {}
 episode_counter = 0
 episode_reward = 0
 
-print("AFTER ENV RESET.")
 # Try excet since eventually the episode start list will be other.
-#try:
+try:
 
-while episode_counter < NUM_TEST_EPISODES:
-    # Compute action.
+    while episode_counter < NUM_TEST_EPISODES:
+        # Compute action.
+        action, state_out, _ = trained_strategy.compute_single_action(obs,
+                                                                      state,
+                                                                      explore=False)
+        # Use state_out as LSTM input for the next iteration.
+        state = state_out
+        '''
+        action = trained_strategy.compute_single_action(
+            observation=obs,
+            explore=False,
+            # TODO: warum habe ich das nochmal gemacht?
+            policy_id="default_policy"
+        )
+        '''
+        # Send action to env and take step receiving obs, reward, done, info.
+        obs, reward, done, info = env.step(action)
+        # Count the reward.
+        episode_reward += reward
 
-    print("BEFORE COMPUTE FIRST ACTION.")
-    # Note: `compute_action` has been deprecated. Use `Algorithm.compute_single_action()
-    action = trained_strategy.compute_single_action(
-        observation=obs,
-        explore=False,
-        # TODO: warum habe ich das nochmal gemacht?
-        policy_id="default_policy"
-    )
-    print("action", action)
+        # If episode is done, collect stats and reset env.
+        if done:
+            # -- Store results.
 
-    print("AFTER COMPUTE FIRST ACTION.")
-    # Send action to env and take step receiving obs, reward, done, info.
-    obs, reward, done, info = env.step(action)
-    # Count the reward.
-    episode_reward += reward
+            # Get results from env.
+            reward = episode_reward
+            episode_start = copy.deepcopy(env.replay.episode.episode_start)
+            overall_is = copy.deepcopy(
+                env.replay.rl_agent.agent_metrics.overall_is(scaling_factor=1))
+            vwap_sell = copy.deepcopy(
+                env.replay.rl_agent.agent_metrics.vwap_sell)
+            total_episode_steps = copy.deepcopy(env.replay.episode._step)
 
-    # If episode is done, collect stats and reset env.
-    if done:
-        # -- Store results.
-        print("EPISODE DONE REACHED.")
-        # Get results from env.
-        reward = episode_reward
-        episode_start = copy.deepcopy(env.replay.episode.episode_start)
-        overall_is = copy.deepcopy(
-            env.replay.rl_agent.agent_metrics.overall_is(scaling_factor=1))
-        vwap_sell = copy.deepcopy(
-            env.replay.rl_agent.agent_metrics.vwap_sell)
-        total_episode_steps = copy.deepcopy(env.replay.episode._step)
+            # Append results to results list.
+            results.append(np.array([episode_start,
+                                     overall_is,
+                                     vwap_sell,
+                                     total_episode_steps,
+                                     reward]))
 
-        # Append results to results list.
-        results.append(np.array([episode_start,
-                                 overall_is,
-                                 vwap_sell,
-                                 total_episode_steps,
-                                 reward]))
+            if episode_counter % NUM_ITERS_STORE_RESULTS == 0:
+                df = pd.DataFrame(results, columns=["episode_start",
+                                                    "overall_is",
+                                                    "vwap_sell",
+                                                    "total_steps",
+                                                    "reward"])
+                df.to_csv(result_path, index=False)
 
-        if episode_counter % NUM_ITERS_STORE_RESULTS == 0:
-            df = pd.DataFrame(results, columns=["episode_start",
-                                                "overall_is",
-                                                "vwap_sell",
-                                                "total_steps",
-                                                "reward"])
-            df.to_csv(result_path, index=False)
+                # Print to terminal.
+                print(df)
 
-            # Print to terminal.
-            print(df)
+            # -- Reset the environment to run the next episode.
+            obs = env.reset()
+            # Reset LSTM input to initial state.
+            state = init_state
+            episode_counter += 1
+            # Reset the reward.
+            episode_reward = 0
 
-        # -- Reset the environment to run the next episode.
-        obs = env.reset()
-        episode_counter += 1
-        # Reset the reward.
-        episode_reward = 0
+            # DEBUGGING
+            # print("initial inventory", env.replay.rl_agent.initial_inventory)
+            # print("episode start: ", env.replay.episode.episode_start)
+            # print("identifier: ", env.replay.episode.identifier)
 
-        # DEBUGGING
-        # print("initial inventory", env.replay.rl_agent.initial_inventory)
-        # print("episode start: ", env.replay.episode.episode_start)
-        # print("identifier: ", env.replay.episode.identifier)
-'''
 # Store results when the loop fails since episodes are over.
 except:
     # -- Store Final Results.
@@ -258,7 +251,7 @@ except:
                                         "reward"])
     df.to_csv(result_path, index=False)
 
-'''
+
 # Redundantly store results again to be safe.
 
 # -- Store Final Results.
