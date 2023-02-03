@@ -140,6 +140,7 @@ base_config["disable_env_checking"] = True
 
 # IN EVALUATIUON MDOE
 base_config["in_evaluation"] = True
+base_config["evaluation_config"] = {"explore": False, "env_config": {"mode": "test"}}
 
 # LSTM
 #base_config["model"]["use_lstm"] = True
