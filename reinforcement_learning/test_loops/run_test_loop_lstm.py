@@ -1,12 +1,11 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-TEST LOOP for Final Agent 2. Model 1: 128
-AGENTID = 012823
+Tets Loop For LSTM Agents. Adds additional input arrays for the LSTM layer
+to the observation when computing action.
 
-10 Observations, 6 Actions
+# manage GPUs if executed on server.
 """
-
 # build ins
 import json
 import pprint
@@ -34,17 +33,11 @@ from reinforcement_learning.agent_prototypes.final_agent_1 import \
 from replay_episode.replay import Replay
 from utils.test_result_path import generate_test_result_path
 
-# -- The TEST LOOP is initialized exactly as the TRAIN Loop since the correct
-# -- config file specifications are required to restore the weights.
-
-# manage GPUs if executed on server.
-"""
 if platform.system() == 'Linux':
     gpuid = 'MIG-b33f9985-2600-590d-9cb1-002ae4ce5957'
     import os
 
     os.environ['CUDA_VISIBLE_DEVICES'] = gpuid
-"""
 
 print("Num GPUs Available TF: ", len(tf.config.list_physical_devices('GPU')))
 
@@ -58,27 +51,27 @@ print("Num GPUs Available TF: ", len(tf.config.list_physical_devices('GPU')))
 #
 # ----------------------------
 # TODO: Insert Agent Name and Symbol!
-STRATEGY_NAME = "A1_FCN_128_LSTM"
+STRATEGY_NAME = "A1_FCN_256_LSTM"
 AGENT = FinalOEAgent1  # FinalOEAgent2Limited # FinalOEAgent1
 SYMBOL = "BAY"
 # ----------------------------
 TEST_START = "2021-05-14"
 TEST_END = "2021-06-30"
-NUM_ITERS_STORE_RESULTS = 150
+NUM_ITERS_STORE_RESULTS = 100 # TODO: Adjust
 VERBOSE = True
 NUM_TEST_EPISODES = 1_000_000
 # ----------------------------
-print(80*"*")
+print(80 * "*")
 print("TEST LOOP STARTED")
 print("STRATEGY: ", STRATEGY_NAME)
 print("SYMBOL: ", SYMBOL)
 print("Start:", TEST_START)
 print("End:", TEST_END)
-print(80*"*")
+print(80 * "*")
 
 # Paths to base config dicts.
 if platform.system() == 'Darwin':  # macos
-    base_config_path = "/Users/florianewald/PycharmProjects/Level-3-Backtest-"\
+    base_config_path = "/Users/florianewald/PycharmProjects/Level-3-Backtest-" \
                        "Engine-RL/reinforcement_learning/base_configs/"
 
 elif platform.system() == 'Linux':
@@ -108,7 +101,7 @@ elif STRATEGY_NAME == "A1_BAY":
 
 elif STRATEGY_NAME == "A2_LIMITED":
     CHECKPOINT_PATH = "/Users/florianewald/ray_results/PPOTrainer_TradingEnvironment_2023-02-02_12-40-48qhxzjq6z/checkpoint_000925/checkpoint-925"
-    #CHECKPOINT_PATH = "/Users/florianewald/ray_results/PPOTrainer_TradingEnvironment_2023-01-31_22-31-19agy3bqbz/checkpoint_000401/checkpoint-401"
+    # CHECKPOINT_PATH = "/Users/florianewald/ray_results/PPOTrainer_TradingEnvironment_2023-01-31_22-31-19agy3bqbz/checkpoint_000401/checkpoint-401"
 
 # Start ray.
 ray.init(num_gpus=0, num_cpus=1)
@@ -129,17 +122,11 @@ replay = Replay(rl_agent=agent,
                 shuffle=False,
                 verbose=False)
 
-
 # Extend base config with instances.
 base_config["env"] = TradingEnvironment
 base_config['env_config']['config']['replay_episode'] = replay
 base_config["disable_env_checking"] = True
-#base_config["framework"] = "tf2"
-
-# LSTM
-#base_config["model"]["use_lstm"] = True
-#base_config["model"]["max_seq_len"] = 10
-#base_config["model"]["lstm_cell_size"] = 128
+# base_config["framework"] = "tf2"
 
 print("(INSTANTIATED) FROM {}".format(base_config_path))
 trained_strategy = PPOTrainer(config=base_config)
@@ -161,36 +148,29 @@ print("(INFO) TEST RESULTS WILL BE STORED TO: ", result_path)
 env = TradingEnvironment(base_config["env_config"])
 # Reset env, get initial obs.
 obs = env.reset()
-# Create inital lstm inputs.
-# TODO: get LSTM size from base_config.
-lstm_cell_size = base_config["model"]["lstm_cell_size"]
-init_state = [np.zeros([lstm_cell_size], np.float32) for _ in range(2)]
-# Reset state to initial state.
-state = init_state
 
 # Dict to store rewards for each test-episode.
 reward_dict = {}
 episode_counter = 0
 episode_reward = 0
 
-# Try excet since eventually the episode start list will be other.
+# -- Create inital lstm inputs.
+lstm_cell_size = base_config["model"]["lstm_cell_size"]
+init_state = [np.zeros([lstm_cell_size], np.float32) for _ in range(2)]
+# Reset state to initial state.
+state = init_state
+
+# Try excet since eventually the episode start list will be over.
 try:
 
     while episode_counter < NUM_TEST_EPISODES:
         # Compute action.
         action, state_out, _ = trained_strategy.compute_single_action(obs,
-                                                                      state,
-                                                                      explore=False)
+                                                                state,
+                                                                explore=False)
         # Use state_out as LSTM input for the next iteration.
         state = state_out
-        '''
-        action = trained_strategy.compute_single_action(
-            observation=obs,
-            explore=False,
-            # TODO: warum habe ich das nochmal gemacht?
-            policy_id="default_policy"
-        )
-        '''
+
         # Send action to env and take step receiving obs, reward, done, info.
         obs, reward, done, info = env.step(action)
         # Count the reward.
@@ -217,6 +197,7 @@ try:
                                      reward]))
 
             if episode_counter % NUM_ITERS_STORE_RESULTS == 0:
+
                 df = pd.DataFrame(results, columns=["episode_start",
                                                     "overall_is",
                                                     "vwap_sell",
@@ -242,17 +223,7 @@ try:
 
 # Store results when the loop fails since episodes are over.
 except:
-    # -- Store Final Results.
-    # Store final  results to DF:
-    df = pd.DataFrame(results, columns=["episode_start",
-                                        "overall_is",
-                                        "vwap_sell",
-                                        "total_steps",
-                                        "reward"])
-    df.to_csv(result_path, index=False)
-
-
-# Redundantly store results again to be safe.
+    pass
 
 # -- Store Final Results.
 # Store final  results to DF:
