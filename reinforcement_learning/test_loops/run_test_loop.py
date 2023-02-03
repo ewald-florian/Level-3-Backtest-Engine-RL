@@ -137,6 +137,11 @@ base_config['env_config']['config']['replay_episode'] = replay
 base_config["disable_env_checking"] = True
 #base_config["framework"] = "tf2"
 
+# LSTM
+base_config["model"]["use_lstm"] = True
+base_config["model"]["max_seq_len"] = 10
+base_config["model"]["lstm_cell_size"] = 128
+
 print("(INSTANTIATED) FROM {}".format(base_config_path))
 trained_strategy = PPOTrainer(config=base_config)
 trained_strategy.restore(CHECKPOINT_PATH)
