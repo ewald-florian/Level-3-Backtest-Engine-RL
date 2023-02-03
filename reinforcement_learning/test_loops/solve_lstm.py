@@ -154,8 +154,11 @@ base_config["disable_env_checking"] = True
 trained_strategy = PPOTrainer(config=base_config)
 trained_strategy.restore(CHECKPOINT_PATH)
 
-print("evaluation config")
-print(trained_strategy.config['evaluation_config'])
+import pprint
+pp = pprint.PrettyPrinter(indent=4)
+
+pp.pprint("evaluation config")
+pp.pprint(trained_strategy.config['evaluation_config'])
 
 # -- Result path.
 
@@ -169,7 +172,7 @@ print("(INFO) TEST RESULTS WILL BE STORED TO: ", result_path)
 # -- Test loop.
 
 # Instantiate environment.
-env = TradingEnvironment(base_config["evaluation_config"]["env_config"])
+env = TradingEnvironment(base_config["env_config"])
 # Reset env, get initial obs.
 print("BEFORE ENV RESET.")
 obs = env.reset()
