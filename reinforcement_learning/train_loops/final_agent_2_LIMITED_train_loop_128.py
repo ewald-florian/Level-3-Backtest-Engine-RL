@@ -36,7 +36,7 @@ from reinforcement_learning.environment.episode_stats import EpisodeStats
 
 # manage GPUs if executed on server.
 if platform.system() == 'Linux':
-    gpuid = 'MIG-ac3c47b3-456e-56ff-aa3e-5731e429d659'
+    gpuid = 'MIG-c8c5eee1-c148-5f66-9889-9759c8656d2b'
     import os
     os.environ["CUDA_VISIBLE_DEVICES"] = gpuid
 
@@ -49,10 +49,10 @@ print("Num GPUs Available TF: ", len(tf.config.list_physical_devices('GPU')))
 
 # Provide checkpoint path if trainer should be restored.
 # NOTE: This is the checkpoint from the training iterations on server.
-restoring_checkpoint_path = "/Users/florianewald/ray_results/PPOTrainer_TradingEnvironment_2023-02-02_12-40-48qhxzjq6z/checkpoint_000925/checkpoint-925"
-name = 'A2_LIMITED_FINAL_RUN_fcn_128_IS_REWARD_WAIT_REWARD_0_001_ALLASSETS_'
+restoring_checkpoint_path = None #"/Users/florianewald/ray_results/PPOTrainer_TradingEnvironment_2023-02-02_12-40-48qhxzjq6z/checkpoint_000925/checkpoint-925"
+name = 'A2_LIMITED_WAIT_2_'
 
-num_iterations = 1000
+num_iterations = 200
 save_checkpoints_freq = 10
 print_results_freq = 10
 # environment.
