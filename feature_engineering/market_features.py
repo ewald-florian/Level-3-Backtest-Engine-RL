@@ -288,7 +288,10 @@ class MarketFeatures:
                 [sum([d['quantity'] for d in state_l3[2][n]]) for n in
                  ask_keys])
 
-            imbalance = (bid_qt - ask_qt) / (ask_qt + bid_qt)
+            if (ask_qt + bid_qt) > 0:
+                imbalance = (bid_qt - ask_qt) / (ask_qt + bid_qt)
+            else:
+                imbalance = 0
 
             return round(imbalance, 3)
 
