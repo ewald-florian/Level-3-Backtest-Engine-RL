@@ -71,7 +71,7 @@ print(80 * "*")
 
 # Paths to base config dicts.
 if platform.system() == 'Darwin':  # macos
-    base_config_path = "/Users/florianewald/PycharmProjects/Level-3-Backtest-" \
+    base_config_path = "/Users/florianewald/PycharmProjects/Level-3-Backtest-"\
                        "Engine-RL/reinforcement_learning/base_configs/"
 
 elif platform.system() == 'Linux':
