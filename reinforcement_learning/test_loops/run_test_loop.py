@@ -58,9 +58,9 @@ print("Num GPUs Available TF: ", len(tf.config.list_physical_devices('GPU')))
 #
 # ----------------------------
 # TODO: Insert Agent Name and Symbol!
-STRATEGY_NAME = "A1_BAY"
-AGENT = FinalOEAgent1  # FinalOEAgent2Limited # FinalOEAgent1
-SYMBOL = "BAY"
+STRATEGY_NAME = "A2_LIMITED"
+AGENT = FinalOEAgent2Limited  # FinalOEAgent2Limited # FinalOEAgent1
+SYMBOL = "ALV"
 # ----------------------------
 TEST_START = "2021-05-14"
 TEST_END = "2021-06-30"
@@ -108,9 +108,9 @@ elif STRATEGY_NAME == "A1_BAY":
 
 elif STRATEGY_NAME == "A2_LIMITED":
     # Note: I uploaded the weights to the server and run them in a ray 1.x environment "old_ray".
-    CHECKPOINT_PATH = "/home/jovyan/A2_final_weights/A2_final_weights/checkpoint-925"
-    print("*Limited agent path server")
-    #CHECKPOINT_PATH = "/Users/florianewald/ray_results/PPOTrainer_TradingEnvironment_2023-02-02_12-40-48qhxzjq6z/checkpoint_000925/checkpoint-925"
+    #CHECKPOINT_PATH = "/home/jovyan/A2_final_weights/A2_final_weights/checkpoint-925"
+    #print("*Limited agent path server")
+    CHECKPOINT_PATH = "/Users/florianewald/ray_results/PPOTrainer_TradingEnvironment_2023-02-02_12-40-48qhxzjq6z/checkpoint_000925/checkpoint-925"
     #CHECKPOINT_PATH = "/Users/florianewald/ray_results/PPOTrainer_TradingEnvironment_2023-01-31_22-31-19agy3bqbz/checkpoint_000401/checkpoint-401"
 
 
