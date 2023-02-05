@@ -1,31 +1,12 @@
 #!/usr/bin/env python3  Line 1
 # -*- coding: utf-8 -*- Line 2
-# ----------------------------------------------------------------------------
-# Created By  : florian
-# Created Date: 18/Sept/2022
-# version ='1.0'
-# ---------------------------------------------------------------------------
 """ Feature Engineering class for the Level-3 backtest engine"""
-# ---------------------------------------------------------------------------
+
 from context.context import Context
 from market.market_trade import MarketTrade
 
 import numpy as np
 import pandas as pd
-
-
-# Compute features based on Context (e.g. midpoint timeseries...)
-# Compute features based on MarketTrade (e.g. trading volume)
-
-# TODO: should I define a feature-method and a feature-timeseries method for
-# each feature or is there a better way to include timeseries?
-
-# TODO: Wie würde ich es am besten umsetzen wenn ich eine liste mit den letzten
-# 1000 midpoints brauche? bzw. mit den letzen 1000 level2_plus arrays?
-
-# TODO: Note: Erstmal nur die features berechnen die ich wirklich brauche
-# da ich alles neu machen muss wenn sich zB die Datenstruktur von context
-# änder oÄ.!
 
 
 class MarketFeatures:

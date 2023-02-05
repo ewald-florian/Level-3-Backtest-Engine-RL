@@ -84,7 +84,7 @@ batch_mode = 'complete_episodes'  # 'truncate_episodes'
 # other settings.
 disable_env_checking = True
 print_entire_result = False  # contains a lot of useless info.
-rllib_log_level = 'WARN'  # WARN, 'DEBUG'
+rllib_log_level = 'BAY'  # WARN, 'DEBUG'
 # instantiate agent.
 agent = FinalOEAgent2Limited(verbose=False,
                       episode_length=episode_length,
