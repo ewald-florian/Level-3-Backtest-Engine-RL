@@ -153,7 +153,7 @@ class Reconstruction:
         Compare current _state to the specified snapshot in order to validate
         the reconstruction.
 
-        Note: some parsed orders contain a "time-in" key for priority time which
+        Note: some parsed orders contain a "time-in" key for priority time
         does not exist in the snapshot data, therefore the "time-in" elements
         need to be removed from _state in order to match the snapshot.
 
@@ -568,7 +568,7 @@ class Reconstruction:
                     self._state[side][price_level][position][
                         "quantity"] -= quantity
                     # if order has quantity 0, delete order
-                    if self._state[side][price_level][position]["quantity"] == 0:
+                    if self._state[side][price_level][position]["quantity"]==0:
                         self._order_delete(message)
         except:
             pass

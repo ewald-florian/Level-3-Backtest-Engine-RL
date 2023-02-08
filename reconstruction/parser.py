@@ -1,18 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-# ----------------------------------------------------------------------------
-__author__ = "phillipp"
-__date__ = "?"
-# version ='1.0'
-# version ='1.0'
-# ---------------------------------------------------------------------------
 """
 Parser classes. Parse snapshot and message data, i.e. convert str numbers
 to int, use uniform keys, remove unnecessary message types and headers.
 """
-
-
-# ---------------------------------------------------------------------------
 
 
 class SnapshotParser:
@@ -79,7 +70,6 @@ class MessagePacketParser:
             for message in message_packet:
 
                 try:
-                    # TODO: use match
                     # identify template_id
                     template_id = message["MessageHeader"]["TemplateID"]
 
@@ -168,7 +158,6 @@ class MessagePacketParser:
             "quantity": int(message["OrderDetails"]["DisplayQty"]),
             "timestamp": int(message["OrderDetails"]["TrdRegTSTimePriority"]),
 
-            # TODO: problem to leave out time-in?
             # Note: Please note that TrdRegTSTimeIn will not be set in case of
             # a self triggered transaction (without any external actor)
             # "time-in": int(message["TrdRegTSTimeIn"])

@@ -1,27 +1,18 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-#----------------------------------------------------------------------------
-# Created By  : florian
-# Created Date: 17/Sept/2022
-# version ='1.0'
-# ---------------------------------------------------------------------------
 """
-Class to store Market Trades
+Class to store Market Trades (from execution summary messages)
 """
-# ---------------------------------------------------------------------------
+
 
 import pandas as pd
 import numpy as np
-
-#TODO: I could also store agent trades and markt trades in the same class
-# in two different lists (market_trades, and market_trades)
 
 
 class MarketTrade:
 
     history = list()
 
-    # TODO: save as dict not as np.array()
     def __init__(self,
                  market_trade: dict,
                  verbose: bool = False):
@@ -52,7 +43,7 @@ class MarketTrade:
         """
         Numpy Array representation of trade history.
         """
-        df = self.dataframe()
+        df = self.dataframe
         return np.array(df)
 
     @property

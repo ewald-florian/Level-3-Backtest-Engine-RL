@@ -1,19 +1,14 @@
 #!/usr/bin/env python3  Line 1
 # -*- coding: utf-8 -*- Line 2
-# ----------------------------------------------------------------------------
-# Created By  : florian
-# Created Date: 05/Sept/2022
-# version ='1.0'
-# ---------------------------------------------------------------------------
 """ Agent Trade storage class for the Level-3 backtest engine"""
 
-# ---------------------------------------------------------------------------
 
 import pandas as pd
 import numpy as np
 
 
-class AgentTrade: # vs MarketTrade
+class AgentTrade:
+    """Storage class for agent execution during backtest."""
 
     history = list()
 
@@ -38,7 +33,6 @@ class AgentTrade: # vs MarketTrade
         #self.message_id = agent_trade['message_id']
         agent_side = agent_trade['agent_side']
 
-        #TODO: Format f string
         if verbose:
             print(f'(EXEC-INFO)agent-trade {trade_id} executed|{executed_volume}@{execution_price}|side: {agent_side}|time: {pd.to_datetime(int(execution_time), unit="ns")}|unix {execution_time}')
 
@@ -64,16 +58,6 @@ class AgentTrade: # vs MarketTrade
         Trade count
         """
         return len(self.__class__.history)
-
-    #TODO: implement helpful properties...
-    # this is rather for agent_metrics...
-    @property
-    def vwap_buy(self):
-        pass
-
-    @property
-    def vwap_sell(self):
-        pass
 
     @classmethod
     def reset_history(cls):

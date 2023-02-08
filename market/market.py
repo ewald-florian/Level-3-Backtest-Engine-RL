@@ -20,7 +20,7 @@ from agent.agent_order import OrderManagementSystem as OMS
 
 class Market(Reconstruction):
     """
-    Market class.
+    Market class containing the matching engine.
     """
     # store several instances in dict with market_id as key
     instances = dict()
@@ -31,7 +31,7 @@ class Market(Reconstruction):
                  l2_levels: int = 5,
                  report_state_timestamps: bool = True,
                  match_agent_against_exec_summary: bool = True,
-                 agent_latency: int = 0,
+                 agent_latency: int = 200000,  # 200 micro seconds
                  track_index: bool = False,
                  store_arrival_price = True,
                  verbose: bool = True):
@@ -366,7 +366,6 @@ class Market(Reconstruction):
         best_bid = max(self._state[1].keys())
         best_ask = min(self._state[2].keys())
 
-        # TODO: sum list comprehension
         bid_quantity = 0
         for order in self._state[1][best_bid]:
             bid_quantity += order["quantity"]
@@ -404,13 +403,10 @@ class Market(Reconstruction):
         """
         # note: only use top levels since there can be strange prices in depth
         prices = list(sorted(self._state[1].keys(), reverse=True))[:20]
-        # TODO: only compatible with python 3.9 and above
         # ticksize = math.gcd(*prices)
         ticksize = reduce(math.gcd, prices)
         return ticksize
 
-    # TODO: remove unnecessary properties but check if I used them somewhere!
-    # (e.g. I think I used best_ask somewhere)
     @property
     def best_bid(self) -> int:
         """
@@ -562,7 +558,6 @@ class Market(Reconstruction):
         # add message_id
         message['message_id'] = len(OMS.order_list)
         # append message to OMS.order_list
-        # TODO: message arrival price (impact)
         if self.store_arrival_price:
             message['arrival_price'] = self.midpoint
         OMS(message)
@@ -599,9 +594,6 @@ class Market(Reconstruction):
             dict, agent submission message
         """
 
-        #assert np.gcd(self.ticksize, message['price']) == self.ticksize, \
-        #    'Limit not admitted by ticksize'
-
         # ensure that 'msg_seq_num' field exists for compatibility
         message["msg_seq_num"] = None
         # extract message information
@@ -636,7 +628,6 @@ class Market(Reconstruction):
         price = order["price"]
         timestamp = order["timestamp"]
 
-        # TODO: use filter
         try:
             # remove order from internal state
             for idx, order in enumerate(self._state[side][price]):
@@ -712,7 +703,6 @@ class Market(Reconstruction):
 
     #  agent order simulation WITHOUT MARKET IMPACT . . . . . . . . . . . . .
 
-    # TODO: better name for this crucial method
     def update_simulation_with_exchange_message(self, message_packet):
         """
         This method is the entry point of Replay to Market to step the
@@ -780,7 +770,6 @@ class Market(Reconstruction):
         message['msg_seq_num'] = None
         # add message_id
         message['message_id'] = len(OMS.order_list)
-        # TODO: message['arrival_price'] (also for trade_history)
         if self.store_arrival_price:
             message['arrival_price'] = self.midpoint
         # store message to Order Management System
@@ -836,7 +825,6 @@ class Market(Reconstruction):
             # change timestamp
             # -> if limit is changed or qt is increased, priority time changes
             # -> if just qt is decreased, priority time is
-            # TODO: new_quantity/old_quantity not defined (set 0 or so...)
             if "new_price" in message.keys() or new_quantity > old_quantity:
                 # store old timestamp
                 modified_order['old_timestamp'] = modified_order[
@@ -1214,7 +1202,6 @@ class Market(Reconstruction):
                 self._process_executed_agent_orders(trade_list)
                 self._store_agent_trades(trade_list)
 
-    # TODO: this is the match version without market impact modeling
     @staticmethod
     def match_new(state_to_match) -> list:
         """
@@ -1353,7 +1340,6 @@ class Market(Reconstruction):
                     match_execution_summary["agent_side"] = 2
                     match_execution_summary["arrival_price"] = order_sell[
                         "arrival_price"]
-                # TODO: Eigenausführungen verhindern (illegal und sinnlos für RL)?
                 # Edge-Case, both sides are agent orders:
                 elif "message_id" in order_buy.keys() and "message_id" in \
                         order_sell.keys():
@@ -1664,7 +1650,6 @@ class Market(Reconstruction):
                     x = time_since_exec / 1e9
 
                     # Edge case.
-                    # TODO: how can x be negative (bug)?
                     if x < 0:
                         continue
                     # exponential recovery function, clipped at 0.9.

@@ -1,14 +1,7 @@
 #!/usr/bin/env python3  Line 1
 # -*- coding: utf-8 -*- Line 2
-# ----------------------------------------------------------------------------
-# Created By  : florian
-# Created Date: 18/Sept/2022
-# version ='1.0'
-# ---------------------------------------------------------------------------
 """ Feature Engineering clas for the Level-3 backtest engine"""
 
-
-# ---------------------------------------------------------------------------
 
 import pandas as pd
 
@@ -41,7 +34,6 @@ class AgentFeatures:
             num_new_trades = len(AgentTrade.history) - self.number_of_trades
             if num_new_trades:
                 # Sum All Trades:
-                # TODO: differentiate sides etc. to use the method more general
                 sum_quantity = 0
                 for trade in AgentTrade.history:
                     quantity = trade['executed_volume']
@@ -131,18 +123,6 @@ class AgentFeatures:
         if time_normed > 1:
             time_normed = 1
         return time_normed
-
-    def number_of_submissions(self):
-        pass
-
-    def time_since_last_trade(self):
-        pass
-
-    def number_of_trades(self):
-        pass
-
-    def inventory(self): # postion
-        pass
 
     def reset(self):
         """Reset AgentFeatures"""

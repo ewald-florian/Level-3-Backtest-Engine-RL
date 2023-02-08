@@ -1,15 +1,10 @@
 #!/usr/bin/env python3  Line 1
 # -*- coding: utf-8 -*- Line 2
-# ---------------------------------------------------------------------------
 """
 Market Interface Module for the Level-3 backtest engine.
 Interface to submit, modify and cancel orders.
 """
-# ----------------------------------------------------------------------------
-__author__ = "florian"
-__date__ = "2022-09-25"
-__version__ = "0.2"
-# ---------------------------------------------------------------------------
+
 
 
 import numpy as np

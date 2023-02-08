@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-__author__ = "florian"
+"""
+Market metrics computed based on execution summaries during the
+backtest.
+"""
 
 from market.market_trade import MarketTrade
-
-# example Trade history
-# [{'template_id': 13104, 'msg_seq_num': 472240, 'side': 1, 'price': 5050000000, 'quantity': 1210000, 'timestamp': 1610468631228153677, 'execution_time': 1610468640090356322, 'aggressor_side': 2}
 
 
 class MarketMetrics:
@@ -17,8 +17,6 @@ class MarketMetrics:
     def __init__(self):
         pass
 
-    # TODO: usually, market vwap does not distinguish buy and sell since both
-    #  sides are involved in every trade.
     @property
     def market_vwap_sell(self):
         """Compute the market vwap since episode start."""

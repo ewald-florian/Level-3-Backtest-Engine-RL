@@ -22,3 +22,7 @@ custom RL-agents. The transition package can be used for the implementation
 of the MDP. 
 
 To run a backtest, the path to the database must be provided in episode.py.
+
+Dependencies:
+base library: pandas market-calendars
+RL-extension: ray rllib, tensorflow, torch

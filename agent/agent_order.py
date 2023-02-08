@@ -1,20 +1,15 @@
 #!/usr/bin/env python3  Line 1
 # -*- coding: utf-8 -*- Line 2
-# ----------------------------------------------------------------------------
-# Created By  : florian
-# Created Date: 05/Sept/2022
-# version ='1.0'
-# ---------------------------------------------------------------------------
 """ Agent Order Management class for the Level-3 backtest engine"""
 
-# ---------------------------------------------------------------------------
-
-# Should later replace Market.agent_message_list
-# TODO: log order submissions/cancellations
 import pandas as pd
 
 
-class OrderManagementSystem:  # OMS
+class OrderManagementSystem:
+    """
+    Management of agent orders during backtest. Order status is defined
+    under dict key "template_id"
+    """
 
     # Basically, Market.agent_message_list
     order_list = list()  # instance store
@@ -35,24 +30,17 @@ class OrderManagementSystem:  # OMS
         # append order to order_list class attribute
         self.__class__.order_list.append(message)
 
-        # TODO: besser hier loggen order direkt im MarketInterface?
-
         # logging
         if message['template_id'] == 99999:
             side = message["side"]
             limit = message["price"]
             quantity = message["quantity"]
             timestamp = message["timestamp"]
-            # if verbose:
-            #    print()
-            # print(f'(INFO) Agent Order Submitted: Side: {side} | Price: {price} | Quantity: {quantity}')
+
 
         elif message['template_id'] == 66666:
 
             order_message_id = message['order_message_id']
-            # TODO
-            # if verbose:
-            #    print(order_message_id)
 
     @property
     def dataframe(self):

@@ -22,16 +22,12 @@ from reinforcement_learning.observation_space.minmaxvalues \
 from context.agent_context import AgentContext
 
 # PATH TO DATA DIRECTORY
-# old dataset
-# local="/Users/florianewald/PycharmProjects/A7_data/"
-# local new sample with Bayer january and february 2021
 local= "/Users/florianewald/PycharmProjects/A7_NEW_SAMPLE/"
 local_2 = "/Users/candis/Desktop/A7_DATA/"
-# dataset on server
 server_new = "/home/jovyan/_shared_storage/temp/A7_data/messages/"
-# new dataset on nvme
 nvme_path = "/Volumes/WD_BLUE_NVME/A7_DATA_BY_ISIN/"
 
+# Select path based on system.
 if platform.system() == 'Darwin':  # macos
     if os.path.isdir(nvme_path):
         PATH = nvme_path
@@ -46,8 +42,8 @@ else:
 
 print(f"(INFO) DATA BASE PATH: {PATH}")
 
-class Episode:
 
+class Episode:
     """
     Episode is the data storage for one episode in the backtest. It consists of
     a snapshot_start (used to initialize the market state in the beginning of
@@ -173,8 +169,6 @@ class Episode:
             elif int(start_hour) >= 11:
                 trading_time = "T11"
 
-        # TODO: load data of days with volatility interruption
-
         # create pattern
         pattern = isin + market + start_date_str + trading_time
 
@@ -292,14 +286,14 @@ class Episode:
         self.message_packet_list = json.load(message_list_file)[1:]
 
     def __next__(self) -> list:
-        '''
+        """
         Returns next message_packet and counts episode steps.
         __next__ can be called to step the episode externally,
         for example in a RL training loop.
 
         :return message_packet
             list, contains messages as dictionaries.
-        '''
+        """
 
         # retrieve next message packet
         next_message_packet = self.message_packet_list[self._step]
@@ -321,14 +315,14 @@ class Episode:
             yield next_message_packet
 
     def __len__(self) -> int:
-        '''
+        """
         Returns length of the current episode as number of message packets,
         relevant for training loops over episodes and the done-flag of the RL
         environment. Based on length of the message_packet_list.
 
         :return: current_episode_length
             int, length of episode
-        '''
+        """
         current_episode_length = len(self.message_packet_list)
         return current_episode_length
 

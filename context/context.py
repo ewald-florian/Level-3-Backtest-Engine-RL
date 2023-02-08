@@ -1,20 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-#----------------------------------------------------------------------------
-# Created By  : florian
-# Created Date: 05/Sept/2022
-# version ='1.0'
-# ---------------------------------------------------------------------------
 """
 Context Module for the Level-3 backtest engine:
 Stores Market States which can then be used to
 generate features.
 """
-# ---------------------------------------------------------------------------
-
-#TODO: maybe it would be an interesting option to no save every single
-# state but instead catch a longer time window in a shorter list, i.e.
-# leave out some states in between...
 
 
 class Context:

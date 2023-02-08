@@ -1,6 +1,6 @@
 #!/usr/bin/env python3  Line 1
 # -*- coding: utf-8 -*- Line 2
-""" Replay Module for the Level-3 backtest engine"""
+""" Replay Module for the Level-3 backtest engine """
 
 import random
 import datetime
@@ -10,7 +10,6 @@ logging.getLogger().setLevel(logging.INFO)
 import pandas_market_calendars as mcal
 import pandas as pd
 import numpy as np
-
 from replay_episode.episode import Episode
 from market.market import Market
 from market.market_trade import MarketTrade
@@ -388,7 +387,6 @@ class Replay:
 
         return first_obs
 
-        # TODO: check regularly if further resets are necessary
         # Further Possible but not necessary resets (RL extension):
         # ------------------------------------------
         # ObservationSpace

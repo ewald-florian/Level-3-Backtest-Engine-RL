@@ -1,13 +1,7 @@
 #!/usr/bin/env python3  Line 1
 # -*- coding: utf-8 -*- Line 2
-# ----------------------------------------------------------------------------
-# Created By  : florian
-# Created Date: 16/Sept/2022
-# version ='1.0'
-# ---------------------------------------------------------------------------
 """ Agent Performance Metrics during Trading"""
 
-# ---------------------------------------------------------------------------
 import textwrap
 import copy
 
@@ -19,21 +13,25 @@ from market.market_trade import MarketTrade
 from context.agent_context import AgentContext
 
 
-# TODO: testing, debugging, str, roundtrip-PnLs
-
-
 class AgentMetrics:
+    """Class to compute agent metrics during backtesting."""
 
     def __init__(self,
                  tc_factor: float = 1e-3,
                  exposure_limit: int = 0):
+        """
+        When initialized, transaction costs and exposure limit can be defined.
+        :param tc_factor:
+            float, tc.
+        :param exposure_limit:
+            int, exposure limit in Euro.
+        """
 
         # static arguments
         self.tc_factor = tc_factor
         self.exposure_limit = exposure_limit
 
         # dynamic attributes
-        # TODO: check if there is a better solution (maybe better in Reward...)
         self.last_number_of_trades = 0
 
     def get_filtered_messages(self, side=None, template_id=None):

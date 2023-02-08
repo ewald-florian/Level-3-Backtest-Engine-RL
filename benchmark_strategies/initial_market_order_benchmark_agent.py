@@ -1,9 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Benchmark Strategy: It submits a market order of the total inventory
+Benchmark Strategy IM: It submits a market order of the total inventory
 in the first step of the episode. I compute the resulting implementation
 shortfall as benchmark for optimal execution strategies.
+
+The strategy uses the backtest library without RL-extension via
+replay.normal_step()
 """
 
 
@@ -91,7 +94,6 @@ if __name__ == '__main__':
     # ---------------------
     name = "initial_market_Avg-10s-Vol_"
     symbol = "BMW"
-    # TODO: Use same initial inventory as for RL-agent.
     initial_inv = initial_inventory_dict[symbol]['Avg-10s-Vol'] * 1_0000
     testset_start = "2021-05-14" #"2021-01-01" # "2021-05-14"
     testset_end = "2021-06-30" #"2021-04-30", "2021-06-30"
@@ -102,8 +104,6 @@ if __name__ == '__main__':
     # ----------------------
 
     # inst: -> generates episode start list
-    # TODO: I HAVE TO USE THE EXACT SAME SAMPLING SET-UP AS IN THE RL-STRATEGY
-    #  TO GET THE SAME EPISODE LIST (or better I even save the episode list)
     replay = Replay(identifier=symbol,
                     start_date=testset_start,  # "2021-05-14",# "2021-01-01",
                     end_date=testset_end,  # "2021-06-30",#"2021-04-30",

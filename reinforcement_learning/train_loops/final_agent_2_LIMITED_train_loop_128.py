@@ -70,10 +70,6 @@ max_seq_len = None  # default 20
 lstm_cell_size = None  # default 256
 # training
 learning_rate = 5e-05  # default 5e-05
-# TODO
-lr_schedule = [
-    [0, 1.0e-6],
-    [1, 1.0e-7]]
 gamma = 1  # 0.99
 train_batch = 256#0  # 2560  # 4000  # default 4000
 mini_batch = 128  # default: 128
@@ -84,7 +80,7 @@ batch_mode = 'complete_episodes'  # 'truncate_episodes'
 # other settings.
 disable_env_checking = True
 print_entire_result = False  # contains a lot of useless info.
-rllib_log_level = 'BAY'  # WARN, 'DEBUG'
+rllib_log_level = 'INFO'  # WARN, 'DEBUG'
 # instantiate agent.
 agent = FinalOEAgent2Limited(verbose=False,
                       episode_length=episode_length,
@@ -132,9 +128,9 @@ replay = Replay(rl_agent=agent,
                 identifier="BAY",
                 #identifier_list=['BAY', 'SAP', 'LIN', 'ALV', 'DTE'],
                 #random_identifier=True,
-                start_date="2021-01-01",
+                start_date="2021-01-08",
                 end_date="2021-04-30",#"2021-04-30",
-                shuffle=True,
+                shuffle=False,
                 #####
                 verbose=False)
 
