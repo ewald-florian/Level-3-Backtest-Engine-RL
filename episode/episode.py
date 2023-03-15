@@ -48,7 +48,7 @@ class Episode:
     Episode is the data storage for one episode in the backtest. It consists of
     a snapshot_start (used to initialize the market state in the beginning of
     the episode) and a message_packet_list (used to iteratively update the
-    market state from messages and hence replay_episode the historical
+    market state from messages and hence replay the historical
     continuous trading phases.
 
     Data is given in UTC. XETRA trading hours reach from 08:00 to 16:30 UTC.
@@ -70,7 +70,7 @@ class Episode:
         message_packet_list from the database  and storing them under the
         instance attributes self.start_snapshot and self.message_packet_list.
 
-        Can be called from replay_episode to build the next episode for the
+        Can be called from replay to build the next episode for the
         backtest.
 
         :param identifier
@@ -306,7 +306,7 @@ class Episode:
     def __iter__(self):
         """
         Create episode as iterable generator which can be
-        used to step the backtest internally from replay_episode.
+        used to step the backtest internally from replay.
         """
         for step, message_packet in enumerate(self.message_packet_list):
 
