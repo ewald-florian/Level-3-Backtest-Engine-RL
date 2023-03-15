@@ -38,7 +38,7 @@ from reinforcement_learning.environment.tradingenvironment import \
     TradingEnvironment
 from reinforcement_learning.agent_prototypes.archieve.twap_incentive_agent \
     import TwapIncentiveAgent
-from replay_episode.replay import Replay
+from replay.replay import Replay
 from utils.result_path_generator import generate_result_path
 
 
@@ -52,7 +52,7 @@ print("RESULT_FILE", result_file)
 ray.init()
 
 agent = TwapIncentiveAgent(verbose=True)
-# instantiate replay_episode and pass agent object as input argument
+# instantiate replay and pass agent object as input argument
 replay = Replay(rl_agent=agent, episode_length="1m")
 
 # prepare config dict for the trainer set-up
@@ -60,7 +60,7 @@ config = {}   # depreciated: config = PPO_DEFAULT_CONFIG
 config["env"] = TradingEnvironment
 config["env_config"] = {
     "config": {
-        "replay_episode": replay},
+        "replay": replay},
 }
 # Size of the observation space
 config["env_config"]["observation_size"] = 33

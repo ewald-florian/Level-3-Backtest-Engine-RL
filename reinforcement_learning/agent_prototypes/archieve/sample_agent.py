@@ -14,7 +14,7 @@ Prototype No. 1 for RL Agents (SampleAgent.
 --------------------------------------------------------------------
 Idea: wrap competitive tasks in an abstract class agent
 
-- replay_episode is responsible for done and info (and Context)
+- replay is responsible for done and info (and Context)
 - RLAgent is responsible for take_action, observation, reward+
 
 There are three adjustment points for specialized agents:
@@ -30,7 +30,7 @@ Endo-to-End:
 
 for step in number_of_steps:
 
-    replay_episode.step(self, action)
+    replay.step(self, action)
     
         if self.step > (len(self.episode)):
             self.done = True

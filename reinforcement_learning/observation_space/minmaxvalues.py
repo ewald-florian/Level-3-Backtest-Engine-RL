@@ -2,10 +2,6 @@
 # -*- coding: utf-8 -*-
 """MinMaxValues to store min and max for episode normalization."""
 
-__author__ = "florian"
-__date__ = "2022-11-29"
-__version__ = "0.1"
-
 
 class MinMaxValues:
     """Class to store minimum and maximum prices and qt for normalization.

@@ -35,7 +35,7 @@ from reinforcement_learning.environment.tradingenvironment import TradingEnviron
 #from reinforcement_learning.agent_prototypes.sample_agent import RlAgent
 from reinforcement_learning.base_agent.special_agent_example \
     import SpecialAgent
-from replay_episode.replay import Replay
+from replay.replay import Replay
 from utils.result_path_generator import generate_result_path
 
 
@@ -49,7 +49,7 @@ print("RESULT_FILE", result_file)
 ray.init()
 
 agent = SpecialAgent(verbose=False)
-# instantiate replay_episode and pass agent object as input argument
+# instantiate replay and pass agent object as input argument
 replay = Replay(rl_agent=agent,
                 episode_length="20s")
 
@@ -58,7 +58,7 @@ config = PPO_DEFAULT_CONFIG
 config["env"] = TradingEnvironment
 config["env_config"] = {
     "config": {
-        "replay_episode": replay},
+        "replay": replay},
 }
 
 config["num_workers"] = 0

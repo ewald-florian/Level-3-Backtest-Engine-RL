@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Class to manage the episode statistics"""
+"""Class to store the episode statistics to json"""
 
 import json
 
@@ -29,7 +29,14 @@ class EpisodeStats:
                               oms,
                               agent_trade,
                               action_list):
-        """Store episode statistics to json file."""
+        """Store episode statistics to json file.
+        :param oms
+            list, oms
+        :param agent_trade
+            list, agent trades
+        :param action_list
+            list, actions
+        """
 
         # Combine OMS and AgentTrade to dict.
         episode_stat_dict = {}

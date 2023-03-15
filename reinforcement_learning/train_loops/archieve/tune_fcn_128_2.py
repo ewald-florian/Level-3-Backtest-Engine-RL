@@ -21,7 +21,7 @@ from ray.rllib.agents.ppo import PPOTrainer
 from reinforcement_learning.environment.tradingenvironment import \
     TradingEnvironment
 from reinforcement_learning.agent_prototypes.archieve.is_agent_2 import ISAgent2
-from replay_episode.replay import Replay
+from replay.replay import Replay
 from utils.result_path_generator import generate_result_path
 from utils.episode_stats_path_generator import generate_episode_stats_path
 from utils.string_generator import generate_string
@@ -113,7 +113,7 @@ print("EP_STATS_FILE:", EpisodeStats.path_name)
 # Start a new instance of Ray
 ray.init(num_gpus=1)
 
-# instantiate replay_episode and pass agent object as input argument
+# instantiate replay and pass agent object as input argument
 replay = Replay(rl_agent=agent,
                 episode_length=agent.episode_length,
                 verbose=False)
@@ -123,7 +123,7 @@ config = {}
 config["env"] = TradingEnvironment
 config["env_config"] = {
     "config": {
-        "replay_episode": replay},
+        "replay": replay},
 }
 # Size of the observation space
 config["env_config"]["observation_size"] = obs_size

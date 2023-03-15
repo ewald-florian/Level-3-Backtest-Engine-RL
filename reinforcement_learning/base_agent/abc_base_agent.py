@@ -1,13 +1,6 @@
 #!/usr/bin/env python3  Line 1
 # -*- coding: utf-8 -*- Line 2
 """ Base RL Agent to be subclassed by RL agents for fast prototyping"""
-# ----------------------------------------------------------------------------
-__author__ = "florian"
-__date__ = "2022-09-23"
-# version ='1.0'
-# ----------------------------------------------------------------------------
-#TODO: Is this abc class actually useful or should I just directly implement
-#  the agent...
 
 from abc import ABC, abstractmethod
 
@@ -47,14 +40,6 @@ class RlBaseAgent(ABC):
         interface.
         """
         raise NotImplementedError("Impl. take_action in special agent class")
-
-    # TODO: what is the best way to reset the agent when a new episode starts?
-    #  probably, it is better to reset the subclass...
-    #  the agent is instantiated inside replay, it will get reset inside the
-    #  replay reset methods, the best approach would be to reset MarketInterface,
-    #  Observation Space and Reward first and then instantiate a new agent instance
-    #  with the resetted objects... (difficult if agent gets instantiated and then
-    #  passed to replay...
 
     @abstractmethod
     def reset(self):

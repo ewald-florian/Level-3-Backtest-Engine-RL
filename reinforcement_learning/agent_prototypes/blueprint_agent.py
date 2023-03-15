@@ -1,19 +1,16 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Universal blueprint RL-Agents, customizable to different strategies.
+Universal blueprint RL-Agent, customizable to different strategies.
 """
-
 
 from copy import copy
 
 import numpy as np
 import pandas as pd
 
-from market.market import Market
 from market.market_interface import MarketInterface
-from context.context import Context
-from replay_episode.episode import Episode
+from episode.episode import Episode
 from feature_engineering.market_features import MarketFeatures
 from reinforcement_learning.reward.abc_reward import BaseReward
 from reinforcement_learning.observation_space.abc_observation_space \
@@ -22,15 +19,9 @@ from reinforcement_learning.base_agent.abc_base_agent import RlBaseAgent
 from reinforcement_learning.transition.agent_transition import AgentTransition
 from reinforcement_learning.action_space.action_storage import ActionStorage
 from context.agent_context import AgentContext
-from agent.agent_trade import AgentTrade
-from agent.agent_order import OrderManagementSystem as OMS
 from agent.agent_metrics import AgentMetrics
-from reinforcement_learning.transition.env_transition import \
-    EnvironmentTransition
 from reinforcement_learning.action_space.abc_action_space import \
     BaseActionSpace
-from market.market_metrics import MarketMetrics
-from market.market_trade import MarketTrade
 from utils.initial_inventory import initial_inventory_dict
 
 

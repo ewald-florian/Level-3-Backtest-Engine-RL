@@ -20,7 +20,7 @@ def create_base_config_file(config_dict, name, path=PATH):
     # Remove Env.
     base_config['env'] = 0
     # Remove Replay.
-    base_config['env_config']['config']['replay_episode'] = 0
+    base_config['env_config']['config']['replay'] = 0
     # pathname.
     pathname = path + name + "_base_config" + ".json"
     with open(pathname, 'w') as fp:

@@ -6,7 +6,7 @@ import json
 import pandas as pd
 from ray.rllib.agents.ppo import DEFAULT_CONFIG as PPO_DEFAULT_CONFIG
 from reinforcement_learning.environment.tradingenvironment import TradingEnvironment
-from replay_episode.replay import Replay
+from replay.replay import Replay
 from utils.result_path_generator import generate_result_path
 
 file_name = generate_result_path('tester1')

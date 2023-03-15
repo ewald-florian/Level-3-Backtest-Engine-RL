@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-# ---------------------------------------------------------------------------
 """
 Abstract Action Space class for RL-Agent
 """
@@ -247,11 +246,6 @@ class BaseActionSpace(ABC):
                 print(f'(RL AGENT) Submission: limit: {market_order}  '
                       f'qt: {order_quantity}'
                       f'action: {action}')
-
-
-
-
-
 
     def limit_price_action(self, action):
         """

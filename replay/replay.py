@@ -9,20 +9,16 @@ logging.getLogger().setLevel(logging.INFO)
 # !pip install pandas-market-calendars # -> dependency!
 import pandas_market_calendars as mcal
 import pandas as pd
-import numpy as np
-from replay_episode.episode import Episode
+from episode.episode import Episode
 from market.market import Market
 from market.market_trade import MarketTrade
 from market.market_metrics import MarketMetrics
 from context.context import Context
-from agent.agent_metrics import AgentMetrics
 from agent.agent_trade import AgentTrade
 from agent.agent_order import OrderManagementSystem
 from reinforcement_learning.transition.env_transition \
     import EnvironmentTransition
 from reinforcement_learning.action_space.action_storage import ActionStorage
-from feature_engineering.agent_features import AgentFeatures
-from context.agent_context import AgentContext
 
 
 class Replay:
@@ -109,9 +105,9 @@ class Replay:
 
         # -- rl agent
 
-        # Note:If the replay_episode instance is going to be used for rl,
+        # Note:If the replay instance is going to be used for rl,
         # the instantiated rl agent object has to be passed as input arg.
-        # This way, I don't need to import different agent in replay_episode.
+        # This way, I don't need to import different agent in replay.
 
         if rl_agent:
             self.rl_agent = rl_agent
@@ -344,7 +340,7 @@ class Replay:
 
             break
 
-    # internally stepped replay_episode . . . . . . . . . . . . . . . . . .
+    # internally stepped replay . . . . . . . . . . . . . . . . . .
 
     def run_backtest(self):
         """"
@@ -452,15 +448,15 @@ class Replay:
         General Note:
         -------------
         Replay is used as the entry point of externally stepped back-test
-        loops to the backtest-library. Therefore, replay_episode contains a universal
-        base_reset method which does not reset the replay_episode class but all
+        loops to the backtest-library. Therefore, replay contains a universal
+        base_reset method which does not reset the replay class but all
         backtest-engine classes when a new episodes starts.
 
         Rl-Applications:
         ----------------
-        In RL-backtests, the RL-environment calls replay_episode.rl_reset() (which in
+        In RL-backtests, the RL-environment calls replay.rl_reset() (which in
         turn calls base_reset() to reset the environment and receive the first
-        observation and replay_episode.rl_step() to step the environment and receive
+        observation and replay.rl_step() to step the environment and receive
         the latest observation, reward,
         done and info.
         """

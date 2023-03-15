@@ -27,7 +27,7 @@ from reinforcement_learning.environment.tradingenvironment import \
 from reinforcement_learning.agent_prototypes.final_agent_2_limited \
     import FinalOEAgent2Limited
 
-from replay_episode.replay import Replay
+from replay.replay import Replay
 from utils.result_path_generator import generate_result_path
 from utils.episode_stats_path_generator import generate_episode_stats_path
 from utils.string_generator import generate_string
@@ -50,7 +50,7 @@ print("Num GPUs Available TF: ", len(tf.config.list_physical_devices('GPU')))
 # Provide checkpoint path if trainer should be restored.
 # NOTE: This is the checkpoint from the training iterations on server.
 restoring_checkpoint_path = None #"/home/jovyan/ray_results/PPO_TradingEnvironment_2023-02-04_12-02-440tzaktnc/checkpoint_000400"
-name = 'A2_LIMITED_NEW_WAIT_5_LOOP5'
+name = 'TEST_VOR_ABGABE'
 
 num_iterations = 200
 save_checkpoints_freq = 10
@@ -120,7 +120,7 @@ print("EP_STATS_FILE:", EpisodeStats.path_name)
 # Start a new instance of Ray (Note: num_gpus=1 required for server)
 ray.init(num_gpus=1)
 
-# instantiate replay_episode and pass agent object as input argument
+# instantiate replay and pass agent object as input argument
 replay = Replay(rl_agent=agent,
                 episode_length=agent.episode_length,
                 # Note: saved for later when I run on several symbols.
@@ -141,7 +141,7 @@ config = {}
 config["env"] = TradingEnvironment
 config["env_config"] = {
     "config": {
-        "replay_episode": replay},
+        "replay": replay},
 }
 # Size of the observation space
 config["env_config"]["observation_size"] = obs_size

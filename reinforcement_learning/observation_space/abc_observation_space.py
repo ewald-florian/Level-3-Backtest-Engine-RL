@@ -1,13 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-# ---------------------------------------------------------------------------
 """
 Abstract Observation Space class for RL-Agent
 """
-#----------------------------------------------------------------------------
-__author__ = 'florian'
-__version__ = '0.1'
-# ---------------------------------------------------------------------------
+
 
 from abc import ABC, abstractmethod
 
@@ -40,8 +36,6 @@ class BaseObservationSpace(ABC):
         self.agent_features = AgentFeatures()
 
         self.number_of_orders = 0
-
-        #self.high_activity_flag = self.update_high_activity_flag()
 
     @abstractmethod
     def market_observation(self):

@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 """
 TEST LOOP for Final Agent 2. Model 1: 128
-AGENTID = 012823
 
 10 Observations, 6 Actions
 """
@@ -31,7 +30,7 @@ from reinforcement_learning.agent_prototypes.final_agent_2_limited \
 from reinforcement_learning.agent_prototypes.final_agent_1 import \
     FinalOEAgent1
 
-from replay_episode.replay import Replay
+from replay.replay import Replay
 from utils.test_result_path import generate_test_result_path
 
 # -- The TEST LOOP is initialized exactly as the TRAIN Loop since the correct
@@ -57,13 +56,13 @@ print("Num GPUs Available TF: ", len(tf.config.list_physical_devices('GPU')))
 # "A2_LIMITED"
 #
 # ----------------------------
-# TODO: Insert Agent Name and Symbol!
+# TODO: Insert Agent Name and Symbol
 STRATEGY_NAME = "A2_LIMITED"
 AGENT = FinalOEAgent2Limited  # FinalOEAgent2Limited # FinalOEAgent1
 SYMBOL = "BAY"
 # ----------------------------
-TEST_START = "2021-05-14"
-TEST_END = "2021-06-30"
+TEST_START = "2021-01-04"
+TEST_END = "2021-02-08"
 NUM_ITERS_STORE_RESULTS = 150
 VERBOSE = True
 NUM_TEST_EPISODES = 1_000_000
@@ -77,7 +76,7 @@ print("End:", TEST_END)
 print(80*"*")
 
 
-# Paths to base config dicts.
+# Load config from Paths to base config dicts.
 if platform.system() == 'Darwin':  # macos
     base_config_path = "/Users/florianewald/PycharmProjects/Level-3-Backtest-"\
                        "Engine-RL/reinforcement_learning/base_configs/"
@@ -137,14 +136,9 @@ replay = Replay(rl_agent=agent,
 
 # Extend base config with instances.
 base_config["env"] = TradingEnvironment
-base_config['env_config']['config']['replay_episode'] = replay
+base_config['env_config']['config']['replay'] = replay
 base_config["disable_env_checking"] = True
-#base_config["framework"] = "tf2"
-
-# LSTM
-#base_config["model"]["use_lstm"] = True
-#base_config["model"]["max_seq_len"] = 10
-#base_config["model"]["lstm_cell_size"] = 128
+base_config["framework"] = "tf2"
 
 print("(INSTANTIATED) FROM {}".format(base_config_path))
 trained_strategy = PPOTrainer(config=base_config)

@@ -15,7 +15,7 @@ import pandas as pd
 
 from market.market_interface import MarketInterface
 from market.market import Market
-from replay_episode.replay import Replay
+from replay.replay import Replay
 from agent.agent_metrics import AgentMetrics
 from agent.agent_order import OrderManagementSystem as OMS
 from agent.agent_trade import AgentTrade
@@ -93,9 +93,9 @@ if __name__ == '__main__':
     # SET UP THE BACKTEST:
     # ---------------------
     name = "initial_market_Avg-10s-Vol_"
-    symbol = "BMW"
+    symbol = "BAY"
     initial_inv = initial_inventory_dict[symbol]['Avg-10s-Vol'] * 1_0000
-    testset_start = "2021-05-14" #"2021-01-01" # "2021-05-14"
+    testset_start = "2021-01-01" #"2021-01-01" # "2021-05-14"
     testset_end = "2021-06-30" #"2021-04-30", "2021-06-30"
     episode_len = "10s"
     frequency = "5m"
@@ -120,7 +120,7 @@ if __name__ == '__main__':
 
     results = []
     result_path = generate_test_result_path(symbol=replay.identifier,
-                                            benchmark_strategy=name)
+                                            strategy_name=name)
 
     # Iterate over episodes.
     for episode in range(1_000_000):  # -> end will not be reached.

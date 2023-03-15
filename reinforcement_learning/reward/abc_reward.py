@@ -1,15 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-# ---------------------------------------------------------------------------
 """
 Abstract Reward class for RL-Agent
 """
-# ----------------------------------------------------------------------------
-__author__ = 'florian'
-__date__ = '08-10-2022'
-__version__ = '0.1'
 
-# ---------------------------------------------------------------------------
 
 from abc import ABC, abstractmethod
 
@@ -111,7 +105,6 @@ class BaseReward(ABC):
         """Realized PnL."""
         return self.agent_metrics.pnl_realized
 
-    # TODO: testing
     @property
     def pnl_marginal(self):
         """

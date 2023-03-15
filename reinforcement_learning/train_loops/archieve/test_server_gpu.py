@@ -36,7 +36,7 @@ from reinforcement_learning.environment.tradingenvironment import TradingEnviron
 #from reinforcement_learning.agent_prototypes.sample_agent import RlAgent
 from reinforcement_learning.agent_prototypes.archieve.more_actions_rl_agent \
     import MoreActionsAgent
-from replay_episode.replay import Replay
+from replay.replay import Replay
 from utils.result_path_generator import generate_result_path
 
 import tensorflow as tf
@@ -57,7 +57,7 @@ print("RESULT_FILE", result_file)
 ray.init(num_gpus=1)
 
 agent = MoreActionsAgent(verbose=False)
-# instantiate replay_episode and pass agent object as input argument
+# instantiate replay and pass agent object as input argument
 replay = Replay(rl_agent=agent,
                 episode_length="1m",
                 verbose=True)
@@ -67,7 +67,7 @@ config = {}
 config["env"] = TradingEnvironment
 config["env_config"] = {
     "config": {
-        "replay_episode": replay},
+        "replay": replay},
 }
 # Size of the observation space
 config["env_config"]["observation_size"] = 34

@@ -16,7 +16,7 @@ __version__ = "0.1"
 import numpy as np
 
 from reinforcement_learning.environment.tradingenvironment import TradingEnvironment
-from replay_episode.replay import Replay
+from replay.replay import Replay
 from market.market import Market
 
 from reinforcement_learning.agent_prototypes.archieve.time_inventory_rl_agent import \
@@ -26,15 +26,15 @@ if __name__ == '__main__':
     # instantiate agent
     #agent = RlAgent(verbose=True)
     agent = TimeInventoryAgent1()
-    # instantiate replay_episode and pass agent object as input argument
+    # instantiate replay and pass agent object as input argument
     replay = Replay(rl_agent=agent,
                     episode_length="1m")
 
-    # store replay_episode instance in config dict
+    # store replay instance in config dict
     config = {}
     config["env_config"] = {
         "config": {
-            "replay_episode": replay},
+            "replay": replay},
     }
     # instantiate and reset environment
     env = TradingEnvironment(env_config=config)
@@ -52,7 +52,7 @@ if __name__ == '__main__':
         # take a random action
         action = np.random.randint(2)
         # call env.step
-        observation, reward, done, info = env.step(action) #calls replay_episode.rl_step(action)
+        observation, reward, done, info = env.step(action) #calls replay.rl_step(action)
         print('(LOOP) DONE: ', done)
         # track activity
         #store = [observation, reward, done, info]

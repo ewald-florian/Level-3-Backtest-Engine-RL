@@ -26,13 +26,7 @@ This template can be copied to implement a new prototype. Prototypes should
 have a unique and meaningful name and be located in the agent_prototypes
 package.
 """
-# ----------------------------------------------------------------------------
-__author__ = 'florian'
-__date__ = '2022-10-08'
-__version__ = '0.1'
 
-# ---------------------------------------------------------------------------
-# TODO: reset agent afer each episode... (to be called inside replay)
 from copy import copy
 
 import numpy as np

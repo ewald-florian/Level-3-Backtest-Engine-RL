@@ -30,7 +30,7 @@ from reinforcement_learning.agent_prototypes.final_agent_2_limited \
 from reinforcement_learning.agent_prototypes.final_agent_1 import \
     FinalOEAgent1
 
-from replay_episode.replay import Replay
+from replay.replay import Replay
 from utils.test_result_path import generate_test_result_path
 
 if platform.system() == 'Linux':
@@ -124,7 +124,7 @@ replay = Replay(rl_agent=agent,
 
 # Extend base config with instances.
 base_config["env"] = TradingEnvironment
-base_config['env_config']['config']['replay_episode'] = replay
+base_config['env_config']['config']['replay'] = replay
 base_config["disable_env_checking"] = True
 # base_config["framework"] = "tf2"
 

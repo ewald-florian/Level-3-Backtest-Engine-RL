@@ -1,13 +1,10 @@
 #!/usr/bin/env python3  Line 1
 # -*- coding: utf-8 -*- Line 2
-# ----------------------------------------------------------------------------
-# Created By  : florian
-# version ='1.0'
-# ---------------------------------------------------------------------------
+
 """
-Implementation of the reinforcement learning environment.
+RL Environment in OpenAI gym custom env style.
 """
-# ---------------------------------------------------------------------------
+
 
 import copy
 import json
@@ -40,6 +37,8 @@ class TradingEnvironment(gym.Env):
                  env_config: dict = None):
         """
         Set observation-space and action-space. Instantiate Replay.
+        :param env_config
+            dict, config dict for the environment
         """
         # Get obs and action sizes from config dict.
         observation_size = env_config['observation_size']
@@ -56,16 +55,16 @@ class TradingEnvironment(gym.Env):
 
         # Entry Points to Level-3 Backtest Engine:
 
-        # -- instantiate replay_episode to step the environment
+        # -- instantiate replay to step the environment
 
         # 1. For Rllib: rllib unpacks the config dict automatically...
         try:
-            self.replay = env_config.get("config").get("replay_episode")
+            self.replay = env_config.get("config").get("replay")
         # 2. For other loops (e.g. toy_training_loop)
         except:
-            self.replay = env_config['env_config']['config']['replay_episode']
+            self.replay = env_config['env_config']['config']['replay']
 
-        # DEBUGGING
+        # step counter.
         self.step_counter = 0
 
     def step(self, action):
@@ -116,7 +115,7 @@ class TradingEnvironment(gym.Env):
         the environment. Reset has to be called at the beginning of each
         episode.
         """
-        # Reset replay_episode.
+        # Reset replay.
         first_obs = self.replay.rl_reset()
 
         return first_obs
