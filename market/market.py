@@ -31,7 +31,7 @@ class Market(Reconstruction):
                  l2_levels: int = 5,
                  report_state_timestamps: bool = True,
                  match_agent_against_exec_summary: bool = True,
-                 agent_latency: int = 200000,  # 200 micro seconds
+                 agent_latency: int = 200000_0000,  # 200 micro seconds
                  track_index: bool = False,
                  store_arrival_price = True,
                  verbose: bool = True):
@@ -552,7 +552,13 @@ class Market(Reconstruction):
             list, dicts with executed trades
         """
 
-        message['timestamp'] = self.timestamp + self.agent_latency
+        # Set current state timestamp plus latency as agent message timestamp
+        # Set latency to zero if zero_latency flag is True
+        if message["zero_latency"]:
+            message['timestamp'] = self.timestamp
+        else:
+            message['timestamp'] = self.timestamp + self.agent_latency
+
         # add impact flag to differentiate from simulated  orders
         message['impact_flag'] = 1
         # add message_id
@@ -765,8 +771,12 @@ class Market(Reconstruction):
             dict, agent message
         """
 
-        # set current state timestamp plus latency as agent message timestamp
-        message['timestamp'] = self.timestamp + self.agent_latency
+        # Set current state timestamp plus latency as agent message timestamp
+        # Set latency to zero if zero_latency flag is True
+        if message["zero_latency"]:
+            message['timestamp'] = self.timestamp
+        else:
+            message['timestamp'] = self.timestamp + self.agent_latency
         message['msg_seq_num'] = None
         # add message_id
         message['message_id'] = len(OMS.order_list)
@@ -774,6 +784,13 @@ class Market(Reconstruction):
             message['arrival_price'] = self.midpoint
         # store message to Order Management System
         OMS(message)
+
+        # DEBUGGING 15-05-2023+
+        print("new order arrived in market:")
+        print("timestamp", self.timestamp)
+        print("timestamp dt", self.timestamp_datetime)
+        print("message timestamp:", message["timestamp"])
+        print(message)
 
         # -- submission
         if message['template_id'] == 99999:

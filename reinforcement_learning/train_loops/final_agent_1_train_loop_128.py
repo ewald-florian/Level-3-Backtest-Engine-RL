@@ -46,7 +46,7 @@ print("Num GPUs Available TF: ", len(tf.config.list_physical_devices('GPU')))
 
 # Provide checkpoint path if trainer should be restored.
 # TODO: ADD CHECKPOINT PATH
-restoring_checkpoint_path = "/home/jovyan/ray_results/PPO_TradingEnvironment_2023-01-31_20-42-42ht2ne36y/checkpoint_000873/" ## richtigen checkpoint einfügen (873)
+restoring_checkpoint_path = None #"/home/jovyan/ray_results/PPO_TradingEnvironment_2023-01-31_20-42-42ht2ne36y/checkpoint_000873/" ## richtigen checkpoint einfügen (873)
 name = 'final_agent_1_fcn_128_FINAL_RUN_ISREWARD_TRAININGSET_WAIT_INCENTIVE_0_001_'
 
 num_iterations = 600
@@ -125,7 +125,7 @@ replay = Replay(rl_agent=agent,
                 episode_length=agent.episode_length,
                 # Note: saved for later when I run on several symbols.
                 # Testset:
-                identifier_list=['BAY', 'SAP', 'LIN', 'ALV', 'DTE'],
+                identifier_list=['BAY'], #, 'SAP', 'LIN', 'ALV', 'DTE'],
                 random_identifier=True,
                 start_date="2021-01-01",
                 end_date="2021-04-30",#"2021-04-30",

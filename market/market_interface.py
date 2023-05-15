@@ -6,7 +6,6 @@ Interface to submit, modify and cancel orders.
 """
 
 
-
 import numpy as np
 
 from market.market import Market
@@ -115,7 +114,11 @@ class MarketInterface:
 
     # 1.) without order book impact (simulation) . . . . . . . . . . . . . .
 
-    def submit_order(self, side: int, quantity: int, limit: int = None):
+    def submit_order(self,
+                     side: int,
+                     quantity: int,
+                     limit: int = None,
+                     zero_latency: bool = False):
         """
         Submit a simulated order which does not affect the internal state of
         the market (no market impact). Limit should consider the market
@@ -128,6 +131,8 @@ class MarketInterface:
             int,
         :param limit:
             int, limit price
+        :param zero_latency:
+            bool, set True to set latency for order to zero
         """
         message = dict()
         # TemplateID 99999 for submission
@@ -135,6 +140,7 @@ class MarketInterface:
         message["side"] = side
         message["price"] = limit
         message["quantity"] = quantity
+        message["zero_latency"] = zero_latency
 
         # submit to Market
         Market.instances["ID"].update_simulation_with_agent_message(message)
@@ -208,18 +214,22 @@ class MarketInterface:
     def submit_order_impact(self,
                             side: int,
                             quantity: int,
-                            limit: int = None):
+                            limit: int = None,
+                            zero_latency: bool = False):
         """
         Submit order with market impact. This order will be placed in the
         internal state of the market but also added to the regular
         OMS.order_list. Impact messages are marked with an "impact_flag" which
         is set to 1 (inside Market).
+
         :param side:
             1(Buy), 2(Sell)
         :param quantity:
             int,
         :param limit:
             int, limit price
+        :param zero_latency:
+            bool, set True to set latency for order to zero
         """
         message = dict()
         # TemplateID 99999 for submission
@@ -227,6 +237,7 @@ class MarketInterface:
         message["side"] = side
         message["price"] = limit
         message["quantity"] = quantity
+        message["zero_latency"] = zero_latency
 
         # submit directly to MarketStateAttribute.instance
         Market.instances["ID"].update_with_agent_message_impact(message)

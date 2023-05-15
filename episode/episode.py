@@ -22,7 +22,7 @@ from reinforcement_learning.observation_space.minmaxvalues \
 from context.agent_context import AgentContext
 
 # PATH TO DATA DIRECTORY
-local= "/Users/florianewald/PycharmProjects/A7_NEW_SAMPLE/"
+local = "/Users/florianewald/Data/A7_NEW_SAMPLE"
 local_2 = "/Users/candis/Desktop/A7_DATA/"
 server_new = "/home/jovyan/_shared_storage/temp/A7_data/messages/"
 nvme_path = "/Volumes/WD_BLUE_NVME/A7_DATA_BY_ISIN/"
